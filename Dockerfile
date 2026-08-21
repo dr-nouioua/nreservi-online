@@ -9,15 +9,18 @@ COPY . .
 
 FROM base AS prod-deps
 WORKDIR /app
-# Fix: Force copy the .npmrc file config layer before running install steps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc* ./
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
+# Explicitly force-allow native binaries to compile safely
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm config set only-built-dependencies esbuild && \
+    pnpm install --prod --frozen-lockfile
 
 FROM base AS build
 WORKDIR /app
-# Fix: Force copy the .npmrc file config layer before running install steps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc* ./
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm config set only-built-dependencies esbuild && \
+    pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm build
 
