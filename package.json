@@ -1,4 +1,10 @@
 {
+    "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+
   "name": "dashboard",
   "private": true,
   "type": "module",
