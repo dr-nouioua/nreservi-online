@@ -17,4 +17,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV NODE_ENV=production
 
-CMD [ "npm", "run", "start" ]
+CMD [ "npx", "vinxi", "start", "--host", "0.0.0.0", "--port", "3000" ]
