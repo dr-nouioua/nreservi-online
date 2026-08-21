@@ -1,28 +1,17 @@
-FROM node:22-alpine AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
+FROM node:22-alpine
+WORKDIR /app
+
+# 1. Enable pnpm package management
 RUN corepack enable
 
-FROM base AS copy
-WORKDIR /app
+# 2. Copy ALL files (including .npmrc and package configurations) first
 COPY . .
 
-FROM base AS prod-deps
-WORKDIR /app
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile --only-built-dependencies=esbuild
+# 3. Clean install all dependencies matching your lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
-FROM base AS build
-WORKDIR /app
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --only-built-dependencies=esbuild
-COPY . .
+# 4. Compile the full-stack TanStack Start framework code
 RUN pnpm build
-
-FROM base
-WORKDIR /app
-COPY --from=prod-deps /app/node_modules ./node_modules
-COPY --from=build /app/ . 
 
 EXPOSE 3000
 ENV PORT=3000
