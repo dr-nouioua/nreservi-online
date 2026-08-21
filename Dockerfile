@@ -1,20 +1,21 @@
 FROM node:22-alpine
 WORKDIR /app
 
-# 1. Copy all project configuration files
-COPY package.json ./
+# 1. Enable native node package manager layout tracking
+RUN corepack enable
 
-# 2. Install dependencies cleanly via native npm (Bypasses all pnpm strict blocks)
+# 2. Copy dependency descriptors and run fresh npm installation
+COPY package.json package-lock.json* ./
 RUN npm install
 
-# 3. Copy the rest of your application code
+# 3. Copy application codebase and bundle files
 COPY . .
-
-# 4. Compile the TanStack Start full-stack web application code
 RUN npm run build
 
 EXPOSE 3000
+# Force the global runtime variables across the network interfaces
+ENV HOST=0.0.0.0
 ENV PORT=3000
 ENV NODE_ENV=production
 
-CMD [ "npx", "vinxi", "start", "--host", "0.0.0.0", "--port", "3000" ]
+CMD [ "node", ".output/server/index.mjs" ]
