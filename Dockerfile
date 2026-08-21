@@ -4,13 +4,16 @@ WORKDIR /app
 # 1. Enable pnpm package management
 RUN corepack enable
 
-# 2. Copy ALL files (including .npmrc and package configurations) first
+# 2. Hardcode the native build script approval variables (Bypasses pnpm block)
+ENV PNPM_ONLY_BUILT_DEPENDENCIES=esbuild,sharp
+
+# 3. Copy your project code context
 COPY . .
 
-# 3. Clean install all dependencies matching your lockfile
+# 4. Clean install all dependencies
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
-# 4. Compile the full-stack TanStack Start framework code
+# 5. Compile the full-stack TanStack Start application framework code
 RUN pnpm build
 
 EXPOSE 3000
