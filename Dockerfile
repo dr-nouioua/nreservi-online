@@ -1,28 +1,21 @@
-FROM node:22-alpine AS base
+FROM node:22-alpine
 WORKDIR /app
-RUN npm install -g npm@latest
 
-FROM base AS dependencies
-COPY package.json ./
-# Changed npm ci to npm install so it doesn't look for a package-lock.json file
-RUN npm install --include=dev
+# 1. Enable corepack for node package management tracking
+RUN corepack enable
 
-FROM base AS builder
-COPY --from=dependencies /app/node_modules ./node_modules
+# 2. Copy the entire repository layout directly
 COPY . .
-ENV NODE_ENV=production
-ENV HOST=0.0.0.0
-ENV PORT=3000
+
+# 3. Use standard npm installation to bypass monorepo locks
+RUN npm install
+
+# 4. Force compile the TanStack application build natively
 RUN npm run build
 
-FROM base AS runner
+EXPOSE 3000
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
 
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/.output ./.output
-
-EXPOSE 3000
 CMD [ "node", ".output/server/index.mjs" ]
