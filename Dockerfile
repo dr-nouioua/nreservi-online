@@ -3,13 +3,13 @@ WORKDIR /app
 RUN npm install -g npm@latest
 
 FROM base AS dependencies
-COPY package.json package-lock.json* ./
-RUN npm ci --include=dev
+COPY package.json ./
+# Changed npm ci to npm install so it doesn't look for a package-lock.json file
+RUN npm install --include=dev
 
 FROM base AS builder
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
-# Set build environment variables so TanStack compiles correctly
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
