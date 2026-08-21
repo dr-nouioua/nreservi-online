@@ -9,12 +9,14 @@ COPY . .
 
 FROM base AS prod-deps
 WORKDIR /app
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# Fix: Force copy the .npmrc file config layer before running install steps
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc* ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
 
 FROM base AS build
 WORKDIR /app
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# Fix: Force copy the .npmrc file config layer before running install steps
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc* ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm build
