@@ -1,21 +1,28 @@
-FROM node:22-alpine
+FROM node:22-alpine AS base
 WORKDIR /app
+RUN npm install -g npm@latest
 
-# 1. Enable native node package manager layout tracking
-RUN corepack enable
-
-# 2. Copy dependency descriptors and run fresh npm installation
+FROM base AS dependencies
 COPY package.json package-lock.json* ./
-RUN npm install
+RUN npm ci --include=dev
 
-# 3. Copy application codebase and bundle files
+FROM base AS builder
+COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
-
-EXPOSE 3000
-# Force the global runtime variables across the network interfaces
+# Set build environment variables so TanStack compiles correctly
+ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
-ENV NODE_ENV=production
+RUN npm run build
 
-CMD [ "npm", "run", "start" ]
+FROM base AS runner
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=3000
+
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.output ./.output
+
+EXPOSE 3000
+CMD [ "node", ".output/server/index.mjs" ]
