@@ -21,7 +21,9 @@ import { Route as AdminAuthedIndexRouteImport } from './routes/admin/_authed.ind
 import { Route as OwnerAuthedSettingsRouteImport } from './routes/owner/_authed.settings'
 import { Route as OwnerAuthedMenuRouteImport } from './routes/owner/_authed.menu'
 import { Route as OwnerAuthedMarketingRouteImport } from './routes/owner/_authed.marketing'
+import { Route as OwnerAuthedBillingRouteImport } from './routes/owner/_authed.billing'
 import { Route as OwnerAuthedAnalyticsRouteImport } from './routes/owner/_authed.analytics'
+import { Route as AdminAuthedSubscriptionsRouteImport } from './routes/admin/_authed.subscriptions'
 import { Route as AdminAuthedOnboardRouteImport } from './routes/admin/_authed.onboard'
 import { Route as AdminAuthedAdsRouteImport } from './routes/admin/_authed.ads'
 import { Route as AdminAuthedAccountRouteImport } from './routes/admin/_authed.account'
@@ -89,6 +91,11 @@ const OwnerAuthedMarketingRoute = OwnerAuthedMarketingRouteImport.update({
   path: '/marketing',
   getParentRoute: () => OwnerAuthedRoute,
 } as any)
+const OwnerAuthedBillingRoute = OwnerAuthedBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => OwnerAuthedRoute,
+} as any)
 const OwnerAuthedAnalyticsRoute = OwnerAuthedAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
@@ -96,6 +103,12 @@ const OwnerAuthedAnalyticsRoute = OwnerAuthedAnalyticsRouteImport.update({
 } as any).lazy(() =>
   import('./routes/owner/_authed.analytics.lazy').then((d) => d.Route),
 )
+const AdminAuthedSubscriptionsRoute =
+  AdminAuthedSubscriptionsRouteImport.update({
+    id: '/subscriptions',
+    path: '/subscriptions',
+    getParentRoute: () => AdminAuthedRoute,
+  } as any)
 const AdminAuthedOnboardRoute = AdminAuthedOnboardRouteImport.update({
   id: '/onboard',
   path: '/onboard',
@@ -129,7 +142,9 @@ export interface FileRoutesByFullPath {
   '/admin/account': typeof AdminAuthedAccountRoute
   '/admin/ads': typeof AdminAuthedAdsRoute
   '/admin/onboard': typeof AdminAuthedOnboardRoute
+  '/admin/subscriptions': typeof AdminAuthedSubscriptionsRoute
   '/owner/analytics': typeof OwnerAuthedAnalyticsRoute
+  '/owner/billing': typeof OwnerAuthedBillingRoute
   '/owner/marketing': typeof OwnerAuthedMarketingRoute
   '/owner/menu': typeof OwnerAuthedMenuRoute
   '/owner/settings': typeof OwnerAuthedSettingsRoute
@@ -146,7 +161,9 @@ export interface FileRoutesByTo {
   '/admin/account': typeof AdminAuthedAccountRoute
   '/admin/ads': typeof AdminAuthedAdsRoute
   '/admin/onboard': typeof AdminAuthedOnboardRoute
+  '/admin/subscriptions': typeof AdminAuthedSubscriptionsRoute
   '/owner/analytics': typeof OwnerAuthedAnalyticsRoute
+  '/owner/billing': typeof OwnerAuthedBillingRoute
   '/owner/marketing': typeof OwnerAuthedMarketingRoute
   '/owner/menu': typeof OwnerAuthedMenuRoute
   '/owner/settings': typeof OwnerAuthedSettingsRoute
@@ -166,7 +183,9 @@ export interface FileRoutesById {
   '/admin/_authed/account': typeof AdminAuthedAccountRoute
   '/admin/_authed/ads': typeof AdminAuthedAdsRoute
   '/admin/_authed/onboard': typeof AdminAuthedOnboardRoute
+  '/admin/_authed/subscriptions': typeof AdminAuthedSubscriptionsRoute
   '/owner/_authed/analytics': typeof OwnerAuthedAnalyticsRoute
+  '/owner/_authed/billing': typeof OwnerAuthedBillingRoute
   '/owner/_authed/marketing': typeof OwnerAuthedMarketingRoute
   '/owner/_authed/menu': typeof OwnerAuthedMenuRoute
   '/owner/_authed/settings': typeof OwnerAuthedSettingsRoute
@@ -187,7 +206,9 @@ export interface FileRouteTypes {
     | '/admin/account'
     | '/admin/ads'
     | '/admin/onboard'
+    | '/admin/subscriptions'
     | '/owner/analytics'
+    | '/owner/billing'
     | '/owner/marketing'
     | '/owner/menu'
     | '/owner/settings'
@@ -204,7 +225,9 @@ export interface FileRouteTypes {
     | '/admin/account'
     | '/admin/ads'
     | '/admin/onboard'
+    | '/admin/subscriptions'
     | '/owner/analytics'
+    | '/owner/billing'
     | '/owner/marketing'
     | '/owner/menu'
     | '/owner/settings'
@@ -223,7 +246,9 @@ export interface FileRouteTypes {
     | '/admin/_authed/account'
     | '/admin/_authed/ads'
     | '/admin/_authed/onboard'
+    | '/admin/_authed/subscriptions'
     | '/owner/_authed/analytics'
+    | '/owner/_authed/billing'
     | '/owner/_authed/marketing'
     | '/owner/_authed/menu'
     | '/owner/_authed/settings'
@@ -328,12 +353,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OwnerAuthedMarketingRouteImport
       parentRoute: typeof OwnerAuthedRoute
     }
+    '/owner/_authed/billing': {
+      id: '/owner/_authed/billing'
+      path: '/billing'
+      fullPath: '/owner/billing'
+      preLoaderRoute: typeof OwnerAuthedBillingRouteImport
+      parentRoute: typeof OwnerAuthedRoute
+    }
     '/owner/_authed/analytics': {
       id: '/owner/_authed/analytics'
       path: '/analytics'
       fullPath: '/owner/analytics'
       preLoaderRoute: typeof OwnerAuthedAnalyticsRouteImport
       parentRoute: typeof OwnerAuthedRoute
+    }
+    '/admin/_authed/subscriptions': {
+      id: '/admin/_authed/subscriptions'
+      path: '/subscriptions'
+      fullPath: '/admin/subscriptions'
+      preLoaderRoute: typeof AdminAuthedSubscriptionsRouteImport
+      parentRoute: typeof AdminAuthedRoute
     }
     '/admin/_authed/onboard': {
       id: '/admin/_authed/onboard'
@@ -370,6 +409,7 @@ interface AdminAuthedRouteChildren {
   AdminAuthedAccountRoute: typeof AdminAuthedAccountRoute
   AdminAuthedAdsRoute: typeof AdminAuthedAdsRoute
   AdminAuthedOnboardRoute: typeof AdminAuthedOnboardRoute
+  AdminAuthedSubscriptionsRoute: typeof AdminAuthedSubscriptionsRoute
   AdminAuthedIndexRoute: typeof AdminAuthedIndexRoute
 }
 
@@ -377,6 +417,7 @@ const AdminAuthedRouteChildren: AdminAuthedRouteChildren = {
   AdminAuthedAccountRoute: AdminAuthedAccountRoute,
   AdminAuthedAdsRoute: AdminAuthedAdsRoute,
   AdminAuthedOnboardRoute: AdminAuthedOnboardRoute,
+  AdminAuthedSubscriptionsRoute: AdminAuthedSubscriptionsRoute,
   AdminAuthedIndexRoute: AdminAuthedIndexRoute,
 }
 
@@ -386,6 +427,7 @@ const AdminAuthedRouteWithChildren = AdminAuthedRoute._addFileChildren(
 
 interface OwnerAuthedRouteChildren {
   OwnerAuthedAnalyticsRoute: typeof OwnerAuthedAnalyticsRoute
+  OwnerAuthedBillingRoute: typeof OwnerAuthedBillingRoute
   OwnerAuthedMarketingRoute: typeof OwnerAuthedMarketingRoute
   OwnerAuthedMenuRoute: typeof OwnerAuthedMenuRoute
   OwnerAuthedSettingsRoute: typeof OwnerAuthedSettingsRoute
@@ -395,6 +437,7 @@ interface OwnerAuthedRouteChildren {
 
 const OwnerAuthedRouteChildren: OwnerAuthedRouteChildren = {
   OwnerAuthedAnalyticsRoute: OwnerAuthedAnalyticsRoute,
+  OwnerAuthedBillingRoute: OwnerAuthedBillingRoute,
   OwnerAuthedMarketingRoute: OwnerAuthedMarketingRoute,
   OwnerAuthedMenuRoute: OwnerAuthedMenuRoute,
   OwnerAuthedSettingsRoute: OwnerAuthedSettingsRoute,

@@ -27,6 +27,7 @@ function AdminLayout() {
               <Link to="/admin/onboard" activeProps={{ className: 'text-white' }} className="flex items-center gap-1">
                 <Plus className="w-3.5 h-3.5" /> Onboard
               </Link>
+              <Link to="/admin/subscriptions" activeProps={{ className: 'text-white' }}>Abonnements</Link>
               <Link to="/admin/ads" activeProps={{ className: 'text-white' }}>Publicités</Link>
               <Link to="/admin/account" activeProps={{ className: 'text-white' }}>Compte</Link>
             </nav>

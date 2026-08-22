@@ -18,14 +18,59 @@ import {
 import { requireSession } from "./auth.functions.js";
 import { sendWhatsappMessage, renderTemplate } from "./whatsapp.server.js";
 import { randomToken } from "./session.server.js";
+import { computeSubscriptionStatus, daysUntil, isSubscriptionValid } from "./subscriptions.shared.js";
 
-export async function requireRestaurantId(): Promise<number> {
+/**
+ * Single chokepoint for every owner operation: resolves the caller's
+ * restaurant AND enforces subscription validity — an expired or suspended
+ * restaurant is blocked here, server-side, regardless of what the UI shows.
+ */
+export const requireRestaurantId = createServerFn({ method: "GET" }).handler(async (): Promise<number> => {
   const session = await requireSession();
   if (!session || (session.role !== "owner" && session.role !== "staff")) {
     throw new Error("Not authorized");
   }
-  return session.restaurantId;
-}
+  const [row] = await db.select().from(restaurants).where(eq(restaurants.id, session.restaurantId));
+  if (!row) throw new Error("Not authorized");
+  if (!isSubscriptionValid(row)) {
+    const code = computeSubscriptionStatus(row) === "pending" ? "SUBSCRIPTION_PENDING" : "SUBSCRIPTION_EXPIRED";
+    const err = new Error(code);
+    (err as Error & { code?: string }).code = code;
+    throw err;
+  }
+  return row.id;
+});
+
+/**
+ * Subscription info for the owner's own "Abonnement" page. Deliberately NOT
+ * gated — expired restaurants must still see their status and this page.
+ */
+export const getOwnSubscription = createServerFn({ method: "GET" }).handler(async () => {
+  const session = await requireSession();
+  if (!session || (session.role !== "owner" && session.role !== "staff")) {
+    throw new Error("Not authorized");
+  }
+  const [row] = await db
+    .select({
+      name: restaurants.name,
+      tier: restaurants.subscriptionTier,
+      status: restaurants.status,
+      start: restaurants.subscriptionStart,
+      end: restaurants.subscriptionEnd,
+    })
+    .from(restaurants)
+    .where(eq(restaurants.id, session.restaurantId));
+  if (!row) throw new Error("Not found");
+  return {
+    name: row.name,
+    tier: row.tier,
+    adminStatus: row.status,
+    start: row.start,
+    end: row.end,
+    effective: computeSubscriptionStatus({ status: row.status, subscriptionEnd: row.end }),
+    daysLeft: daysUntil(row.end),
+  };
+});
 
 export const getOwnerOverview = createServerFn({ method: "GET" }).handler(async () => {
   const restaurantId = await requireRestaurantId();

@@ -3,6 +3,8 @@ import { eq } from "drizzle-orm";
 import { db } from "../../db/index.js";
 import { adminUsers, ads, restaurants, restaurantOwners, reservations, areas } from "../../db/schema.js";
 import { requireSession } from "./auth.functions.js";
+import { appendSubscriptionHistory, syncExpiredSubscriptionsInternal } from "./subscription.server.js";
+import { computeSubscriptionStatus, daysUntil, SUBSCRIPTION_WARNING_DAYS } from "./subscriptions.shared.js";
 import { hashPassword } from "./crypto.server.js";
 import { signSession } from "./session.server.js";
 import { setCookie } from "@tanstack/react-start/server";
@@ -260,4 +262,102 @@ export const deleteAd = createServerFn({ method: "POST" })
     await requireAdmin();
     await db.delete(ads).where(eq(ads.id, data.id));
     return { success: true as const };
+  });
+
+// ---------- Subscription management (spec §17–21) ----------
+
+function todayISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/** Flips every active-but-expired restaurant to suspended. Cheap; run on admin dashboard load and via cron. */
+export const syncExpiredSubscriptions = createServerFn({ method: "POST" }).handler(async () => {
+  await requireAdmin();
+  return { suspended: await syncExpiredSubscriptionsInternal() };
+});
+
+export const listSubscriptions = createServerFn({ method: "GET" }).handler(async () => {
+  await requireAdmin();
+  await syncExpiredSubscriptionsInternal();
+  const rows = await db.select().from(restaurants).orderBy(restaurants.name);
+  return rows.map((r) => {
+    const status = computeSubscriptionStatus(r);
+    return {
+      id: r.id,
+      name: r.name,
+      city: r.city,
+      tier: r.subscriptionTier,
+      adminStatus: r.status,
+      status,
+      start: r.subscriptionStart,
+      end: r.subscriptionEnd,
+      daysLeft: daysUntil(r.subscriptionEnd),
+      warningDays: SUBSCRIPTION_WARNING_DAYS,
+      history: (r.subscriptionHistory as unknown[]) ?? [],
+    };
+  });
+});
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+export const updateSubscriptionDates = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: number; start: string | null; end: string | null }) => data)
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    for (const d of [data.start, data.end]) {
+      if (d && !DATE_RE.test(d)) return { error: "Date invalide (format attendu AAAA-MM-JJ)." };
+    }
+    if (data.start && data.end && data.end <= data.start) {
+      return { error: "La date de fin doit être après la date de début." };
+    }
+    const [row] = await db.select().from(restaurants).where(eq(restaurants.id, data.id));
+    if (!row) return { error: "Restaurant introuvable." };
+
+    // A pending restaurant stays pending; an expired/suspended one becomes
+    // active again as soon as a valid period is assigned (renewal, §20).
+    const wasExpired = computeSubscriptionStatus(row) === "expired";
+    await db
+      .update(restaurants)
+      .set({
+        subscriptionStart: data.start,
+        subscriptionEnd: data.end,
+        ...(row.status === "suspended" || wasExpired ? { status: "active" } : {}),
+      })
+      .where(eq(restaurants.id, data.id));
+    await appendSubscriptionHistory(data.id, {
+      start: data.start,
+      end: data.end,
+      tier: row.subscriptionTier,
+    });
+    return { success: true as const };
+  });
+
+/** Renewal shortcut: extends by N months from the later of (today, current end). */
+export const renewSubscription = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: number; months: number }) => data)
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    if (!(data.months >= 1 && data.months <= 36)) return { error: "Durée invalide (1–36 mois)." };
+    const [row] = await db.select().from(restaurants).where(eq(restaurants.id, data.id));
+    if (!row) return { error: "Restaurant introuvable." };
+
+    const today = todayISO();
+    const base = row.subscriptionEnd && row.subscriptionEnd > today ? row.subscriptionEnd : today;
+    const [y, m, d] = base.split("-").map(Number);
+    const endISO = new Date(Date.UTC(y, m - 1 + data.months, d) - 1).toISOString().slice(0, 10);
+
+    await db
+      .update(restaurants)
+      .set({
+        subscriptionStart: row.subscriptionStart ?? today,
+        subscriptionEnd: endISO,
+        ...(row.status !== "active" ? { status: "active" } : {}),
+      })
+      .where(eq(restaurants.id, data.id));
+    await appendSubscriptionHistory(data.id, {
+      start: row.subscriptionStart ?? today,
+      end: endISO,
+      tier: row.subscriptionTier,
+    });
+    return { success: true as const, newEnd: endISO };
   });

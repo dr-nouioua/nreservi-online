@@ -18,10 +18,20 @@ app.get("/api/health", (c) => c.json({ ok: true }));
 // ---- Inbound WhatsApp webhook (replaces netlify/functions/whatsapp-webhook) ----
 app.all("/api/whatsapp-webhook", (c) => handleWhatsappWebhook(c.req.raw));
 
-// ---- Scheduled jobs endpoint, called hourly by system cron on the VPS:
+// ---- Scheduled jobs endpoints, called from system cron on the VPS:
 //      0 * * * * curl -fsS -X POST -H "x-cron-secret: $CRON_SECRET" \
 //        http://127.0.0.1:3000/api/cron/reservation-reminders
-app.post("/api/cron/reservation-reminders", async (c) => {
+//      30 * * * * curl -fsS -X POST -H "x-cron-secret: $CRON_SECRET" \
+//        http://127.0.0.1:3000/api/cron/sync-subscriptions
+app.post("/api/cron/reservation-reminders", async (c) => cronGuard(c, () => runReservationReminders()));
+app.post("/api/cron/sync-subscriptions", async (c) =>
+  cronGuard(c, async () => {
+    const { syncExpiredSubscriptionsInternal } = await import("../src/server/subscription.server.js");
+    return Response.json({ suspended: await syncExpiredSubscriptionsInternal() });
+  }),
+);
+
+async function cronGuard(c: { req: { header: (k: string) => string | undefined } }, run: () => Promise<Response>) {
   const secret = process.env.CRON_SECRET;
   if (!secret) {
     return c.json({ error: "CRON_SECRET is not configured" }, 503);
@@ -29,8 +39,8 @@ app.post("/api/cron/reservation-reminders", async (c) => {
   if (c.req.header("x-cron-secret") !== secret) {
     return c.json({ error: "Unauthorized" }, 401);
   }
-  return runReservationReminders();
-});
+  return run();
+}
 
 // ---- Static client assets (Vite emits them under dist/client) ----
 app.use("*", serveStatic({ root: "./dist/client" }));

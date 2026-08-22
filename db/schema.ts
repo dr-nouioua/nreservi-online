@@ -44,6 +44,9 @@ export const restaurants = pgTable("restaurants", {
   subscriptionTier: text("subscription_tier").notNull().default("starter"), // starter | growth | pro
    openingHours: jsonb("opening_hours").notNull().default({}), // { mon: [{open, close}], ... }
    showMenuImages: boolean("show_menu_images").notNull().default(true), // owner toggle: photos in the public menu
+   subscriptionStart: date("subscription_start"),
+   subscriptionEnd: date("subscription_end"), // null = no expiry (grandfathered)
+   subscriptionHistory: jsonb("subscription_history").notNull().default([]), // [{start,end,tier,changedAt}]
    createdAt: timestamp("created_at").defaultNow(),
 });
 
