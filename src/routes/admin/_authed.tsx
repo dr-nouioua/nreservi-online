@@ -19,10 +19,10 @@ function AdminLayout() {
   return (
     <div className="min-h-screen">
       <header className="bg-stone-900 text-white dark:bg-stone-900 dark:border-b dark:border-stone-800">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6">
             <span className="font-semibold flex items-center gap-2"><Building2 className="w-4 h-4" /> nreservi.online · Administration</span>
-            <nav className="flex items-center gap-4 text-sm text-stone-300">
+            <nav className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-300">
               <Link to="/admin" activeProps={{ className: 'text-white' }}>Restaurants</Link>
               <Link to="/admin/onboard" activeProps={{ className: 'text-white' }} className="flex items-center gap-1">
                 <Plus className="w-3.5 h-3.5" /> Onboard

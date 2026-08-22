@@ -66,7 +66,7 @@ function AnalyticsPage() {
   ]
 
   return (
-    <div className="p-8 max-w-6xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Analytics</h1>
         <button onClick={() => exportCsv(data)} className="px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm hover:bg-stone-100 dark:hover:bg-stone-800">

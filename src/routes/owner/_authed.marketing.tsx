@@ -43,7 +43,7 @@ function MarketingPage() {
   }
 
   return (
-    <div className="p-8 max-w-6xl">
+    <div className="p-4 sm:p-4 sm:p-6 lg:p-8 max-w-6xl">
       <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Marketing automation</h1>
       <p className="text-stone-500 dark:text-stone-400 text-sm mt-1">Retarget customers via WhatsApp based on behavior segments.</p>
 

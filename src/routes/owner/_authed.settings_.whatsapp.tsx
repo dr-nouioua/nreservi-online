@@ -50,7 +50,7 @@ function WhatsappSettingsPage() {
   }
 
   return (
-    <div className="max-w-3xl space-y-6 p-6 lg:p-8">
+    <div className="max-w-3xl space-y-6 p-4 sm:p-6 lg:p-8">
       <div>
         <Link to="/owner/settings" className="inline-flex items-center gap-1 text-sm text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-100">
           <ArrowLeft className="h-3.5 w-3.5" /> Paramètres
@@ -64,7 +64,7 @@ function WhatsappSettingsPage() {
         </p>
       </div>
 
-      <form onSubmit={submitNumber} className="space-y-3 rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-sm">
+      <form onSubmit={submitNumber} className="space-y-3 rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-4 sm:p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="font-semibold text-stone-900 dark:text-stone-100">Numéro WhatsApp</p>
           {savedNumber && (
@@ -106,7 +106,7 @@ function WhatsappSettingsPage() {
         )}
       </form>
 
-      <div className="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-sm">
+      <div className="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-4 sm:p-6 shadow-sm">
         <p className="font-semibold text-stone-900 dark:text-stone-100">Variables disponibles</p>
         <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
           Insérez ces variables dans vos messages : elles sont remplacées par les informations de la
@@ -186,7 +186,7 @@ function TemplateEditor({
   const isDefault = body === whatsappService.defaultTemplates[kind]
 
   return (
-    <div className="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-6 shadow-sm">
+    <div className="rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-4 sm:p-6 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="font-medium text-stone-900 dark:text-stone-100">{label}</p>

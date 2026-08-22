@@ -59,7 +59,7 @@ function OnboardPage() {
   return (
     <div className="max-w-xl">
       <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Onboard a restaurant</h1>
-      <form onSubmit={submit} className="mt-6 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-6 space-y-3">
+      <form onSubmit={submit} className="mt-6 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-4 sm:p-6 space-y-3">
         {fields.map(([key, label]) => (
           <div key={key}>
             <label className="text-xs text-stone-500 dark:text-stone-400">{label}</label>
