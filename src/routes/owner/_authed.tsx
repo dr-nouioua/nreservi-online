@@ -18,6 +18,7 @@ import {
 import { getSession, logout } from '../../server/auth.functions'
 import { getOwnSubscription } from '../../server/owner.functions'
 import { ThemeToggle } from '../../components/ThemeToggle'
+import { BrandLogo } from '../../components/BrandLogo'
 
 export const Route = createFileRoute('/owner/_authed')({
   beforeLoad: async () => {
@@ -146,7 +147,7 @@ function OwnerLayout() {
       >
         <div className={`flex items-center justify-between gap-2 ${collapsed ? 'lg:justify-center' : ''}`}>
           <Link to="/" aria-label="nreservi.online — accueil" onClick={() => setDrawerOpen(false)}>
-            <img src="/brand/nreservi-logo.png" alt="nreservi.online" width={815} height={125} className={`${collapsed ? 'hidden lg:block lg:h-5' : 'h-6'} w-auto max-w-full`} />
+            <BrandLogo className={`${collapsed ? 'lg:h-5' : 'h-6'} w-auto max-w-full`} />
           </Link>
           {/* close button — mobile drawer only */}
           <button
@@ -192,7 +193,7 @@ function OwnerLayout() {
           >
             <Menu className="h-6 w-6" />
           </button>
-          <img src="/brand/nreservi-logo.png" alt="nreservi.online" width={815} height={125} className="h-5 w-auto max-w-[55%] object-contain" />
+          <BrandLogo className="h-5 w-auto max-w-[55%] object-contain" />
           <ThemeToggle />
         </header>
 

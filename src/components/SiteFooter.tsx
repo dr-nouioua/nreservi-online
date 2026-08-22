@@ -1,17 +1,12 @@
 import { Link } from '@tanstack/react-router'
+import { BrandLogo } from './BrandLogo'
 
 export function SiteFooter() {
   return (
     <footer className="border-t border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
-          <img
-            src="/brand/nreservi-mark.png"
-            alt=""
-            width={172}
-            height={125}
-            className="h-7 w-auto"
-          />
+          <BrandLogo mark className="h-7 w-auto" />
           <div>
             <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">nreservi.online</p>
             <p className="text-sm text-stone-500 dark:text-stone-400">

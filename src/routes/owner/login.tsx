@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { BrandLogo } from "../../components/BrandLogo"
 import { useState } from 'react'
 import { loginOwner } from '../../server/auth.functions'
 import { ensureSeeded } from '../../server/seed.server'
@@ -43,7 +44,7 @@ function OwnerLogin() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-stone-100 dark:bg-stone-800 px-4 py-12">
       <a href="/" className="mb-6" aria-label="nreservi.online — accueil">
-        <img src="/brand/nreservi-logo.png" alt="nreservi.online" width={815} height={125} className="h-8 w-auto" />
+        <BrandLogo className="h-8 w-auto" />
       </a>
       <div className="w-full max-w-sm bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-8">
         <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">Espace professionnel</h1>

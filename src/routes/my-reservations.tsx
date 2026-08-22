@@ -57,7 +57,7 @@ function MyReservations() {
             required
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            placeholder="+33 6 12 34 56 78"
+            placeholder="+213 555 12 34 56"
             className="flex-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm"
           />
           <button className="px-4 py-2 rounded-lg bg-stone-900 text-white dark:ring-1 dark:ring-stone-700 text-sm font-medium">

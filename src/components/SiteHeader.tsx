@@ -1,18 +1,13 @@
 import { Link } from '@tanstack/react-router'
 import { ThemeToggle } from './ThemeToggle'
+import { BrandLogo } from './BrandLogo'
 
 export function SiteHeader() {
   return (
     <header className="border-b border-stone-200 bg-white/80 backdrop-blur sticky top-0 z-10 dark:border-stone-800 dark:bg-stone-900/80">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-2 sm:gap-3">
         <Link to="/" className="flex min-w-0 items-center" aria-label="nreservi.online — accueil">
-          <img
-            src="/brand/nreservi-logo.png"
-            alt="nreservi.online"
-            width={815}
-            height={125}
-            className="h-6 w-auto max-w-full object-contain object-left sm:h-8"
-          />
+          <BrandLogo className="h-6 w-auto max-w-full object-contain object-left sm:h-8" />
         </Link>
         <div className="flex items-center gap-2 sm:gap-3">
           <ThemeToggle />

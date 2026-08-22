@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { BrandLogo } from "../../components/BrandLogo"
 import { useState } from 'react'
 import { createServerFn } from '@tanstack/react-start'
 import { loginAdmin } from '../../server/auth.functions'
@@ -43,7 +44,7 @@ function AdminLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-stone-900 px-4">
       <div className="w-full max-w-sm bg-white dark:bg-stone-900 rounded-xl p-8">
-        <img src="/brand/nreservi-logo.png" alt="nreservi.online" width={815} height={125} className="h-7 w-auto" />
+        <BrandLogo className="h-7 w-auto" />
         <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100 mt-5">Administration de la plateforme</h1>
         <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">Accès réservé aux administrateurs.</p>
         <form onSubmit={submit} className="mt-6 space-y-3">

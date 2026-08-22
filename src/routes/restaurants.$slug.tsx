@@ -292,7 +292,7 @@ function RestaurantPage() {
                       required
                       value={guestPhone}
                       onChange={(e) => setGuestPhone(e.target.value)}
-                      placeholder="+33 6 12 34 56 78"
+                      placeholder="+213 555 12 34 56"
                       className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm"
                     />
                   </div>
