@@ -42,15 +42,15 @@ function AdminLogin() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-stone-900 px-4">
-      <div className="w-full max-w-sm bg-white rounded-xl p-8">
+      <div className="w-full max-w-sm bg-white dark:bg-stone-900 rounded-xl p-8">
         <img src="/brand/nreservi-logo.png" alt="nreservi.online" width={815} height={125} className="h-7 w-auto" />
-        <h1 className="text-xl font-bold text-stone-900 mt-5">Administration de la plateforme</h1>
-        <p className="text-sm text-stone-500 mt-1">Accès réservé aux administrateurs.</p>
+        <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100 mt-5">Administration de la plateforme</h1>
+        <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">Accès réservé aux administrateurs.</p>
         <form onSubmit={submit} className="mt-6 space-y-3">
-          <input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm" />
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm" />
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <button disabled={loading} className="w-full py-2.5 rounded-lg bg-stone-950 text-white text-sm font-medium disabled:opacity-50">
+          <input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm" />
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm" />
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+          <button disabled={loading} className="w-full py-2.5 rounded-lg bg-stone-950 text-white dark:ring-1 dark:ring-stone-700 text-sm font-medium disabled:opacity-50">
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>
         </form>

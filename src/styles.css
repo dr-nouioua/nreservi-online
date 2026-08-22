@@ -1,5 +1,10 @@
 @import "tailwindcss" source("../");
 
+/* Class-based dark mode (Tailwind 4 defaults to prefers-color-scheme).
+   The .dark class is applied to <html> by the inline theme script in __root.tsx
+   before first paint, so there is no flash of the wrong theme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 body {
   @apply m-0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",

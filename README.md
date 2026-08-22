@@ -10,19 +10,22 @@ French-first ("Mes réservations"); the owner and admin dashboards are unchanged
 
 ## Tech stack
 
-- **Framework:** TanStack Start (React 19, TanStack Router), deployed on Netlify
-- **Database:** Netlify Database (managed Postgres) via Drizzle ORM — see `db/schema.ts`
+- **Framework:** TanStack Start (React 19, TanStack Router), self-hosted on Node (target: Hostinger VPS)
+- **Database:** any Postgres (self-hosted on the VPS or managed) via Drizzle ORM — see `db/schema.ts`
 - **Styling:** Tailwind CSS 4
 - **Charts:** Chart.js / react-chartjs-2
 - **Auth:** custom email/password login for owners, staff, and the admin, using signed HMAC session cookies (no third-party auth provider)
 - **WhatsApp integration:** mocked send/receive, logged to the `whatsapp_messages` table (see "WhatsApp integration" below)
-- **Background jobs:** a scheduled Netlify Function for reservation reminders, and an inbound-webhook Netlify Function for CANCEL/CONFIRM/STOP replies
+- **Background jobs:** hourly reservation reminders via system cron calling a protected endpoint, and an inbound WhatsApp webhook endpoint for CANCEL/CONFIRM/STOP replies
 
 ## Running locally
 
 ```bash
 pnpm install
-netlify dev --port 8889
+cp .env.example .env          # set DATABASE_URL + SESSION_SECRET
+docker compose up -d db       # or point DATABASE_URL at any Postgres
+pnpm db:migrate               # apply migrations in ./drizzle
+pnpm dev                      # http://localhost:3000
 ```
 
 The database seeds itself automatically on first request with two active demo restaurants and one pending
@@ -36,6 +39,58 @@ onboarding applicant. Demo logins:
 
 Customers don't need an account — book from the homepage with any phone number, then look reservations up again
 at `/my-reservations` with that same number.
+
+## Déploiement Hostinger VPS (self-hosted)
+
+The app is a standard Node server — no platform-specific runtime required.
+
+**Option A — Docker (recommended):**
+
+```bash
+cp .env.example .env    # set SESSION_SECRET (+ POSTGRES_* if you change defaults)
+docker compose up -d --build
+# apply migrations once:
+docker compose exec web npm run db:migrate
+```
+
+The stack starts Postgres (`db` service, data in a named volume) and the app on port 3000.
+Put nginx/Caddy in front for TLS:
+
+```
+# Caddyfile example
+nreservi.online {
+  reverse_proxy 127.0.0.1:3000
+}
+```
+
+**Option B — bare metal (Node 22+):**
+
+```bash
+pnpm install
+pnpm build
+pnpm db:migrate            # DATABASE_URL must be set (reads .env)
+SESSION_SECRET=$(openssl rand -hex 32) CRON_SECRET=$(openssl rand -hex 24) \
+  pnpm start               # serves on $PORT (default 3000)
+```
+
+Run it under systemd or pm2.
+
+**Hourly reminder cron (host crontab):**
+
+```
+0 * * * * curl -fsS -X POST -H "x-cron-secret: $CRON_SECRET" http://127.0.0.1:3000/api/cron/reservation-reminders
+```
+
+**Endpoints added by the host server (`server/index.mts`):**
+
+| Route | Use |
+| --- | --- |
+| `GET /api/health` | uptime probe / docker healthcheck |
+| `POST /api/whatsapp-webhook` | inbound WhatsApp replies (CANCEL / CONFIRM / STOP); verifies Meta's `X-Hub-Signature-256` when `WHATSAPP_APP_SECRET` is set |
+| `POST /api/cron/reservation-reminders` | protected by `x-cron-secret: $CRON_SECRET`; sends the 2–3h-before reminders |
+
+Environment variables: see `.env.example`. `SESSION_SECRET` is mandatory outside local development —
+the server refuses to sign sessions without it.
 
 ## Branding
 

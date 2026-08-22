@@ -58,21 +58,21 @@ function OnboardPage() {
 
   return (
     <div className="max-w-xl">
-      <h1 className="text-2xl font-bold text-stone-900">Onboard a restaurant</h1>
-      <form onSubmit={submit} className="mt-6 bg-white rounded-xl border border-stone-200 p-6 space-y-3">
+      <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Onboard a restaurant</h1>
+      <form onSubmit={submit} className="mt-6 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-6 space-y-3">
         {fields.map(([key, label]) => (
           <div key={key}>
-            <label className="text-xs text-stone-500">{label}</label>
+            <label className="text-xs text-stone-500 dark:text-stone-400">{label}</label>
             <input
               required={key !== 'whatsappNumber'}
               type={key === 'ownerPassword' ? 'password' : 'text'}
               value={form[key]}
               onChange={(e) => update(key, e.target.value)}
-              className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 text-sm"
+              className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm"
             />
           </div>
         ))}
-        <button disabled={submitting} className="w-full py-2.5 rounded-lg bg-stone-900 text-white text-sm font-medium disabled:opacity-50">
+        <button disabled={submitting} className="w-full py-2.5 rounded-lg bg-stone-900 text-white dark:ring-1 dark:ring-stone-700 text-sm font-medium disabled:opacity-50">
           {submitting ? 'Creating...' : 'Create restaurant + owner account'}
         </button>
       </form>

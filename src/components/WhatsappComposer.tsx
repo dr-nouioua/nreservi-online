@@ -99,13 +99,13 @@ export function WhatsappComposer({
 
   return (
     <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 px-0 sm:items-center sm:px-4">
-      <div className="w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-t-2xl bg-white p-5 sm:rounded-2xl sm:p-6">
+      <div className="w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-t-2xl bg-white dark:bg-stone-900 p-5 sm:rounded-2xl sm:p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="flex items-center gap-2 font-semibold text-stone-900">
-              <MessageCircle className="h-4 w-4 text-emerald-600" /> Contacter sur WhatsApp
+            <h3 className="flex items-center gap-2 font-semibold text-stone-900 dark:text-stone-100">
+              <MessageCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> Contacter sur WhatsApp
             </h3>
-            <p className="mt-1 text-xs text-stone-500">
+            <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
               Réservation #{reservation.confirmationCode} · {reservation.guestName} ·{' '}
               {link.ok
                 ? whatsappService.formatPhoneForDisplay(link.e164.slice(1))
@@ -116,13 +116,13 @@ export function WhatsappComposer({
             type="button"
             onClick={onClose}
             aria-label="Fermer"
-            className="rounded-lg p-1 text-stone-400 hover:bg-stone-100"
+            className="rounded-lg p-1 text-stone-400 dark:text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <label className="mt-5 block text-xs font-medium text-stone-500">Message</label>
+        <label className="mt-5 block text-xs font-medium text-stone-500 dark:text-stone-400">Message</label>
         <div className="mt-1 flex flex-wrap gap-1.5">
           {WHATSAPP_TEMPLATE_KINDS.filter((t) =>
             available.some((a) => a.kind === t.kind),
@@ -133,8 +133,8 @@ export function WhatsappComposer({
               onClick={() => pickKind(t.kind)}
               className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
                 kind === t.kind
-                  ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
-                  : 'border-stone-200 text-stone-600 hover:border-stone-300'
+                  ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-300'
+                  : 'border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:border-stone-300 dark:hover:border-stone-600'
               }`}
             >
               {t.label}
@@ -146,15 +146,15 @@ export function WhatsappComposer({
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           rows={12}
-          className="mt-3 w-full rounded-xl border border-stone-300 px-3 py-2 font-mono text-xs leading-relaxed text-stone-800"
+          className="mt-3 w-full rounded-xl border border-stone-300 dark:border-stone-700 px-3 py-2 font-mono text-xs leading-relaxed text-stone-800 dark:text-stone-200"
         />
-        <p className="mt-2 text-xs text-stone-500">
+        <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">
           WhatsApp s'ouvre avec ce message déjà rempli. <strong>C'est vous qui appuyez sur Envoyer</strong> —
           nreservi n'envoie jamais de message à votre place.
         </p>
 
         {!link.ok && (
-          <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{link.error}</p>
+          <p className="mt-3 rounded-lg bg-red-50 dark:bg-red-500/10 px-3 py-2 text-xs text-red-700 dark:text-red-400">{link.error}</p>
         )}
 
         <div className="mt-5 flex flex-wrap items-center gap-2">
@@ -172,9 +172,9 @@ export function WhatsappComposer({
           <button
             type="button"
             onClick={copyMessage}
-            className="inline-flex items-center gap-2 rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-700 hover:bg-stone-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-stone-300 dark:border-stone-700 px-3 py-2 text-sm text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/70"
           >
-            {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+            {copied ? <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> : <Copy className="h-4 w-4" />}
             {copied ? 'Message copié' : 'Copier le message'}
           </button>
         </div>
@@ -187,7 +187,7 @@ export function WhatsappComposer({
               target="_blank"
               rel="noreferrer"
               onClick={noteHandoff}
-              className="inline-flex items-center gap-1 text-stone-600 underline"
+              className="inline-flex items-center gap-1 text-stone-600 dark:text-stone-400 underline"
             >
               Utiliser WhatsApp Web <ExternalLink className="h-3 w-3" />
             </a>{' '}

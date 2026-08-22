@@ -1,0 +1,1 @@
+ALTER TABLE "restaurants" ADD COLUMN "show_menu_images" boolean DEFAULT true NOT NULL;

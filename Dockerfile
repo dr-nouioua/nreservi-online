@@ -1,21 +1,28 @@
-FROM node:22-alpine
+FROM node:22-alpine AS build
 WORKDIR /app
 
-# 1. Enable corepack for node package management tracking
 RUN corepack enable
 
-# 2. Copy the entire repository layout directly
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+RUN npx -y pnpm@10 install --frozen-lockfile
+
 COPY . .
+RUN npx pnpm@10 run build
 
-# 3. Use standard npm installation to bypass monorepo locks
-RUN npm install
-
-# 4. Force compile the TanStack application build natively
-RUN npm run build
-
-EXPOSE 3000
+FROM node:22-alpine
+WORKDIR /app
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
 
-CMD [ "node", ".output/server/index.mjs" ]
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/drizzle ./drizzle
+COPY --from=build /app/db ./db
+COPY --from=build /app/server ./server
+COPY --from=build /app/src/server ./src/server
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/drizzle.config.ts ./drizzle.config.ts
+
+EXPOSE 3000
+CMD [ "npm", "run", "start" ]

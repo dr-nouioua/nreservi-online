@@ -1,21 +1,41 @@
-version: '3.8'
-
 services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-nreservi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nreservi}
+      POSTGRES_DB: ${POSTGRES_DB:-nreservi}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nreservi}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
-      - HOST=0.0.0.0
-      - PORT=3000
-      - DATABASE_URL=${DATABASE_URL}
-    restart: always
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      DATABASE_URL: postgres://${POSTGRES_USER:-nreservi}:${POSTGRES_PASSWORD:-nreservi}@db:5432/${POSTGRES_DB:-nreservi}
+      SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env}
+      CRON_SECRET: ${CRON_SECRET:-}
+      WHATSAPP_APP_SECRET: ${WHATSAPP_APP_SECRET:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/api/health"]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 15s
+
+volumes:
+  db-data:

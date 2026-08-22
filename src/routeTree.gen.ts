@@ -23,6 +23,8 @@ import { Route as OwnerAuthedMenuRouteImport } from './routes/owner/_authed.menu
 import { Route as OwnerAuthedMarketingRouteImport } from './routes/owner/_authed.marketing'
 import { Route as OwnerAuthedAnalyticsRouteImport } from './routes/owner/_authed.analytics'
 import { Route as AdminAuthedOnboardRouteImport } from './routes/admin/_authed.onboard'
+import { Route as AdminAuthedAdsRouteImport } from './routes/admin/_authed.ads'
+import { Route as AdminAuthedAccountRouteImport } from './routes/admin/_authed.account'
 import { Route as OwnerAuthedSettingsWhatsappRouteImport } from './routes/owner/_authed.settings_.whatsapp'
 
 const MyReservationsRoute = MyReservationsRouteImport.update({
@@ -69,7 +71,9 @@ const AdminAuthedIndexRoute = AdminAuthedIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminAuthedRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/admin/_authed.index.lazy').then((d) => d.Route),
+)
 const OwnerAuthedSettingsRoute = OwnerAuthedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -89,10 +93,22 @@ const OwnerAuthedAnalyticsRoute = OwnerAuthedAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
   getParentRoute: () => OwnerAuthedRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/owner/_authed.analytics.lazy').then((d) => d.Route),
+)
 const AdminAuthedOnboardRoute = AdminAuthedOnboardRouteImport.update({
   id: '/onboard',
   path: '/onboard',
+  getParentRoute: () => AdminAuthedRoute,
+} as any)
+const AdminAuthedAdsRoute = AdminAuthedAdsRouteImport.update({
+  id: '/ads',
+  path: '/ads',
+  getParentRoute: () => AdminAuthedRoute,
+} as any)
+const AdminAuthedAccountRoute = AdminAuthedAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => AdminAuthedRoute,
 } as any)
 const OwnerAuthedSettingsWhatsappRoute =
@@ -110,6 +126,8 @@ export interface FileRoutesByFullPath {
   '/owner': typeof OwnerAuthedRouteWithChildren
   '/owner/login': typeof OwnerLoginRoute
   '/restaurants/$slug': typeof RestaurantsSlugRoute
+  '/admin/account': typeof AdminAuthedAccountRoute
+  '/admin/ads': typeof AdminAuthedAdsRoute
   '/admin/onboard': typeof AdminAuthedOnboardRoute
   '/owner/analytics': typeof OwnerAuthedAnalyticsRoute
   '/owner/marketing': typeof OwnerAuthedMarketingRoute
@@ -125,6 +143,8 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/owner/login': typeof OwnerLoginRoute
   '/restaurants/$slug': typeof RestaurantsSlugRoute
+  '/admin/account': typeof AdminAuthedAccountRoute
+  '/admin/ads': typeof AdminAuthedAdsRoute
   '/admin/onboard': typeof AdminAuthedOnboardRoute
   '/owner/analytics': typeof OwnerAuthedAnalyticsRoute
   '/owner/marketing': typeof OwnerAuthedMarketingRoute
@@ -143,6 +163,8 @@ export interface FileRoutesById {
   '/owner/_authed': typeof OwnerAuthedRouteWithChildren
   '/owner/login': typeof OwnerLoginRoute
   '/restaurants/$slug': typeof RestaurantsSlugRoute
+  '/admin/_authed/account': typeof AdminAuthedAccountRoute
+  '/admin/_authed/ads': typeof AdminAuthedAdsRoute
   '/admin/_authed/onboard': typeof AdminAuthedOnboardRoute
   '/owner/_authed/analytics': typeof OwnerAuthedAnalyticsRoute
   '/owner/_authed/marketing': typeof OwnerAuthedMarketingRoute
@@ -162,6 +184,8 @@ export interface FileRouteTypes {
     | '/owner'
     | '/owner/login'
     | '/restaurants/$slug'
+    | '/admin/account'
+    | '/admin/ads'
     | '/admin/onboard'
     | '/owner/analytics'
     | '/owner/marketing'
@@ -177,6 +201,8 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/owner/login'
     | '/restaurants/$slug'
+    | '/admin/account'
+    | '/admin/ads'
     | '/admin/onboard'
     | '/owner/analytics'
     | '/owner/marketing'
@@ -194,6 +220,8 @@ export interface FileRouteTypes {
     | '/owner/_authed'
     | '/owner/login'
     | '/restaurants/$slug'
+    | '/admin/_authed/account'
+    | '/admin/_authed/ads'
     | '/admin/_authed/onboard'
     | '/owner/_authed/analytics'
     | '/owner/_authed/marketing'
@@ -314,6 +342,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuthedOnboardRouteImport
       parentRoute: typeof AdminAuthedRoute
     }
+    '/admin/_authed/ads': {
+      id: '/admin/_authed/ads'
+      path: '/ads'
+      fullPath: '/admin/ads'
+      preLoaderRoute: typeof AdminAuthedAdsRouteImport
+      parentRoute: typeof AdminAuthedRoute
+    }
+    '/admin/_authed/account': {
+      id: '/admin/_authed/account'
+      path: '/account'
+      fullPath: '/admin/account'
+      preLoaderRoute: typeof AdminAuthedAccountRouteImport
+      parentRoute: typeof AdminAuthedRoute
+    }
     '/owner/_authed/settings_/whatsapp': {
       id: '/owner/_authed/settings_/whatsapp'
       path: '/settings/whatsapp'
@@ -325,11 +367,15 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminAuthedRouteChildren {
+  AdminAuthedAccountRoute: typeof AdminAuthedAccountRoute
+  AdminAuthedAdsRoute: typeof AdminAuthedAdsRoute
   AdminAuthedOnboardRoute: typeof AdminAuthedOnboardRoute
   AdminAuthedIndexRoute: typeof AdminAuthedIndexRoute
 }
 
 const AdminAuthedRouteChildren: AdminAuthedRouteChildren = {
+  AdminAuthedAccountRoute: AdminAuthedAccountRoute,
+  AdminAuthedAdsRoute: AdminAuthedAdsRoute,
   AdminAuthedOnboardRoute: AdminAuthedOnboardRoute,
   AdminAuthedIndexRoute: AdminAuthedIndexRoute,
 }

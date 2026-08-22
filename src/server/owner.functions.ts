@@ -181,6 +181,14 @@ export const updateRestaurantSettings = createServerFn({ method: "POST" })
     return { success: true };
   });
 
+export const setShowMenuImages = createServerFn({ method: "POST" })
+  .inputValidator((data: { enabled: boolean }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    await db.update(restaurants).set({ showMenuImages: data.enabled }).where(eq(restaurants.id, restaurantId));
+    return { success: true };
+  });
+
 export const addArea = createServerFn({ method: "POST" })
   .inputValidator((data: { name: string }) => data)
   .handler(async ({ data }) => {
@@ -218,9 +226,15 @@ export const deleteTable = createServerFn({ method: "POST" })
 
 export const getMenu = createServerFn({ method: "GET" }).handler(async () => {
   const restaurantId = await requireRestaurantId();
-  const cats = await db.select().from(menuCategories).where(eq(menuCategories.restaurantId, restaurantId));
-  const items = await db.select().from(menuItems).where(eq(menuItems.restaurantId, restaurantId));
-  return cats.map((c) => ({ ...c, items: items.filter((i) => i.categoryId === c.id) }));
+  const [cats, items, rows] = await Promise.all([
+    db.select().from(menuCategories).where(eq(menuCategories.restaurantId, restaurantId)),
+    db.select().from(menuItems).where(eq(menuItems.restaurantId, restaurantId)),
+    db.select({ showMenuImages: restaurants.showMenuImages }).from(restaurants).where(eq(restaurants.id, restaurantId)),
+  ]);
+  return {
+    showMenuImages: rows[0]?.showMenuImages ?? true,
+    categories: cats.map((c) => ({ ...c, items: items.filter((i) => i.categoryId === c.id) })),
+  };
 });
 
 export const addMenuCategory = createServerFn({ method: "POST" })
@@ -248,6 +262,51 @@ export const addMenuItem = createServerFn({ method: "POST" })
       })
       .returning();
     return item;
+  });
+
+export const updateMenuItem = createServerFn({ method: "POST" })
+  .inputValidator(
+    (data: { id: number; categoryId?: number; name: string; description: string; price: string; photoUrl?: string | null }) => data,
+  )
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    // A forged categoryId must not point at another tenant's category.
+    if (data.categoryId != null) {
+      const [cat] = await db
+        .select({ id: menuCategories.id })
+        .from(menuCategories)
+        .where(and(eq(menuCategories.id, data.categoryId), eq(menuCategories.restaurantId, restaurantId)));
+      if (!cat) throw new Error("Invalid category");
+    }
+    await db
+      .update(menuItems)
+      .set({
+        ...(data.categoryId != null ? { categoryId: data.categoryId } : {}),
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        photoUrl: data.photoUrl || null,
+      })
+      .where(and(eq(menuItems.id, data.id), eq(menuItems.restaurantId, restaurantId)));
+    return { success: true };
+  });
+
+export const deleteMenuItem = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: number }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    await db.delete(menuItems).where(and(eq(menuItems.id, data.id), eq(menuItems.restaurantId, restaurantId)));
+    return { success: true };
+  });
+
+export const deleteMenuCategory = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: number }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    // Items first — there is no ON DELETE cascade between menu_items and menu_categories.
+    await db.delete(menuItems).where(and(eq(menuItems.categoryId, data.id), eq(menuItems.restaurantId, restaurantId)));
+    await db.delete(menuCategories).where(and(eq(menuCategories.id, data.id), eq(menuCategories.restaurantId, restaurantId)));
+    return { success: true };
   });
 
 export const toggleMenuItemAvailability = createServerFn({ method: "POST" })

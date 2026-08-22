@@ -1,16 +1,15 @@
-import type { Config } from "@netlify/functions";
 import { and, eq } from "drizzle-orm";
 import { db } from "../../db/index.js";
 import { reservations, customers, restaurants, whatsappMessages } from "../../db/schema.js";
 
 /**
- * Scheduled function that sends WhatsApp reminders a few hours before a
- * reservation. Runs hourly. Uses the same mock WhatsApp logger as the rest
- * of the app — swap in the real WhatsApp Business Platform call here for
- * production, keeping the delivery-status webhook (whatsapp-webhook.mts) in
- * sync with the provider's message IDs.
+ * Sends WhatsApp reminders for confirmed reservations starting in the next
+ * 2–3 hours. Idempotent per run window; call it hourly from cron:
+ *
+ *   0 * * * * curl -fsS -X POST -H "x-cron-secret: $CRON_SECRET" \
+ *     http://127.0.0.1:3000/api/cron/reservation-reminders
  */
-export default async () => {
+export async function runReservationReminders(): Promise<Response> {
   const now = new Date();
   const windowStart = new Date(now.getTime() + 2 * 60 * 60 * 1000);
   const windowEnd = new Date(now.getTime() + 3 * 60 * 60 * 1000);
@@ -42,8 +41,4 @@ export default async () => {
   }
 
   return Response.json({ sent });
-};
-
-export const config: Config = {
-  schedule: "0 * * * *",
-};
+}

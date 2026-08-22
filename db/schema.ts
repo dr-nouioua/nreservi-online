@@ -10,6 +10,7 @@ import {
   date,
   time,
   unique,
+  index,
 } from "drizzle-orm/pg-core";
 
 // ---------- Platform / admin ----------
@@ -41,8 +42,9 @@ export const restaurants = pgTable("restaurants", {
   rating: numeric("rating", { precision: 3, scale: 2 }).default("4.5"),
   status: text("status").notNull().default("pending"), // pending | active | suspended
   subscriptionTier: text("subscription_tier").notNull().default("starter"), // starter | growth | pro
-  openingHours: jsonb("opening_hours").notNull().default({}), // { mon: [{open, close}], ... }
-  createdAt: timestamp("created_at").defaultNow(),
+   openingHours: jsonb("opening_hours").notNull().default({}), // { mon: [{open, close}], ... }
+   showMenuImages: boolean("show_menu_images").notNull().default(true), // owner toggle: photos in the public menu
+   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const restaurantOwners = pgTable("restaurant_owners", {
@@ -71,7 +73,9 @@ export const areas = pgTable("areas", {
   restaurantId: integer("restaurant_id").notNull().references(() => restaurants.id),
   name: text("name").notNull(), // indoor, terrace, bar, private room
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("areas_restaurant_idx").on(table.restaurantId),
+]);
 
 export const tables = pgTable("tables", {
   id: serial().primaryKey(),
@@ -83,7 +87,9 @@ export const tables = pgTable("tables", {
   posY: integer("pos_y").notNull().default(0),
   shape: text("shape").notNull().default("square"), // square | round | rect
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("tables_restaurant_idx").on(table.restaurantId),
+]);
 
 // ---------- Menu ----------
 
@@ -92,7 +98,9 @@ export const menuCategories = pgTable("menu_categories", {
   restaurantId: integer("restaurant_id").notNull().references(() => restaurants.id),
   name: text("name").notNull(),
   sortOrder: integer("sort_order").notNull().default(0),
-});
+}, (table) => [
+  index("menu_categories_restaurant_idx").on(table.restaurantId),
+]);
 
 export const menuItems = pgTable("menu_items", {
   id: serial().primaryKey(),
@@ -103,7 +111,10 @@ export const menuItems = pgTable("menu_items", {
   price: numeric("price", { precision: 10, scale: 2 }).notNull().default("0"),
   photoUrl: text("photo_url"),
   available: boolean("available").notNull().default(true),
-});
+}, (table) => [
+  index("menu_items_restaurant_idx").on(table.restaurantId),
+  index("menu_items_category_idx").on(table.categoryId),
+]);
 
 // ---------- Customers ----------
 
@@ -138,7 +149,11 @@ export const reservations = pgTable("reservations", {
   confirmationCode: text("confirmation_code").notNull().unique(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("reservations_restaurant_date_idx").on(table.restaurantId, table.date),
+  index("reservations_guest_phone_date_idx").on(table.guestPhone, table.date),
+  index("reservations_customer_idx").on(table.customerId),
+]);
 
 // ---------- Marketing ----------
 
@@ -175,7 +190,9 @@ export const campaignLogs = pgTable("campaign_logs", {
   templateId: integer("template_id").references(() => marketingTemplates.id),
   status: text("status").notNull().default("sent"), // sent | delivered | read | booked | opted_out | failed
   sentAt: timestamp("sent_at").defaultNow(),
-});
+}, (table) => [
+  index("campaign_logs_restaurant_idx").on(table.restaurantId),
+]);
 
 // ---------- WhatsApp message log ----------
 
@@ -188,7 +205,9 @@ export const whatsappMessages = pgTable("whatsapp_messages", {
   body: text("body").notNull(),
   status: text("status").notNull().default("queued"), // queued | sent | delivered | read | failed
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("whatsapp_messages_restaurant_created_idx").on(table.restaurantId, table.createdAt),
+]);
 
 // ---------- WhatsApp owner templates ----------
 
@@ -207,3 +226,22 @@ export const whatsappTemplates = pgTable(
   },
   (table) => [unique("whatsapp_templates_restaurant_kind_key").on(table.restaurantId, table.kind)],
 );
+
+// ---------- Inline ads (admin-managed, shown on restaurant pages) ----------
+
+// restaurantId null = the ad is shown on every restaurant page.
+// active false hides the ad without deleting it (can be re-enabled later).
+export const ads = pgTable("ads", {
+  id: serial().primaryKey(),
+  restaurantId: integer("restaurant_id").references(() => restaurants.id),
+  title: text("title").notNull(),
+  body: text("body").default(""),
+  imageUrl: text("image_url"),
+  linkUrl: text("link_url"),
+  ctaLabel: text("cta_label").default("Découvrir"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("ads_restaurant_active_idx").on(table.restaurantId, table.active),
+]);

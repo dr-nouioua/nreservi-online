@@ -1,7 +1,7 @@
 # AGENTS.md
 
-Multi-tenant restaurant reservation platform. TanStack Start (React 19) on Netlify, with Netlify Database
-(Postgres via Drizzle ORM) for persistence.
+Multi-tenant restaurant reservation platform. TanStack Start (React 19), self-hosted on Node
+(target deployment: Hostinger VPS), with standard Postgres via Drizzle ORM for persistence.
 
 ## Directory structure
 

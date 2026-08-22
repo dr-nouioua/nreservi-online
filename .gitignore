@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+.output/
+.netlify/
+
+# environment & secrets
+.env
+.env.local
+.env.*.local
+
+# OS / editor noise
+.DS_Store
+*.log
+
+# local docs not meant for deploy
+CLAUDE.local.md

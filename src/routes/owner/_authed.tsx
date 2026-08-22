@@ -1,6 +1,7 @@
 import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
 import { LayoutDashboard, BarChart3, Megaphone, MessageCircle, Settings, UtensilsCrossed, LogOut } from 'lucide-react'
 import { getSession, logout } from '../../server/auth.functions'
+import { ThemeToggle } from '../../components/ThemeToggle'
 
 export const Route = createFileRoute('/owner/_authed')({
   beforeLoad: async () => {
@@ -27,11 +28,11 @@ function OwnerLayout() {
 
   return (
     <div className="min-h-screen flex">
-      <aside className="w-56 border-r border-stone-200 bg-white p-4 flex flex-col">
+      <aside className="w-56 border-r border-stone-200 bg-white p-4 flex flex-col dark:border-stone-800 dark:bg-stone-900">
         <a href="/" className="px-2" aria-label="nreservi.online — accueil">
           <img src="/brand/nreservi-logo.png" alt="nreservi.online" width={815} height={125} className="h-6 w-auto" />
         </a>
-        <p className="font-semibold text-stone-900 px-2 mt-4">Espace professionnel</p>
+        <p className="font-semibold text-stone-900 px-2 mt-4 dark:text-stone-100">Espace professionnel</p>
         <p className="text-xs text-stone-400 px-2 mb-6">{session.name}</p>
         <nav className="space-y-1 flex-1">
           {nav.map((item) => (
@@ -39,17 +40,20 @@ function OwnerLayout() {
               key={item.to}
               to={item.to}
               activeOptions={{ exact: item.to === '/owner' || item.to === '/owner/settings' }}
-              className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm text-stone-600 hover:bg-stone-100"
-              activeProps={{ className: 'flex items-center gap-2 px-2 py-2 rounded-lg text-sm bg-amber-50 text-amber-700 font-medium' }}
+              className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
+              activeProps={{ className: 'flex items-center gap-2 px-2 py-2 rounded-lg text-sm bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 font-medium dark:bg-amber-400/10 dark:text-amber-300' }}
             >
               <item.icon className="w-4 h-4" />
               {item.label}
             </Link>
           ))}
         </nav>
-        <LogoutButton />
+        <div className="flex items-center justify-between gap-2 pt-2">
+          <LogoutButton />
+          <ThemeToggle />
+        </div>
       </aside>
-      <main className="flex-1 bg-stone-50 min-h-screen overflow-y-auto">
+      <main className="flex-1 bg-stone-50 min-h-screen overflow-y-auto dark:bg-stone-950">
         <Outlet />
       </main>
     </div>
