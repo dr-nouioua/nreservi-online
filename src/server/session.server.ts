@@ -34,11 +34,12 @@ export function verifySession(token: string | undefined | null): SessionPayload 
   if (!token) return null;
   const [body, sig] = token.split(".");
   if (!body || !sig) return null;
-  const expected = createHmac("sha256", getSecret()).update(body).digest();
-  const provided = Buffer.from(sig);
-  // Constant-time comparison — a plain === leaks the signature byte by byte
-  // through response timing.
-  if (provided.length !== expected.length || !timingSafeEqual(provided, expected)) {
+  // Constant-time comparison of the base64url signatures — a plain ===
+  // comparison leaks the signature byte by byte through response timing.
+  const expected = createHmac("sha256", getSecret()).update(body).digest("base64url");
+  const a = Buffer.from(expected);
+  const b = Buffer.from(sig);
+  if (a.length !== b.length || !timingSafeEqual(a, b)) {
     return null;
   }
   try {
