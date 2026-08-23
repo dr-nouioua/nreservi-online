@@ -33,7 +33,17 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: 'bg-stone-100 dark:bg-stone-800 text-stone-400 dark:text-stone-500',
 }
 
-const STATUS_OPTIONS = ['pending', 'confirmed', 'seated', 'completed', 'no_show', 'cancelled']
+const STATUS_OPTIONS = ['confirmed', 'seated', 'completed', 'no_show', 'cancelled']
+
+/** French labels shown everywhere on the board (filters, cards, table). */
+const STATUS_LABELS_FR: Record<string, string> = {
+  confirmed: 'Confirmée',
+  seated: 'Installée',
+  completed: 'Terminée',
+  no_show: 'No-show',
+  cancelled: 'Annulée',
+  pending: 'En attente', // legacy rows only
+}
 
 function OwnerReservationsBoard() {
   const { overview, today, whatsapp } = Route.useLoaderData()
@@ -80,7 +90,7 @@ function OwnerReservationsBoard() {
       className={`px-2 py-1 rounded-full text-xs font-medium border-0 ${STATUS_COLORS[r.status]}`}
     >
       {STATUS_OPTIONS.map((s) => (
-        <option key={s} value={s}>{s.replace('_', ' ')}</option>
+        <option key={s} value={s}>{STATUS_LABELS_FR[s]}</option>
       ))}
     </select>
   )
@@ -121,7 +131,7 @@ function OwnerReservationsBoard() {
             onClick={() => setShowWalkIn(true)}
             className="flex items-center gap-1 px-3 py-2 rounded-lg bg-stone-950 text-white text-sm font-medium hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white dark:ring-1 dark:ring-stone-700"
           >
-            <Plus className="w-4 h-4" /> Walk-in
+            <Plus className="w-4 h-4" /> Sans résa
           </button>
         </div>
       </div>
@@ -136,7 +146,7 @@ function OwnerReservationsBoard() {
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-1.5 rounded-lg border border-stone-300 dark:border-stone-700 text-sm">
           <option value="all">Tous les statuts</option>
           {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>{s.replace('_', ' ')}</option>
+            <option key={s} value={s}>{STATUS_LABELS_FR[s]}</option>
           ))}
         </select>
       </div>
@@ -321,7 +331,7 @@ function WalkInModal({ tables, date, onClose, onCreated }: { tables: any[]; date
   return (
     <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-20 px-0 sm:px-4">
       <form onSubmit={submit} className="w-full sm:max-w-sm bg-white dark:bg-stone-900 rounded-t-2xl sm:rounded-xl p-5 sm:p-6 space-y-3 max-h-[92vh] overflow-y-auto">
-        <h3 className="font-semibold text-stone-900 dark:text-stone-100">Ajouter un walk-in / réservation téléphone</h3>
+        <h3 className="font-semibold text-stone-900 dark:text-stone-100">Nouvelle arrivée sans réservation</h3>
         <input required placeholder="Nom du client" value={guestName} onChange={(e) => setGuestName(e.target.value)} className="w-full px-3 py-2.5 rounded-lg border border-stone-300 dark:border-stone-700 text-sm" />
         <input required placeholder="Téléphone" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} className="w-full px-3 py-2.5 rounded-lg border border-stone-300 dark:border-stone-700 text-sm" />
         <div className="grid grid-cols-2 gap-2">

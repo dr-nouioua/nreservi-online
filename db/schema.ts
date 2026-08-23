@@ -145,7 +145,7 @@ export const reservations = pgTable("reservations", {
   partySize: integer("party_size").notNull(),
   date: date("date").notNull(),
   time: time("time").notNull(),
-  status: text("status").notNull().default("pending"), // pending | confirmed | seated | completed | no_show | cancelled
+  status: text("status").notNull().default("confirmed"), // confirmed | seated | completed | no_show | cancelled
   source: text("source").notNull().default("online"), // online | walk_in | phone
   specialRequests: text("special_requests").default(""),
   notes: text("notes").default(""),

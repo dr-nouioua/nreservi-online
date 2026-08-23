@@ -205,7 +205,7 @@ export async function ensureSeeded() {
 
     const today = new Date();
     const fmt = (d: Date) => d.toISOString().slice(0, 10);
-    const statuses = ["confirmed", "pending", "seated", "completed", "no_show", "cancelled"];
+    const statuses = ["confirmed", "seated", "completed", "no_show", "cancelled"];
     const resRows: any[] = [];
     for (let i = 0; i < 14; i++) {
       const dayOffset = i % 5 === 0 ? -3 : i % 3 === 0 ? 1 : 0;
@@ -223,7 +223,7 @@ export async function ensureSeeded() {
         partySize: [2, 2, 4, 3, 6][i % 5],
         date: fmt(d),
         time: `${12 + (i % 8)}:${i % 2 === 0 ? "00" : "30"}:00`,
-        status: dayOffset < 0 ? statuses[i % statuses.length] : i % 4 === 0 ? "pending" : "confirmed",
+        status: dayOffset < 0 ? statuses[i % statuses.length] : i % 3 === 0 ? "seated" : "confirmed",
         source: i % 5 === 0 ? "walk_in" : "online",
         specialRequests: i % 4 === 0 ? "Birthday celebration" : "",
         confirmationCode: `SEED${r.id}${i}`,
