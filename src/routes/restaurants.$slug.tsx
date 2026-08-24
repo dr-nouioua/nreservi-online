@@ -235,7 +235,7 @@ function RestaurantPage() {
                   value={date}
                   min={todayISO()}
                   onChange={(e) => setDate(e.target.value)}
-                  className="h-[42px] w-full mt-1 px-3 rounded-lg border border-stone-300 bg-white dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 text-sm"
+                  className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                 />
               </div>
               <div>
@@ -248,7 +248,7 @@ function RestaurantPage() {
                     max={20}
                     value={partySize}
                     onChange={(e) => setPartySize(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm"
+                    className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                   />
                 </div>
               </div>
@@ -257,7 +257,7 @@ function RestaurantPage() {
                 <select
                   value={areaId ?? ''}
                   onChange={(e) => setAreaId(e.target.value ? Number(e.target.value) : undefined)}
-                  className="h-[42px] w-full mt-1 px-3 rounded-lg border border-stone-300 bg-white dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 text-sm"
+                  className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                 >
                   <option value="">Tous les espaces</option>
                   {areas.map((a) => (
@@ -302,7 +302,7 @@ function RestaurantPage() {
                       required
                       value={guestName}
                       onChange={(e) => setGuestName(e.target.value)}
-                      className="h-[42px] w-full mt-1 px-3 rounded-lg border border-stone-300 bg-white dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 text-sm"
+                      className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                     />
                   </div>
                   <div>
@@ -312,7 +312,7 @@ function RestaurantPage() {
                       value={guestPhone}
                       onChange={(e) => setGuestPhone(e.target.value)}
                       placeholder="+213 555 12 34 56"
-                      className="h-[42px] w-full mt-1 px-3 rounded-lg border border-stone-300 bg-white dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 text-sm"
+                      className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                     />
                   </div>
                   <div>
@@ -321,7 +321,7 @@ function RestaurantPage() {
                       value={specialRequests}
                       onChange={(e) => setSpecialRequests(e.target.value)}
                       placeholder="Anniversaire, allergies, chaise haute..."
-                      className="h-[42px] w-full mt-1 px-3 rounded-lg border border-stone-300 bg-white dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 text-sm"
+                      className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                       rows={2}
                     />
                   </div>

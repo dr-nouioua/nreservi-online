@@ -131,7 +131,7 @@ function MenuPage() {
           <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Catalogue</p>
           <h1 className="text-2xl sm:text-3xl font-bold text-stone-950 tracking-tight dark:text-stone-50">Gestion du menu</h1>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="grid w-full gap-3 sm:grid-cols-2">
           <ImageToggle enabled={showImages} onToggle={toggleImages} label="Photos du menu" icon={Images} />
           <ImageToggle enabled={menuFixed} onToggle={toggleMenuFixed} label="Menu fixe" icon={PanelTop} />
         </div>
@@ -276,7 +276,7 @@ function ImageToggle({
       onClick={onToggle}
       role="switch"
       aria-checked={enabled}
-      className={`inline-flex items-center gap-3 rounded-xl border px-3.5 py-2.5 text-left transition-all duration-200 ${
+      className={`inline-flex w-full items-center gap-3 rounded-xl border px-3.5 py-2.5 text-left transition-all duration-200 ${
         enabled
           ? 'border-lime-400/70 bg-lime-50 dark:border-lime-500/40 dark:bg-lime-500/10'
           : 'border-stone-200 bg-white hover:border-stone-300 dark:border-stone-700 dark:bg-stone-900 dark:hover:border-stone-600'
