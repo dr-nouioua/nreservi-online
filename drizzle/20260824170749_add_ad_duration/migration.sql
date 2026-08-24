@@ -1,0 +1,1 @@
+ALTER TABLE "ads" ADD COLUMN "duration_seconds" integer DEFAULT 15 NOT NULL;

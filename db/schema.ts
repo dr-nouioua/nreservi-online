@@ -244,6 +244,7 @@ export const ads = pgTable("ads", {
   linkUrl: text("link_url"),
   ctaLabel: text("cta_label").default("Découvrir"),
   sortOrder: integer("sort_order").notNull().default(0),
+  durationSeconds: integer("duration_seconds").notNull().default(15), // carousel display time per ad
   active: boolean("active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [

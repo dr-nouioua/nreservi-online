@@ -13,11 +13,14 @@ export function AdsCarousel({ ads, className = "" }: { ads: Ad[]; className?: st
   const touchX = useRef<number | null>(null)
   const count = ads.length
 
+  // Rotation duration comes from the ad being displayed (admin-adjustable, default 15s).
+  const durationMs = (ads[index]?.durationSeconds ?? 15) * 1000
+
   useEffect(() => {
     if (count < 2 || paused) return
-    const t = setInterval(() => setIndex((i) => (i + 1) % count), 5000)
-    return () => clearInterval(t)
-  }, [count, paused])
+    const t = setTimeout(() => setIndex((i) => (i + 1) % count), durationMs)
+    return () => clearTimeout(t)
+  }, [count, paused, index, durationMs])
 
   if (count === 0) return null
   if (count === 1) return <AdCard ad={ads[0]} className={className} />

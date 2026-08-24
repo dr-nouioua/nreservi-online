@@ -24,10 +24,11 @@ interface AdForm {
   linkUrl: string
   ctaLabel: string
   sortOrder: number
+  durationSeconds: number
   restaurantId: number | null
 }
 
-const EMPTY_FORM: AdForm = { title: '', body: '', imageUrl: '', linkUrl: '', ctaLabel: 'Découvrir', sortOrder: 0, restaurantId: null }
+const EMPTY_FORM: AdForm = { title: '', body: '', imageUrl: '', linkUrl: '', ctaLabel: 'Découvrir', sortOrder: 0, durationSeconds: 15, restaurantId: null }
 
 function adToForm(ad: Ad): AdForm {
   return {
@@ -37,6 +38,7 @@ function adToForm(ad: Ad): AdForm {
     linkUrl: ad.linkUrl ?? '',
     ctaLabel: ad.ctaLabel ?? 'Découvrir',
     sortOrder: ad.sortOrder,
+    durationSeconds: ad.durationSeconds ?? 15,
     restaurantId: ad.restaurantId,
   }
 }
@@ -138,9 +140,10 @@ function AdminAdsPage() {
           <input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} placeholder="URL de l'image (facultatif)" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
           <input value={form.linkUrl} onChange={(e) => setForm({ ...form, linkUrl: e.target.value })} placeholder="Lien https://… (facultatif)" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
           <input value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} placeholder="Texte de la publicité" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm sm:col-span-2 dark:border-stone-700" />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <input value={form.ctaLabel} onChange={(e) => setForm({ ...form, ctaLabel: e.target.value })} placeholder="Libellé du bouton" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
             <input type="number" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })} placeholder="Ordre" title="Ordre d'affichage (les plus petits d'abord)" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
+            <input type="number" min={5} max={120} value={form.durationSeconds} onChange={(e) => setForm({ ...form, durationSeconds: Number(e.target.value) })} title="Durée d'affichage dans le carrousel (secondes)" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" placeholder="Durée (s)" />
           </div>
         </div>
         {formMessage && (
@@ -185,6 +188,7 @@ function AdminAdsPage() {
                     {ad.restaurantId ? restaurants.find((r) => r.id === ad.restaurantId)?.name ?? 'Restaurant inconnu' : 'Tous les restaurants'}
                     {' · ordre '}
                     {ad.sortOrder}
+                    {' · '}{ad.durationSeconds ?? 15}s
                   </p>
                 </div>
               </div>
@@ -222,9 +226,10 @@ function AdminAdsPage() {
                   <input value={editForm.imageUrl} onChange={(e) => setEditForm({ ...editForm, imageUrl: e.target.value })} placeholder="URL de l'image" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
                   <input value={editForm.linkUrl} onChange={(e) => setEditForm({ ...editForm, linkUrl: e.target.value })} placeholder="Lien https://…" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
                   <input value={editForm.body} onChange={(e) => setEditForm({ ...editForm, body: e.target.value })} placeholder="Texte" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
                     <input value={editForm.ctaLabel} onChange={(e) => setEditForm({ ...editForm, ctaLabel: e.target.value })} placeholder="Libellé bouton" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
                     <input type="number" value={editForm.sortOrder} onChange={(e) => setEditForm({ ...editForm, sortOrder: Number(e.target.value) })} title="Ordre d'affichage" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
+                    <input type="number" min={5} max={120} value={editForm.durationSeconds} onChange={(e) => setEditForm({ ...editForm, durationSeconds: Number(e.target.value) })} title="Durée d'affichage (secondes)" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" placeholder="Durée (s)" />
                   </div>
                 </div>
                 {editMessage && <p className="text-sm text-red-600 dark:text-red-400">{editMessage}</p>}

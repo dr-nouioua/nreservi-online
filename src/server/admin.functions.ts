@@ -205,7 +205,7 @@ export const listAds = createServerFn({ method: "GET" }).handler(async () => {
   return db.select().from(ads).orderBy(ads.sortOrder, ads.id);
 });
 
-function normalizeAdInput(data: { title: string; body: string; imageUrl: string; linkUrl: string; ctaLabel: string; sortOrder: number; restaurantId: number | null }) {
+function normalizeAdInput(data: { title: string; body: string; imageUrl: string; linkUrl: string; ctaLabel: string; sortOrder: number; durationSeconds: number; restaurantId: number | null }) {
   return {
     title: data.title.trim(),
     body: data.body.trim(),
@@ -213,13 +213,14 @@ function normalizeAdInput(data: { title: string; body: string; imageUrl: string;
     linkUrl: data.linkUrl.trim() || null,
     ctaLabel: data.ctaLabel.trim() || "Découvrir",
     sortOrder: Number.isFinite(data.sortOrder) ? data.sortOrder : 0,
+    durationSeconds: Number.isFinite(data.durationSeconds) ? Math.min(120, Math.max(5, Math.round(data.durationSeconds))) : 15,
     restaurantId: data.restaurantId ?? null,
   };
 }
 
 export const createAd = createServerFn({ method: "POST" })
   .inputValidator(
-    (data: { title: string; body: string; imageUrl: string; linkUrl: string; ctaLabel: string; sortOrder: number; restaurantId: number | null }) => data,
+    (data: { title: string; body: string; imageUrl: string; linkUrl: string; ctaLabel: string; sortOrder: number; durationSeconds: number; restaurantId: number | null }) => data,
   )
   .handler(async ({ data }) => {
     await requireAdmin();
@@ -234,7 +235,7 @@ export const createAd = createServerFn({ method: "POST" })
 
 export const updateAd = createServerFn({ method: "POST" })
   .inputValidator(
-    (data: { id: number; title: string; body: string; imageUrl: string; linkUrl: string; ctaLabel: string; sortOrder: number; restaurantId: number | null }) => data,
+    (data: { id: number; title: string; body: string; imageUrl: string; linkUrl: string; ctaLabel: string; sortOrder: number; durationSeconds: number; restaurantId: number | null }) => data,
   )
   .handler(async ({ data }) => {
     await requireAdmin();
