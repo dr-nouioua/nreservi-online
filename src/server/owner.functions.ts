@@ -136,7 +136,6 @@ export const createWalkIn = createServerFn({ method: "POST" })
     if (!table) return { error: "Table introuvable." };
     // …and must be free at that date/time — a confirmed/installed reservation
     // keeps its table until it is cancelled or completed.
-    const timePrefix = `${data.time.slice(0, 5)}:`;
     const [conflict] = await db
       .select({ id: reservations.id })
       .from(reservations)
@@ -145,7 +144,7 @@ export const createWalkIn = createServerFn({ method: "POST" })
           eq(reservations.restaurantId, restaurantId),
           eq(reservations.tableId, data.tableId),
           eq(reservations.date, data.date),
-          like(reservations.time, `${timePrefix}%`),
+          eq(reservations.time, `${data.time}:00`),
           inArray(reservations.status, ["confirmed", "seated"]),
         ),
       )
@@ -153,15 +152,14 @@ export const createWalkIn = createServerFn({ method: "POST" })
     let assignedTable = table;
     if (conflict) {
       // Auto-select another available table with enough seats (same area first).
-      const timePrefix = `${data.time.slice(0, 5)}:`;
-      const busy = await db
+        const busy = await db
         .select({ tableId: reservations.tableId })
         .from(reservations)
         .where(
           and(
             eq(reservations.restaurantId, restaurantId),
             eq(reservations.date, data.date),
-            like(reservations.time, `${timePrefix}%`),
+            eq(reservations.time, `${data.time}:00`),
             inArray(reservations.status, ["confirmed", "seated"]),
           ),
         );
