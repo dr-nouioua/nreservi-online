@@ -57,11 +57,12 @@ function OnboardPage() {
   ]
 
   return (
-    <div className="max-w-xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-xl mx-auto">
       <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Créer un restaurant</h1>
       <form onSubmit={submit} className="mt-6 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-4 sm:p-6 space-y-3">
+        <div className="grid gap-3 sm:grid-cols-2">
         {fields.map(([key, label]) => (
-          <div key={key}>
+          <div key={key} className="min-w-0">
             <label className="text-xs text-stone-500 dark:text-stone-400">{label}</label>
             <input
               required={key !== 'whatsappNumber'}
@@ -72,6 +73,7 @@ function OnboardPage() {
             />
           </div>
         ))}
+        </div>
         <button disabled={submitting} className="w-full py-2.5 rounded-lg bg-stone-900 text-white dark:ring-1 dark:ring-stone-700 text-sm font-medium disabled:opacity-50">
           {submitting ? 'Creating...' : 'Create restaurant + owner account'}
         </button>
