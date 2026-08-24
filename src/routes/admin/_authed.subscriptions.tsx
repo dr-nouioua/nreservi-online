@@ -5,6 +5,7 @@ import {
   listSubscriptions,
   updateSubscriptionDates,
   renewSubscription,
+  setSubscriptionTier,
 } from '../../server/admin.functions'
 
 export const Route = createFileRoute('/admin/_authed/subscriptions')({
@@ -104,9 +105,7 @@ function SubscriptionsPage() {
                     {sub.name}
                     <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.className}`}>{badge.label}</span>
                   </p>
-                  <p className="text-sm text-stone-500 dark:text-stone-400">
-                    {sub.city} · formule {sub.tier}
-                  </p>
+                  <p className="text-sm text-stone-500 dark:text-stone-400">{sub.city}</p>
                 </div>
                 <span className="text-sm font-medium text-stone-600 dark:text-stone-300 whitespace-nowrap">{daysLabel(sub)}</span>
               </div>
@@ -141,7 +140,21 @@ function SubscriptionsPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2 border-t border-stone-100 pt-3 dark:border-stone-800">
-                <RefreshCw className="h-4 w-4 text-stone-400" />
+                <label className="text-xs text-stone-500 dark:text-stone-400">Formule</label>
+                <select
+                  value={sub.tier}
+                  onChange={async (e) => {
+                    const result = await setSubscriptionTier({ data: { id: sub.id, tier: e.target.value } })
+                    if ('error' in result && result.error) { setMessage(result.error); return }
+                    setMessage('Formule mise à jour.')
+                    refresh()
+                  }}
+                  className="rounded-lg border border-stone-300 px-2 py-1.5 text-sm dark:border-stone-700"
+                >
+                  <option value="basic">Basique</option>
+                  <option value="premium">Premium</option>
+                </select>
+                <RefreshCw className="ml-2 h-4 w-4 text-stone-400" />
                 <select
                   value={renewMonths[sub.id] ?? 12}
                   onChange={(e) => setRenewMonths({ ...renewMonths, [sub.id]: Number(e.target.value) })}

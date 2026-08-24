@@ -71,7 +71,15 @@ export const setSubscriptionTier = createServerFn({ method: "POST" })
   .inputValidator((data: { id: number; tier: string }) => data)
   .handler(async ({ data }) => {
     await requireAdmin();
+    if (!["basic", "premium"].includes(data.tier)) return { error: "Formule invalide." };
+    const [row] = await db.select().from(restaurants).where(eq(restaurants.id, data.id));
+    if (!row) return { error: "Restaurant introuvable." };
     await db.update(restaurants).set({ subscriptionTier: data.tier }).where(eq(restaurants.id, data.id));
+    await appendSubscriptionHistory(data.id, {
+      start: row.subscriptionStart,
+      end: row.subscriptionEnd,
+      tier: data.tier,
+    });
     return { success: true };
   });
 
@@ -114,7 +122,7 @@ export const onboardRestaurant = createServerFn({ method: "POST" })
         contactPhone: data.contactPhone,
         whatsappNumber: data.whatsappNumber || null,
         status: "active",
-        subscriptionTier: "starter",
+        subscriptionTier: "basic",
         openingHours: defaultHours,
       })
       .returning();

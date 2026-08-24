@@ -1,0 +1,2 @@
+ALTER TABLE "restaurants" ALTER COLUMN "subscription_tier" SET DEFAULT 'basic';--> statement-breakpoint
+UPDATE "restaurants" SET "subscription_tier" = CASE WHEN "subscription_tier" = 'starter' THEN 'basic' ELSE 'premium' END WHERE "subscription_tier" IN ('starter', 'growth', 'pro');

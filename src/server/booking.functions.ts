@@ -127,7 +127,7 @@ export const createReservation = createServerFn({ method: "POST" })
     if (!restaurant || !isSubscriptionValid(restaurant) || restaurant.status !== "active") {
       return { error: "Cet établissement n'accepte pas les réservations pour le moment." };
     }
-    if (restaurant.subscriptionTier === "starter") {
+    if (restaurant.subscriptionTier === "basic") {
       return { error: "La réservation en ligne n'est pas activée pour cet établissement." };
     }
 

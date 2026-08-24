@@ -18,7 +18,6 @@ import {
   approveRestaurant,
   suspendRestaurant,
   deleteRestaurant,
-  setSubscriptionTier,
   impersonateRestaurant,
 } from '../../server/admin.functions'
 
@@ -139,20 +138,7 @@ function AdminIndex() {
                 <td className="px-4 py-3">
                   <span className={`px-2 py-0.5 rounded-full text-xs ${STATUS_COLORS[r.status]}`}>{r.status}</span>
                 </td>
-                <td className="px-4 py-3">
-                  <select
-                    value={r.subscriptionTier}
-                    onChange={async (e) => {
-                      await setSubscriptionTier({ data: { id: r.id, tier: e.target.value } })
-                      refresh()
-                    }}
-                    className="px-2 py-1 rounded border border-stone-200 dark:border-stone-800 text-xs"
-                  >
-                    <option value="starter">Starter</option>
-                    <option value="growth">Growth</option>
-                    <option value="pro">Pro</option>
-                  </select>
-                </td>
+                <td className="px-4 py-3 capitalize">{r.subscriptionTier === 'premium' ? 'Premium' : 'Basique'}</td>
                 <td className="px-4 py-3 space-x-2 whitespace-nowrap">
                   {r.status !== 'active' && (
                     <button onClick={async () => { await approveRestaurant({ data: { id: r.id } }); refresh() }} className="text-emerald-600 dark:text-emerald-400 hover:underline text-xs">Valider</button>

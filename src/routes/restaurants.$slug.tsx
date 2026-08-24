@@ -223,7 +223,7 @@ function RestaurantPage() {
             
           </div>
 
-          {restaurant.subscriptionTier !== 'starter' && (
+          {restaurant.subscriptionTier === 'premium' && (
           <>
           <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 p-6 h-fit sticky top-20 shadow-xl">
             <h2 className="font-semibold text-stone-900 dark:text-stone-100 mb-4 flex items-center gap-2"><CalendarDays className="h-4 w-4" /> Réserver</h2>

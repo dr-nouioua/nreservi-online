@@ -53,7 +53,7 @@ function BillingPage() {
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <p className="font-semibold text-stone-900 dark:text-stone-100">{sub.name}</p>
-            <p className="mt-0.5 text-sm text-stone-500 dark:text-stone-400 capitalize">Formule : {sub.tier}</p>
+            <p className="mt-0.5 text-sm text-stone-500 dark:text-stone-400">Formule : {sub.tier === 'premium' ? 'Premium' : 'Basique'}</p>
           </div>
           <span className={`rounded-full px-3 py-1 text-sm font-medium ${badge.className}`}>{badge.label}</span>
         </div>

@@ -71,7 +71,7 @@ export async function ensureSeeded() {
         avgTicketPrice: opts.avgTicket,
         rating: "4.6",
         status: "active",
-        subscriptionTier: "growth",
+        subscriptionTier: "premium",
         openingHours: hours,
       })
       .returning();
@@ -278,7 +278,7 @@ export async function ensureSeeded() {
     avgTicketPrice: "38.00",
     rating: "0",
     status: "pending",
-    subscriptionTier: "starter",
+    subscriptionTier: "basic",
     openingHours: hours,
   });
 
