@@ -186,10 +186,20 @@ export const marketingRules = pgTable("marketing_rules", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const marketingCampaigns = pgTable("marketing_campaigns", {
+  id: serial().primaryKey(),
+  restaurantId: integer("restaurant_id").notNull().references(() => restaurants.id),
+  name: text("name").notNull(),
+  body: text("body").notNull(), // supports {{customer_name}}, {{restaurant_name}}, {{last_reservation_date}}
+  audience: text("audience").notNull().default("all"), // all | recent | regular | lapsed
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const campaignLogs = pgTable("campaign_logs", {
   id: serial().primaryKey(),
   restaurantId: integer("restaurant_id").notNull().references(() => restaurants.id),
   ruleId: integer("rule_id").references(() => marketingRules.id),
+  campaignId: integer("campaign_id").references(() => marketingCampaigns.id),
   customerId: integer("customer_id").notNull().references(() => customers.id),
   templateId: integer("template_id").references(() => marketingTemplates.id),
   status: text("status").notNull().default("sent"), // sent | delivered | read | booked | opted_out | failed

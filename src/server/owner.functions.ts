@@ -14,6 +14,7 @@ import {
   marketingRules,
   campaignLogs,
   whatsappMessages,
+  marketingCampaigns,
 } from "../../db/schema.js";
 import { requireSession } from "./auth.functions.js";
 import { sendWhatsappMessage, renderTemplate } from "./whatsapp.server.js";
@@ -557,3 +558,148 @@ export const getWhatsappLog = createServerFn({ method: "GET" }).handler(async ()
   const restaurantId = await requireRestaurantId();
   return db.select().from(whatsappMessages).where(eq(whatsappMessages.restaurantId, restaurantId)).orderBy(sql`created_at desc`).limit(50);
 });
+
+// ---------- Marketing campaigns (Premium only, manual WhatsApp sending) ----------
+
+const AUDIENCES = ["all", "recent", "regular", "lapsed"] as const;
+
+async function requirePremiumRestaurantId(): Promise<number> {
+  const restaurantId = await requireRestaurantId();
+  const [row] = await db
+    .select({ tier: restaurants.subscriptionTier })
+    .from(restaurants)
+    .where(eq(restaurants.id, restaurantId));
+  if (!row || row.tier !== "premium") {
+    const err = new Error("PREMIUM_ONLY");
+    (err as Error & { code?: string }).code = "PREMIUM_ONLY";
+    throw err;
+  }
+  return restaurantId;
+}
+
+function renderCampaignMessage(body: string, vars: { name: string | null; restaurantName: string; lastVisit: string | null }): string {
+  return body
+    .replace(/\{\{customer_name\}\}/g, vars.name?.trim() || "cher client")
+    .replace(/\{\{restaurant_name\}\}/g, vars.restaurantName)
+    .replace(/\{\{last_reservation_date\}\}/g, vars.lastVisit ?? "—");
+}
+
+export const createCampaign = createServerFn({ method: "POST" })
+  .inputValidator((data: { name: string; body: string; audience: string }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requirePremiumRestaurantId();
+    const name = data.name.trim();
+    const body = data.body.trim();
+    if (!name) return { error: "Le nom de la campagne est requis." };
+    if (body.length < 10) return { error: "Le message est trop court (10 caractères minimum)." };
+    if (body.length > 1000) return { error: "Le message ne peut dépasser 1000 caractères." };
+    if (!AUDIENCES.includes(data.audience as (typeof AUDIENCES)[number])) return { error: "Audience invalide." };
+    const [campaign] = await db
+      .insert(marketingCampaigns)
+      .values({ restaurantId, name, body, audience: data.audience })
+      .returning();
+    return { campaign };
+  });
+
+export const listCampaigns = createServerFn({ method: "GET" }).handler(async () => {
+  const restaurantId = await requirePremiumRestaurantId();
+  const campaigns = await db
+    .select()
+    .from(marketingCampaigns)
+    .where(eq(marketingCampaigns.restaurantId, restaurantId))
+    .orderBy(sql`created_at desc`);
+  const sends = await db
+    .select({ campaignId: campaignLogs.campaignId, count: sql<number>`count(*)::int` })
+    .from(campaignLogs)
+    .where(and(eq(campaignLogs.restaurantId, restaurantId), eq(campaignLogs.status, "prepared")))
+    .groupBy(campaignLogs.campaignId);
+  const counts = new Map(sends.map((s) => [s.campaignId, s.count]));
+  return campaigns.map((c) => ({ ...c, sentCount: counts.get(c.id) ?? 0 }));
+});
+
+export const deleteCampaign = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: number }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requirePremiumRestaurantId();
+    await db.delete(campaignLogs).where(and(eq(campaignLogs.campaignId, data.id), eq(campaignLogs.restaurantId, restaurantId)));
+    await db.delete(marketingCampaigns).where(and(eq(marketingCampaigns.id, data.id), eq(marketingCampaigns.restaurantId, restaurantId)));
+    return { success: true };
+  });
+
+const AUDIENCE_LABELS: Record<string, string> = {
+  all: "Tous les clients",
+  recent: "Clients récents (30 derniers jours)",
+  regular: "Clients fidèles (3 réservations et +)",
+  lapsed: "Clients inactifs (60 jours et +)",
+};
+
+/** Recipients for a campaign, each with its personalized message ready for WhatsApp. */
+export const getCampaignAudience = createServerFn({ method: "GET" })
+  .inputValidator((data: { campaignId: number }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requirePremiumRestaurantId();
+    const [campaign] = await db
+      .select()
+      .from(marketingCampaigns)
+      .where(and(eq(marketingCampaigns.id, data.campaignId), eq(marketingCampaigns.restaurantId, restaurantId)));
+    if (!campaign) throw new Error("Campagne introuvable");
+
+    const [restaurant] = await db
+      .select({ name: restaurants.name })
+      .from(restaurants)
+      .where(eq(restaurants.id, restaurantId));
+
+    const rows = await db
+      .select({
+        id: customers.id,
+        name: customers.name,
+        phone: customers.phone,
+        lastVisit: sql<string | null>`max(${reservations.date})`,
+        visits: sql<number>`count(*)::int`,
+      })
+      .from(reservations)
+      .innerJoin(customers, eq(reservations.customerId, customers.id))
+      .where(eq(reservations.restaurantId, restaurantId))
+      .groupBy(customers.id, customers.name, customers.phone);
+
+    const today = new Date().toISOString().slice(0, 10);
+    const daysSince = (d: string | null) => (d ? Math.floor((Date.parse(today) - Date.parse(d)) / 86_400_000) : Infinity);
+
+    let audience = rows;
+    if (campaign.audience === "recent") audience = rows.filter((r) => r.lastVisit && daysSince(r.lastVisit) <= 30);
+    if (campaign.audience === "regular") audience = rows.filter((r) => r.visits >= 3);
+    if (campaign.audience === "lapsed") audience = rows.filter((r) => r.lastVisit && daysSince(r.lastVisit) > 60);
+
+    return {
+      campaign,
+      audienceLabel: AUDIENCE_LABELS[campaign.audience] ?? campaign.audience,
+      recipients: audience
+        .sort((a, b) => (b.lastVisit ?? "").localeCompare(a.lastVisit ?? ""))
+        .map((r) => ({
+          id: r.id,
+          name: r.name,
+          phone: r.phone,
+          lastVisit: r.lastVisit,
+          visits: r.visits,
+          message: renderCampaignMessage(campaign.body, {
+            name: r.name,
+            restaurantName: restaurant?.name ?? "notre restaurant",
+            lastVisit: r.lastVisit,
+          }),
+        })),
+    };
+  });
+
+/** Records that the owner opened WhatsApp for this recipient — never that a message was sent. */
+export const markCampaignRecipientPrepared = createServerFn({ method: "POST" })
+  .inputValidator((data: { campaignId: number; customerId: number }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requirePremiumRestaurantId();
+    await db.insert(campaignLogs).values({
+      restaurantId,
+      campaignId: data.campaignId,
+      customerId: data.customerId,
+      status: "prepared",
+    });
+    return { success: true };
+  });

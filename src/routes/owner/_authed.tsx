@@ -47,7 +47,7 @@ const nav = [
 function OwnerLayout() {
   const { session, subscription } = Route.useRouteContext() as {
     session: { name: string; email: string }
-    subscription: { effective: string; end: string | null; name?: string }
+    subscription: { effective: string; end: string | null; tier: string; name?: string }
   }
 
   // Drawer (mobile/tablet) + icon-only collapse (desktop). Persisted.
@@ -107,9 +107,10 @@ function OwnerLayout() {
 
   const sidebarWidth = collapsed ? 'lg:w-[68px]' : 'lg:w-56'
 
+  const isPremium = subscription.tier === 'premium'
   const navLinks = () => (
     <nav className="space-y-1 flex-1 overflow-y-auto">
-      {nav.map((item) => (
+      {nav.filter((item) => isPremium || item.to !== '/owner/marketing').map((item) => (
         <Link
           key={item.to}
           to={item.to}
