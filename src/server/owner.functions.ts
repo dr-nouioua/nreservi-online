@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, like, sql } from "drizzle-orm";
 import { db } from "../../db/index.js";
 import {
   reservations,
@@ -145,7 +145,7 @@ export const createWalkIn = createServerFn({ method: "POST" })
           eq(reservations.restaurantId, restaurantId),
           eq(reservations.tableId, data.tableId),
           eq(reservations.date, data.date),
-          sql`${reservations.time} LIKE ${timePrefix}%`,
+          like(reservations.time, `${timePrefix}%`),
           inArray(reservations.status, ["confirmed", "seated"]),
         ),
       )
@@ -161,7 +161,7 @@ export const createWalkIn = createServerFn({ method: "POST" })
           and(
             eq(reservations.restaurantId, restaurantId),
             eq(reservations.date, data.date),
-            sql`${reservations.time} LIKE ${timePrefix}%`,
+            like(reservations.time, `${timePrefix}%`),
             inArray(reservations.status, ["confirmed", "seated"]),
           ),
         );

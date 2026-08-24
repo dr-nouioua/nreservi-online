@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { ImagePlus, Images, Pencil, Plus, Trash2, Upload, X } from 'lucide-react'
+import { ImagePlus, Images, PanelTop, Pencil, Plus, Trash2, Upload, X } from 'lucide-react'
 import {
   getMenu,
   addMenuCategory,
@@ -132,8 +132,8 @@ function MenuPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-stone-950 tracking-tight dark:text-stone-50">Gestion du menu</h1>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <ImageToggle enabled={showImages} onToggle={toggleImages} />
-          <ImageToggle enabled={menuFixed} onToggle={toggleMenuFixed} label="Menu fixe" />
+          <ImageToggle enabled={showImages} onToggle={toggleImages} label="Photos du menu" icon={Images} />
+          <ImageToggle enabled={menuFixed} onToggle={toggleMenuFixed} label="Menu fixe" icon={PanelTop} />
         </div>
       </div>
 
@@ -259,23 +259,47 @@ function MenuPage() {
   )
 }
 
-function ImageToggle({ enabled, onToggle, label = 'Photos du menu' }: { enabled: boolean; onToggle: () => void; label?: string }) {
+function ImageToggle({
+  enabled,
+  onToggle,
+  label = 'Photos du menu',
+  icon: Icon = Images,
+}: {
+  enabled: boolean
+  onToggle: () => void
+  label?: string
+  icon?: typeof Images
+}) {
   return (
     <button
       type="button"
       onClick={onToggle}
       role="switch"
       aria-checked={enabled}
-      className="inline-flex items-center gap-3 rounded-full border border-stone-200 bg-white py-1.5 pl-1.5 pr-3 shadow-sm transition dark:border-stone-700 dark:bg-stone-900"
-      title={enabled ? 'Masquer les photos dans le menu public' : 'Afficher les photos dans le menu public'}
+      className={`inline-flex items-center gap-3 rounded-xl border px-3.5 py-2.5 text-left transition-all duration-200 ${
+        enabled
+          ? 'border-lime-400/70 bg-lime-50 dark:border-lime-500/40 dark:bg-lime-500/10'
+          : 'border-stone-200 bg-white hover:border-stone-300 dark:border-stone-700 dark:bg-stone-900 dark:hover:border-stone-600'
+      }`}
+      title={enabled ? `Désactiver : ${label}` : `Activer : ${label}`}
     >
       <span
-        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition ${enabled ? 'bg-lime-500' : 'bg-stone-300 dark:bg-stone-700'}`}
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors duration-200 ${
+          enabled ? 'bg-lime-400 text-stone-950' : 'bg-stone-100 text-stone-400 dark:bg-stone-800 dark:text-stone-500'
+        }`}
       >
-        <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${enabled ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+        <Icon className="h-4 w-4" />
       </span>
-      <span className="flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-stone-200">
-        <Images className="h-4 w-4" /> {label}
+      <span className="min-w-0">
+        <span className={`block truncate text-sm font-medium ${enabled ? 'text-stone-900 dark:text-stone-100' : 'text-stone-500 dark:text-stone-400'}`}>
+          {label}
+        </span>
+        <span className={`block text-[11px] ${enabled ? 'text-lime-700 dark:text-lime-400' : 'text-stone-400'}`}>
+          {enabled ? 'Activé' : 'Désactivé'}
+        </span>
+      </span>
+      <span className={`relative ml-1 inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 ${enabled ? 'bg-lime-500' : 'bg-stone-300 dark:bg-stone-600'}`}>
+        <span className={`absolute h-4 w-4 rounded-full bg-white shadow transition-all duration-200 ${enabled ? 'left-[18px]' : 'left-0.5'}`} />
       </span>
     </button>
   )
