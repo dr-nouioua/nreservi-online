@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { CalendarDays, CheckCircle2, ChevronDown, ImagePlus, MapPin, Sparkles, Star, Users, UtensilsCrossed } from 'lucide-react'
 import { getRestaurantBySlug, getAvailability, createReservation } from '../server/booking.functions'
 import { formatPriceDA } from '../services/format'
-import { AdCard, type Ad } from '../components/AdCard'
+import { type Ad } from '../components/AdCard'
+import { AdsCarousel } from '../components/AdsCarousel'
 import { SiteHeader } from '../components/SiteHeader'
 import { SiteFooter } from '../components/SiteFooter'
 
@@ -49,7 +50,7 @@ function RestaurantPage() {
   }
 
   // Whole menu collapsed by default — long catalogs stay light to load & scan.
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(restaurant.menuFixed)
   const [date, setDate] = useState(todayISO())
   const [partySize, setPartySize] = useState(2)
   const [areaId, setAreaId] = useState<number | undefined>(undefined)
@@ -160,7 +161,7 @@ function RestaurantPage() {
       <div className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 relative">
         <p className="text-stone-600 dark:text-stone-400 mt-6 max-w-2xl text-lg">{restaurant.description}</p>
 
-        {ads[0] && <AdCard ad={ads[0]} className="mt-6 max-w-2xl" />}
+        {ads.length > 0 && <AdsCarousel ads={ads.slice(0, 2)} className="mt-6 max-w-2xl" />}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 pb-16">
           <div className="lg:col-span-2 space-y-6">
@@ -180,7 +181,7 @@ function RestaurantPage() {
                   </span>
                 </span>
                 <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 dark:border-stone-700 dark:text-stone-300">
-                  {menuOpen ? 'Masquer' : 'Voir le menu'}
+                  {restaurant.menuFixed ? 'Menu' : menuOpen ? 'Masquer' : 'Voir le menu'}
                   <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${menuOpen ? 'rotate-180' : ''}`} />
                 </span>
               </button>

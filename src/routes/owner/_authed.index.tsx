@@ -347,10 +347,6 @@ function WalkInModal({ tables, reservations, date, onClose, onCreated }: { table
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (occupiedIds.has(tableId)) {
-      setError('Cette table est déjà occupée à cette heure.')
-      return
-    }
     const result = await createWalkIn({ data: { guestName, guestPhone, partySize, date, time, tableId } })
     if ('error' in result && result.error) {
       setError(result.error)
@@ -376,6 +372,9 @@ function WalkInModal({ tables, reservations, date, onClose, onCreated }: { table
             </option>
           ))}
         </select>
+        {occupiedIds.has(tableId) && !error && (
+          <p className="text-xs text-amber-600 dark:text-amber-400">Table occupée à cette heure — une autre table libre sera attribuée automatiquement.</p>
+        )}
         {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" onClick={onClose} className="px-3 py-1.5 text-sm text-stone-500 dark:text-stone-400">Annuler</button>

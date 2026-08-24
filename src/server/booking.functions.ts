@@ -14,6 +14,7 @@ import {
 import { ensureSeeded } from "./seed.server.js";
 import { sendWhatsappMessage } from "./whatsapp.server.js";
 import { randomToken } from "./session.server.js";
+import { isSubscriptionValid } from "./subscriptions.shared.js";
 import { rateLimit } from "./rate-limit.server.js";
 
 export const listRestaurants = createServerFn({ method: "GET" })
@@ -68,6 +69,13 @@ export const getRestaurantBySlug = createServerFn({ method: "GET" })
 export const getAvailability = createServerFn({ method: "GET" })
   .inputValidator((data: { restaurantId: number; date: string; partySize: number }) => data)
   .handler(async ({ data }) => {
+    // Expired / suspended / pending restaurants expose no slots at all.
+    const [restaurantRow] = await db
+      .select({ status: restaurants.status, subscriptionEnd: restaurants.subscriptionEnd })
+      .from(restaurants)
+      .where(eq(restaurants.id, data.restaurantId));
+    if (!restaurantRow || !isSubscriptionValid(restaurantRow)) return [];
+
     const tableRows = await db
       .select()
       .from(tables)
@@ -114,6 +122,14 @@ export const createReservation = createServerFn({ method: "POST" })
     }
 
     const [restaurant] = await db.select().from(restaurants).where(eq(restaurants.id, data.restaurantId));
+
+    // Premium feature + subscription validity — enforced server-side, not just UI.
+    if (!restaurant || !isSubscriptionValid(restaurant) || restaurant.status !== "active") {
+      return { error: "Cet établissement n'accepte pas les réservations pour le moment." };
+    }
+    if (restaurant.subscriptionTier === "starter") {
+      return { error: "La réservation en ligne n'est pas activée pour cet établissement." };
+    }
 
     // Check-and-insert must be atomic or two concurrent submissions can grab
     // the same table. Locking the restaurant's tables serializes the choice.
