@@ -11,7 +11,7 @@ import {
   Legend,
 } from 'chart.js'
 import { Bar, Doughnut } from 'react-chartjs-2'
-import { TrendingUp, Users, AlertTriangle, DollarSign } from 'lucide-react'
+import { TrendingUp, Users, AlertTriangle } from 'lucide-react'
 import { formatPriceDA } from '../../services/format'
 
 export const Route = createLazyFileRoute('/owner/_authed/analytics')({
@@ -36,7 +36,6 @@ function exportCsv(data: any) {
     ["Taux de no-show (%)", data.noShowRate],
     ["Taux d'annulation (%)", data.cancellationRate],
     ["Taux d'occupation (%)", data.occupancyRate],
-    ["Revenu estimé (DA)", data.revenueEstimate],
     ["Clients fidèles", data.repeatCustomers],
     ["Nouveaux clients", data.newCustomers],
   ]
@@ -63,7 +62,6 @@ function AnalyticsPage() {
     { label: "Taux d'occupation", value: `${data.occupancyRate}%`, icon: TrendingUp, color: 'bg-blue-500' },
     { label: "Taux de no-show", value: `${data.noShowRate}%`, icon: AlertTriangle, color: 'bg-red-500' },
     { label: "Clients fidèles", value: data.repeatCustomers, icon: Users, color: 'bg-emerald-500' },
-    { label: 'Revenu est.', value: formatPriceDA(data.revenueEstimate), icon: DollarSign, color: 'bg-amber-500' },
   ]
 
   return (
@@ -75,7 +73,7 @@ function AnalyticsPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
         {stats.map((s) => (
           <div key={s.label} className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-5 flex items-center gap-3">
             <div className={`${s.color} p-2.5 rounded-lg`}>

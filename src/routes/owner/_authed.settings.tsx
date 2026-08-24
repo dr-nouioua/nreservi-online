@@ -206,6 +206,7 @@ function SettingsPage() {
         <ChevronRight className="h-4 w-4 shrink-0 text-stone-400" />
       </Link>
 
+      {initial.restaurant?.subscriptionTier === 'premium' ? (
       <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 p-6 space-y-3 shadow-sm">
         <p className="font-semibold text-stone-900 dark:text-stone-100">Espaces & tables</p>
         {overview.areas.map((area) => (
@@ -266,6 +267,12 @@ function SettingsPage() {
           <button className="flex items-center gap-1 rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"><Plus className="h-4 w-4" /> Table</button>
         </form>
       </div>
+
+      ) : (
+        <div className="rounded-xl border border-stone-200 bg-stone-50 p-5 text-sm text-stone-600 dark:border-stone-800 dark:bg-stone-900/60 dark:text-stone-400">
+          La gestion des espaces & tables est incluse dans la formule <span className="font-semibold">Premium</span>.
+        </div>
+      )}
 
       <form onSubmit={updateEmail} className="bg-white rounded-lg border border-stone-200 p-6 space-y-3 shadow-sm dark:bg-stone-900 dark:border-stone-800">
         <p className="font-semibold text-stone-900 flex items-center gap-2 dark:text-stone-100"><AtSign className="h-4 w-4" /> E-mail de connexion</p>

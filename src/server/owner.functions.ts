@@ -291,7 +291,7 @@ export const setMenuFixed = createServerFn({ method: "POST" })
 export const renameArea = createServerFn({ method: "POST" })
   .inputValidator((data: { id: number; name: string }) => data)
   .handler(async ({ data }) => {
-    const restaurantId = await requireRestaurantId();
+    const restaurantId = await requirePremiumRestaurantId();
     const name = data.name.trim();
     if (!name) return { error: "Le nom de l'espace est requis." };
     await db.update(areas).set({ name }).where(and(eq(areas.id, data.id), eq(areas.restaurantId, restaurantId)));
@@ -301,7 +301,7 @@ export const renameArea = createServerFn({ method: "POST" })
 export const deleteArea = createServerFn({ method: "POST" })
   .inputValidator((data: { id: number }) => data)
   .handler(async ({ data }) => {
-    const restaurantId = await requireRestaurantId();
+    const restaurantId = await requirePremiumRestaurantId();
     const tableCount = await db
       .select({ id: tables.id })
       .from(tables)
@@ -316,7 +316,7 @@ export const deleteArea = createServerFn({ method: "POST" })
 export const addArea = createServerFn({ method: "POST" })
   .inputValidator((data: { name: string }) => data)
   .handler(async ({ data }) => {
-    const restaurantId = await requireRestaurantId();
+    const restaurantId = await requirePremiumRestaurantId();
     const [area] = await db.insert(areas).values({ restaurantId, name: data.name }).returning();
     return area;
   });
@@ -324,7 +324,7 @@ export const addArea = createServerFn({ method: "POST" })
 export const addTable = createServerFn({ method: "POST" })
   .inputValidator((data: { areaId: number; label: string; capacity: number; shape: string }) => data)
   .handler(async ({ data }) => {
-    const restaurantId = await requireRestaurantId();
+    const restaurantId = await requirePremiumRestaurantId();
     const [table] = await db
       .insert(tables)
       .values({
@@ -343,7 +343,7 @@ export const addTable = createServerFn({ method: "POST" })
 export const deleteTable = createServerFn({ method: "POST" })
   .inputValidator((data: { id: number }) => data)
   .handler(async ({ data }) => {
-    const restaurantId = await requireRestaurantId();
+    const restaurantId = await requirePremiumRestaurantId();
     await db.delete(tables).where(and(eq(tables.id, data.id), eq(tables.restaurantId, restaurantId)));
     return { success: true };
   });
