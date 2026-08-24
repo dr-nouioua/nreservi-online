@@ -10,6 +10,7 @@ import {
   deleteMenuCategory,
   toggleMenuItemAvailability,
   setShowMenuImages,
+  setMenuFixed,
 } from '../../server/owner.functions'
 import { formatPriceDA } from '../../services/format'
 
@@ -33,6 +34,7 @@ const EMPTY_ITEM: ItemForm = { categoryId: null, name: '', description: '', pric
 function MenuPage() {
   const initial = Route.useLoaderData()
   const [showImages, setShowImages] = useState(initial.showMenuImages)
+  const [menuFixed, setMenuFixedState] = useState(initial.menuFixed)
   const [categories, setCategories] = useState(initial.categories)
   const [newCatName, setNewCatName] = useState('')
   const [newItem, setNewItem] = useState<ItemForm>({ ...EMPTY_ITEM, categoryId: initial.categories[0]?.id ?? null })
@@ -42,6 +44,7 @@ function MenuPage() {
   async function refresh() {
     const data = await getMenu()
     setShowImages(data.showMenuImages)
+    setMenuFixedState(data.menuFixed)
     setCategories(data.categories)
   }
 
@@ -102,6 +105,12 @@ function MenuPage() {
     refresh()
   }
 
+  async function toggleMenuFixed() {
+    const next = !menuFixed
+    setMenuFixedState(next)
+    await setMenuFixed({ data: { fixed: next } })
+  }
+
   async function toggleImages() {
     const next = !showImages
     setShowImages(next)
@@ -122,7 +131,10 @@ function MenuPage() {
           <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Catalogue</p>
           <h1 className="text-2xl sm:text-3xl font-bold text-stone-950 tracking-tight dark:text-stone-50">Gestion du menu</h1>
         </div>
-        <ImageToggle enabled={showImages} onToggle={toggleImages} />
+        <div className="flex flex-wrap items-center gap-3">
+          <ImageToggle enabled={showImages} onToggle={toggleImages} />
+          <ImageToggle enabled={menuFixed} onToggle={toggleMenuFixed} label="Menu fixe" />
+        </div>
       </div>
 
       <div className="grid gap-5 mt-6 lg:grid-cols-2">
@@ -247,7 +259,7 @@ function MenuPage() {
   )
 }
 
-function ImageToggle({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) {
+function ImageToggle({ enabled, onToggle, label = 'Photos du menu' }: { enabled: boolean; onToggle: () => void; label?: string }) {
   return (
     <button
       type="button"
@@ -263,7 +275,7 @@ function ImageToggle({ enabled, onToggle }: { enabled: boolean; onToggle: () => 
         <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${enabled ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
       </span>
       <span className="flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-stone-200">
-        <Images className="h-4 w-4" /> Photos du menu
+        <Images className="h-4 w-4" /> {label}
       </span>
     </button>
   )

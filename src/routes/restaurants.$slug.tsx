@@ -35,6 +35,8 @@ function RestaurantPage() {
       address: string
       rating: string | null
       showMenuImages: boolean
+      menuFixed: boolean
+      subscriptionTier: string
     }
     areas: { id: number; name: string }[]
     tables: unknown[]
@@ -220,6 +222,8 @@ function RestaurantPage() {
             
           </div>
 
+          {restaurant.subscriptionTier !== 'starter' && (
+          <>
           <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 p-6 h-fit sticky top-20 shadow-xl">
             <h2 className="font-semibold text-stone-900 dark:text-stone-100 mb-4 flex items-center gap-2"><CalendarDays className="h-4 w-4" /> Réserver</h2>
             <div className="space-y-3">
@@ -230,7 +234,7 @@ function RestaurantPage() {
                   value={date}
                   min={todayISO()}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm"
+                  className="w-full mt-1 px-3 py-2.5 rounded-lg border border-stone-300 bg-white dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 text-sm"
                 />
               </div>
               <div>
@@ -252,7 +256,7 @@ function RestaurantPage() {
                 <select
                   value={areaId ?? ''}
                   onChange={(e) => setAreaId(e.target.value ? Number(e.target.value) : undefined)}
-                  className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm"
+                  className="w-full mt-1 px-3 py-2.5 rounded-lg border border-stone-300 bg-white dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 text-sm"
                 >
                   <option value="">Tous les espaces</option>
                   {areas.map((a) => (
@@ -297,7 +301,7 @@ function RestaurantPage() {
                       required
                       value={guestName}
                       onChange={(e) => setGuestName(e.target.value)}
-                      className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm"
+                      className="w-full mt-1 px-3 py-2.5 rounded-lg border border-stone-300 bg-white dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 text-sm"
                     />
                   </div>
                   <div>
@@ -307,7 +311,7 @@ function RestaurantPage() {
                       value={guestPhone}
                       onChange={(e) => setGuestPhone(e.target.value)}
                       placeholder="+213 555 12 34 56"
-                      className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm"
+                      className="w-full mt-1 px-3 py-2.5 rounded-lg border border-stone-300 bg-white dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 text-sm"
                     />
                   </div>
                   <div>
@@ -316,7 +320,7 @@ function RestaurantPage() {
                       value={specialRequests}
                       onChange={(e) => setSpecialRequests(e.target.value)}
                       placeholder="Anniversaire, allergies, chaise haute..."
-                      className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm"
+                      className="w-full mt-1 px-3 py-2.5 rounded-lg border border-stone-300 bg-white dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100 text-sm"
                       rows={2}
                     />
                   </div>
@@ -332,6 +336,8 @@ function RestaurantPage() {
               )}
             </div>
           </div>
+          </>
+          )}
         </div>
       </div>
       <SiteFooter />

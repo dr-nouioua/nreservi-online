@@ -149,15 +149,36 @@ export const createWalkIn = createServerFn({ method: "POST" })
         ),
       )
       .limit(1);
+    let assignedTable = table;
     if (conflict) {
-      return { error: `La table ${table.label} est déjà réservée à ${data.time.slice(0, 5)}. Choisissez une autre table ou un autre horaire.` };
+      // Auto-select another available table with enough seats (same area first).
+      const timePrefix = `${data.time.slice(0, 5)}:`;
+      const busy = await db
+        .select({ tableId: reservations.tableId })
+        .from(reservations)
+        .where(
+          and(
+            eq(reservations.restaurantId, restaurantId),
+            eq(reservations.date, data.date),
+            sql`${reservations.time} LIKE ${timePrefix}%`,
+            inArray(reservations.status, ["confirmed", "seated"]),
+          ),
+        );
+      const busyIds = new Set(busy.map((b) => b.tableId));
+      const candidates = (await db.select().from(tables).where(eq(tables.restaurantId, restaurantId)))
+        .filter((t) => t.id !== table.id && !busyIds.has(t.id) && t.capacity >= data.partySize)
+        .sort((a, b) => (a.areaId === table.areaId ? -1 : b.areaId === table.areaId ? 1 : a.capacity - b.capacity));
+      if (candidates.length === 0) {
+        return { error: `La table ${table.label} est déjà réservée à ${data.time.slice(0, 5)} et aucune autre table n'est disponible.` };
+      }
+      assignedTable = candidates[0];
     }
     const [reservation] = await db
       .insert(reservations)
       .values({
         restaurantId,
-        tableId: data.tableId,
-        areaId: table?.areaId,
+        tableId: assignedTable.id,
+        areaId: assignedTable.areaId,
         guestName: data.guestName,
         guestPhone: data.guestPhone,
         partySize: data.partySize,
@@ -168,7 +189,7 @@ export const createWalkIn = createServerFn({ method: "POST" })
         confirmationCode: randomToken(),
       })
       .returning();
-    return reservation;
+    return { reservation, assignedTableId: assignedTable.id, autoAssigned: assignedTable.id !== table.id };
   });
 
 export const getAnalytics = createServerFn({ method: "GET" }).handler(async () => {
@@ -258,6 +279,39 @@ export const setShowMenuImages = createServerFn({ method: "POST" })
     return { success: true };
   });
 
+export const setMenuFixed = createServerFn({ method: "POST" })
+  .inputValidator((data: { fixed: boolean }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    await db.update(restaurants).set({ menuFixed: data.fixed }).where(eq(restaurants.id, restaurantId));
+    return { success: true };
+  });
+
+export const renameArea = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: number; name: string }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    const name = data.name.trim();
+    if (!name) return { error: "Le nom de l'espace est requis." };
+    await db.update(areas).set({ name }).where(and(eq(areas.id, data.id), eq(areas.restaurantId, restaurantId)));
+    return { success: true };
+  });
+
+export const deleteArea = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: number }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    const tableCount = await db
+      .select({ id: tables.id })
+      .from(tables)
+      .where(and(eq(tables.areaId, data.id), eq(tables.restaurantId, restaurantId)));
+    if (tableCount.length > 0) {
+      return { error: "Supprimez d'abord les tables de cet espace." };
+    }
+    await db.delete(areas).where(and(eq(areas.id, data.id), eq(areas.restaurantId, restaurantId)));
+    return { success: true };
+  });
+
 export const addArea = createServerFn({ method: "POST" })
   .inputValidator((data: { name: string }) => data)
   .handler(async ({ data }) => {
@@ -298,10 +352,11 @@ export const getMenu = createServerFn({ method: "GET" }).handler(async () => {
   const [cats, items, rows] = await Promise.all([
     db.select().from(menuCategories).where(eq(menuCategories.restaurantId, restaurantId)),
     db.select().from(menuItems).where(eq(menuItems.restaurantId, restaurantId)),
-    db.select({ showMenuImages: restaurants.showMenuImages }).from(restaurants).where(eq(restaurants.id, restaurantId)),
+    db.select({ showMenuImages: restaurants.showMenuImages, menuFixed: restaurants.menuFixed }).from(restaurants).where(eq(restaurants.id, restaurantId)),
   ]);
   return {
     showMenuImages: rows[0]?.showMenuImages ?? true,
+    menuFixed: rows[0]?.menuFixed ?? false,
     categories: cats.map((c) => ({ ...c, items: items.filter((i) => i.categoryId === c.id) })),
   };
 });

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
-import { AtSign, ChevronRight, ImagePlus, KeyRound, MessageCircle, Plus, Save, Trash2, Upload } from 'lucide-react'
-import { getOwnerOverview, updateRestaurantSettings, addArea, addTable, deleteTable } from '../../server/owner.functions'
+import { AtSign, ChevronRight, ImagePlus, KeyRound, MessageCircle, Pencil, Plus, Save, Trash2, Upload } from 'lucide-react'
+import { getOwnerOverview, updateRestaurantSettings, addArea, addTable, deleteTable, renameArea, deleteArea } from '../../server/owner.functions'
 import { changePassword, updateAccountEmail } from '../../server/auth.functions'
 
 export const Route = createFileRoute('/owner/_authed/settings')({
@@ -28,6 +28,9 @@ function SettingsPage() {
     (initial.restaurant?.openingHours as any) ?? {},
   )
   const [newAreaName, setNewAreaName] = useState('')
+  const [editingAreaId, setEditingAreaId] = useState<number | null>(null)
+  const [areaName, setAreaName] = useState('')
+  const [areaMessage, setAreaMessage] = useState<string | null>(null)
   const [newTable, setNewTable] = useState({ areaId: initial.areas[0]?.id, label: '', capacity: 2, shape: 'square' })
   const [saved, setSaved] = useState(false)
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
@@ -52,6 +55,27 @@ function SettingsPage() {
     const reader = new FileReader()
     reader.onload = () => setter(String(reader.result))
     reader.readAsDataURL(file)
+  }
+
+  async function saveAreaName(id: number) {
+    const result = await renameArea({ data: { id, name: areaName } })
+    if ('error' in result && result.error) {
+      setAreaMessage(result.error)
+      return
+    }
+    setEditingAreaId(null)
+    setAreaMessage(null)
+    refresh()
+  }
+
+  async function removeArea(id: number) {
+    const result = await deleteArea({ data: { id } })
+    if ('error' in result && result.error) {
+      setAreaMessage(result.error)
+      return
+    }
+    setAreaMessage(null)
+    refresh()
   }
 
   async function createArea(e: React.FormEvent) {
@@ -186,7 +210,28 @@ function SettingsPage() {
         <p className="font-semibold text-stone-900 dark:text-stone-100">Espaces & tables</p>
         {overview.areas.map((area) => (
           <div key={area.id} className="rounded-lg border border-stone-100 dark:border-stone-800 p-3">
-            <p className="text-sm font-medium text-stone-700 dark:text-stone-300">{area.name}</p>
+            <div className="flex items-center justify-between gap-2">
+              {editingAreaId === area.id ? (
+                <div className="flex min-w-0 flex-1 items-center gap-2">
+                  <input value={areaName} onChange={(e) => setAreaName(e.target.value)} className="min-w-0 flex-1 rounded border border-stone-300 px-2 py-1 text-sm dark:border-stone-700" />
+                  <button onClick={() => saveAreaName(area.id)} className="rounded-lg bg-stone-950 px-2.5 py-1 text-xs font-medium text-white dark:bg-stone-100 dark:text-stone-900">OK</button>
+                  <button onClick={() => setEditingAreaId(null)} className="text-xs text-stone-500">Annuler</button>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm font-medium text-stone-700 dark:text-stone-300">{area.name}</p>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => { setEditingAreaId(area.id); setAreaName(area.name) }} className="rounded-md p-1.5 text-stone-400 hover:bg-stone-100 hover:text-stone-700 dark:hover:bg-stone-800" title="Renommer l'espace">
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <button onClick={() => { if (window.confirm(`Supprimer l'espace « ${area.name} » ?`)) removeArea(area.id) }} className="rounded-md p-1.5 text-stone-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10" title="Supprimer l'espace">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+            {areaMessage && editingAreaId === null && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{areaMessage}</p>}
             <ul className="mt-2 space-y-1">
               {overview.tables.filter((t) => t.areaId === area.id).map((t) => (
                 <li key={t.id} className="flex items-center justify-between text-sm text-stone-600 dark:text-stone-400">

@@ -9,8 +9,7 @@ export type Ad = {
   ctaLabel: string | null
 }
 
-// Inline promotional card rendered inside restaurant pages. Always labelled
-// "Annonce" — sponsored content must be identifiable as such.
+// Inline promotional card rendered inside restaurant pages.
 export function AdCard({ ad, className = "" }: { ad: Ad; className?: string }) {
   const Wrapper = (ad.linkUrl ? "a" : "div") as "a"
 
@@ -19,7 +18,6 @@ export function AdCard({ ad, className = "" }: { ad: Ad; className?: string }) {
       {...(ad.linkUrl ? { href: ad.linkUrl, target: "_blank", rel: "nofollow sponsored noopener" } : {})}
       className={`group relative block overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm transition hover:shadow-md dark:border-stone-800 dark:bg-stone-900 ${className}`}
     >
-      <span className="absolute right-2 top-2 z-10 rounded-full bg-stone-900/70 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-white backdrop-blur">Annonce</span>
       {ad.imageUrl && (
         <img src={ad.imageUrl} alt="" loading="lazy" decoding="async" className="h-32 w-full object-cover sm:h-36" />
       )}
