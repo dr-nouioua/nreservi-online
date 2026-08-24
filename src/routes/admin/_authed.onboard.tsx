@@ -43,22 +43,22 @@ function OnboardPage() {
   }
 
   const fields: [keyof typeof form, string][] = [
-    ['name', 'Restaurant name'],
-    ['slug', 'URL slug'],
-    ['city', 'City'],
-    ['cuisine', 'Cuisine'],
-    ['address', 'Address'],
-    ['contactEmail', 'Contact email'],
-    ['contactPhone', 'Contact phone'],
+    ['name', "Nom du restaurant"],
+    ['slug', "Identifiant d'URL (slug)"],
+    ['city', "Ville"],
+    ['cuisine', "Type de cuisine"],
+    ['address', "Adresse"],
+    ['contactEmail', "E-mail de contact"],
+    ['contactPhone', "Téléphone de contact"],
     ['whatsappNumber', 'WhatsApp Business number'],
-    ['ownerName', 'Owner name'],
-    ['ownerEmail', 'Owner login email'],
-    ['ownerPassword', 'Owner login password'],
+    ['ownerName', "Nom du propriétaire"],
+    ['ownerEmail', "E-mail de connexion du propriétaire"],
+    ['ownerPassword', "Mot de passe du propriétaire"],
   ]
 
   return (
     <div className="max-w-xl">
-      <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Onboard a restaurant</h1>
+      <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Créer un restaurant</h1>
       <form onSubmit={submit} className="mt-6 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-4 sm:p-6 space-y-3">
         {fields.map(([key, label]) => (
           <div key={key}>

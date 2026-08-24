@@ -193,7 +193,7 @@ export const createReservation = createServerFn({ method: "POST" })
       return { error: "Vous avez déjà une réservation pour cette date. Une seule réservation par jour est autorisée." };
     }
     if (reservation.kind === "full") {
-      return { error: "No tables available for that time. Please pick another slot." };
+      return { error: "Aucune table disponible à cette heure. Choisissez un autre horaire." };
     }
     const reservationRecord = reservation.created;
 
@@ -202,7 +202,7 @@ export const createReservation = createServerFn({ method: "POST" })
         restaurantId: data.restaurantId,
         customerId: reservation.customerId,
         kind: "confirmation",
-        body: `Your table for ${data.partySize} at ${restaurant?.name} on ${data.date} at ${data.time} is confirmed. Code: ${reservationRecord.confirmationCode}. Reply CANCEL to cancel or STOP to opt out of messages.`,
+        body: `Bonjour, votre table pour ${data.partySize} personnes chez ${restaurant?.name} le ${data.date} à ${data.time} est confirmée. Référence : ${reservationRecord.confirmationCode}. Répondez CANCEL pour annuler ou STOP pour ne plus recevoir de messages.`,
       });
     }
 
@@ -233,7 +233,7 @@ export const cancelReservation = createServerFn({ method: "POST" })
     }
     const [reservation] = await db.select().from(reservations).where(eq(reservations.id, data.id));
     if (!reservation || reservation.guestPhone !== data.phone) {
-      return { error: "Reservation not found" };
+      return { error: "Réservation introuvable" };
     }
     await db
       .update(reservations)
@@ -245,7 +245,7 @@ export const cancelReservation = createServerFn({ method: "POST" })
         restaurantId: reservation.restaurantId,
         customerId: reservation.customerId,
         kind: "cancellation",
-        body: `Your reservation ${reservation.confirmationCode} on ${reservation.date} has been cancelled.`,
+        body: `Votre réservation ${reservation.confirmationCode} du ${reservation.date} a bien été annulée.`,
       });
     }
     return { success: true };

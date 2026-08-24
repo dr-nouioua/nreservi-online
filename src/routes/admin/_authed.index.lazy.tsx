@@ -68,15 +68,15 @@ function AdminIndex() {
   }
 
   const stats = [
-    { label: 'Total restaurants', value: analytics.totalRestaurants, icon: Building2 },
-    { label: 'Active', value: analytics.activeRestaurants, icon: TrendingUp },
-    { label: 'Pending approval', value: analytics.pendingRestaurants, icon: Clock },
-    { label: 'Total bookings', value: analytics.totalBookings, icon: Users },
+    { label: "Restaurants au total", value: analytics.totalRestaurants, icon: Building2 },
+    { label: "Active", value: analytics.activeRestaurants, icon: TrendingUp },
+    { label: "En attente de validation", value: analytics.pendingRestaurants, icon: Clock },
+    { label: "Réservations totales", value: analytics.totalBookings, icon: Users },
   ]
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Platform overview</h1>
+      <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Vue d'ensemble</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-6">
         {stats.map((s) => (
@@ -92,11 +92,11 @@ function AdminIndex() {
 
       <div className="grid gap-6 mt-6 lg:grid-cols-[1fr_340px]">
         <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-6">
-          <h2 className="text-sm font-semibold text-stone-700 dark:text-stone-300 mb-4">Bookings by restaurant</h2>
+          <h2 className="text-sm font-semibold text-stone-700 dark:text-stone-300 mb-4">Réservations par restaurant</h2>
           <Bar
             data={{
               labels: Object.keys(analytics.byRestaurant),
-              datasets: [{ label: 'Bookings', data: Object.values(analytics.byRestaurant), backgroundColor: 'rgba(30,41,59,0.8)', borderRadius: 6 }],
+              datasets: [{ label: "Réservations", data: Object.values(analytics.byRestaurant), backgroundColor: 'rgba(30,41,59,0.8)', borderRadius: 6 }],
             }}
             options={{
               responsive: true,
@@ -110,12 +110,12 @@ function AdminIndex() {
         </div>
 
         <form onSubmit={updatePassword} className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-6 h-fit space-y-3">
-          <h2 className="text-sm font-semibold text-stone-800 dark:text-stone-200 flex items-center gap-2"><KeyRound className="h-4 w-4" /> Admin password</h2>
+          <h2 className="text-sm font-semibold text-stone-800 dark:text-stone-200 flex items-center gap-2"><KeyRound className="h-4 w-4" /> Mot de passe administrateur</h2>
           <input required type="password" value={passwords.currentPassword} onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })} placeholder="Current password" className="w-full rounded-lg border border-stone-300 dark:border-stone-700 px-3 py-2 text-sm" />
           <input required type="password" value={passwords.newPassword} onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })} placeholder="New password" className="w-full rounded-lg border border-stone-300 dark:border-stone-700 px-3 py-2 text-sm" />
           <input required type="password" value={passwords.confirmPassword} onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })} placeholder="Confirm new password" className="w-full rounded-lg border border-stone-300 dark:border-stone-700 px-3 py-2 text-sm" />
           {passwordMessage && <p className={`text-sm ${passwordMessage.includes('updated') ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>{passwordMessage}</p>}
-          <button className="inline-flex items-center gap-2 rounded-lg bg-stone-900 px-3 py-2 text-sm font-medium text-white dark:ring-1 dark:ring-stone-700 hover:bg-stone-800"><Save className="h-4 w-4" /> Change password</button>
+          <button className="inline-flex items-center gap-2 rounded-lg bg-stone-900 px-3 py-2 text-sm font-medium text-white dark:ring-1 dark:ring-stone-700 hover:bg-stone-800"><Save className="h-4 w-4" /> Changer le mot de passe</button>
         </form>
       </div>
 
@@ -124,10 +124,10 @@ function AdminIndex() {
         <table className="w-full text-sm">
           <thead className="bg-stone-50 dark:bg-stone-950 text-stone-500 dark:text-stone-400 text-left">
             <tr>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">City</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Tier</th>
+              <th className="px-4 py-3">Nom</th>
+              <th className="px-4 py-3">Ville</th>
+              <th className="px-4 py-3">Statut</th>
+              <th className="px-4 py-3">Formule</th>
               <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
@@ -155,12 +155,12 @@ function AdminIndex() {
                 </td>
                 <td className="px-4 py-3 space-x-2 whitespace-nowrap">
                   {r.status !== 'active' && (
-                    <button onClick={async () => { await approveRestaurant({ data: { id: r.id } }); refresh() }} className="text-emerald-600 dark:text-emerald-400 hover:underline text-xs">Approve</button>
+                    <button onClick={async () => { await approveRestaurant({ data: { id: r.id } }); refresh() }} className="text-emerald-600 dark:text-emerald-400 hover:underline text-xs">Valider</button>
                   )}
                   {r.status !== 'suspended' && (
-                    <button onClick={async () => { await suspendRestaurant({ data: { id: r.id } }); refresh() }} className="text-amber-600 dark:text-amber-400 hover:underline text-xs">Suspend</button>
+                    <button onClick={async () => { await suspendRestaurant({ data: { id: r.id } }); refresh() }} className="text-amber-600 dark:text-amber-400 hover:underline text-xs">Suspendre</button>
                   )}
-                  <button onClick={() => impersonate(r.id)} className="text-blue-600 hover:underline text-xs">Support login</button>
+                  <button onClick={() => impersonate(r.id)} className="text-blue-600 hover:underline text-xs">Accès support</button>
                   <button
                     onClick={async () => {
                       if (confirm(`Delete ${r.name}? This removes all its data.`)) {

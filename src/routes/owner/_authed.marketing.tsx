@@ -44,15 +44,15 @@ function MarketingPage() {
 
   return (
     <div className="p-4 sm:p-4 sm:p-6 lg:p-8 max-w-6xl">
-      <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Marketing automation</h1>
+      <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Automatisation marketing</h1>
       <p className="text-stone-500 dark:text-stone-400 text-sm mt-1">Retarget customers via WhatsApp based on behavior segments.</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-6">
         {[
-          { label: 'Sent', value: data.perf.sent },
-          { label: 'Delivered', value: data.perf.delivered },
-          { label: 'Read', value: data.perf.read },
-          { label: 'Booked as result', value: data.perf.booked },
+          { label: "Envoyés", value: data.perf.sent },
+          { label: "Livrés", value: data.perf.delivered },
+          { label: "Lus", value: data.perf.read },
+          { label: "Réservations générées", value: data.perf.booked },
         ].map((s) => (
           <div key={s.label} className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-4">
             <p className="text-xs text-stone-500 dark:text-stone-400">{s.label}</p>
@@ -61,7 +61,7 @@ function MarketingPage() {
         ))}
       </div>
 
-      <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100 mt-8 mb-3">Automation rules</h2>
+      <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100 mt-8 mb-3">Règles d'automatisation</h2>
       <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 divide-y divide-stone-100 dark:divide-stone-800">
         {data.rules.map((rule) => {
           const segment = data.segments.find((s) => s.id === rule.segmentId)
@@ -80,13 +80,13 @@ function MarketingPage() {
                   disabled={sendingRule === rule.id}
                   className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-600 text-white text-xs font-medium disabled:opacity-50"
                 >
-                  <Send className="w-3.5 h-3.5" /> {sendingRule === rule.id ? 'Sending...' : 'Run now'}
+                  <Send className="w-3.5 h-3.5" /> {sendingRule === rule.id ? 'Sending...' : "Lancer"}
                 </button>
                 <button
                   onClick={() => toggleRule(rule.id, !rule.active)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium ${rule.active ? 'bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400' : 'bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400'}`}
                 >
-                  {rule.active ? 'Active' : 'Paused'}
+                  {rule.active ? "Active" : "En pause"}
                 </button>
               </div>
             </div>
@@ -94,7 +94,7 @@ function MarketingPage() {
         })}
       </div>
 
-      <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100 mt-8 mb-3">Templates</h2>
+      <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100 mt-8 mb-3">Modèles</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {data.templates.map((t) => (
           <div key={t.id} className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-4">
@@ -108,10 +108,10 @@ function MarketingPage() {
         <p className="text-sm font-medium text-stone-700 dark:text-stone-300 flex items-center gap-1"><Plus className="w-4 h-4" /> New template</p>
         <input required placeholder="Template name" value={newTemplateName} onChange={(e) => setNewTemplateName(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm" />
         <textarea required placeholder="Hi {{name}}, ... {{last_visit_date}} ... {{offer_code}}" value={newTemplateBody} onChange={(e) => setNewTemplateBody(e.target.value)} rows={2} className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm" />
-        <button className="px-3 py-1.5 rounded-lg bg-stone-900 text-white dark:ring-1 dark:ring-stone-700 text-sm">Save template</button>
+        <button className="px-3 py-1.5 rounded-lg bg-stone-900 text-white dark:ring-1 dark:ring-stone-700 text-sm">Enregistrer le modèle</button>
       </form>
 
-      <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100 mt-8 mb-3">Recent sends</h2>
+      <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100 mt-8 mb-3">Envois récents</h2>
       <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 divide-y divide-stone-100 dark:divide-stone-800">
         {data.logs.map(({ log, customer, template }) => (
           <div key={log.id} className="p-3 flex items-center justify-between text-sm">

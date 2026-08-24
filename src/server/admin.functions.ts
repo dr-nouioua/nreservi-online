@@ -137,7 +137,7 @@ export const impersonateRestaurant = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     await requireAdmin();
     const [owner] = await db.select().from(restaurantOwners).where(eq(restaurantOwners.restaurantId, data.restaurantId));
-    if (!owner) throw new Error("No owner account found for this restaurant");
+    if (!owner) throw new Error("Aucun compte propriétaire pour ce restaurant");
     const token = signSession({
       role: "owner",
       id: owner.id,

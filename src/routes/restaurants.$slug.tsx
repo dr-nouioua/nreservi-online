@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Fragment, useState } from 'react'
-import { CalendarDays, CheckCircle2, ChevronDown, Clock, ImagePlus, MapPin, Sparkles, Star, Users } from 'lucide-react'
+import { useState } from 'react'
+import { CalendarDays, CheckCircle2, ChevronDown, Clock, ImagePlus, MapPin, Sparkles, Star, Users, UtensilsCrossed } from 'lucide-react'
 import { getRestaurantBySlug, getAvailability, createReservation } from '../server/booking.functions'
 import { formatPriceDA } from '../services/format'
 import { AdCard, type Ad } from '../components/AdCard'
@@ -46,20 +46,9 @@ function RestaurantPage() {
     ads: Ad[]
   }
 
-  // Menu categories start collapsed — long catalogs stay scannable (§ UX).
-  const [openCategories, setOpenCategories] = useState<Set<number>>(new Set())
-  function toggleCategory(id: number) {
-    setOpenCategories((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
-  const allOpen = menu.length > 0 && openCategories.size === menu.length
-  function toggleAllCategories() {
-    setOpenCategories(allOpen ? new Set() : new Set(menu.map((c) => c.id)))
-  }
+  // Whole menu collapsed by default — long catalogs stay light to load & scan.
+  const totalDishes = menu.reduce((n, c) => n + c.items.length, 0)
+  const [menuOpen, setMenuOpen] = useState(false)
   const [date, setDate] = useState(todayISO())
   const [partySize, setPartySize] = useState(2)
   const [areaId, setAreaId] = useState<number | undefined>(undefined)
@@ -174,60 +163,60 @@ function RestaurantPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 pb-16">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 p-6 shadow-sm">
-              <div className="flex items-center justify-between gap-3 mb-4">
-                <h2 className="font-semibold text-stone-900 dark:text-stone-100">Menu</h2>
-                <button
-                  onClick={toggleAllCategories}
-                  className="text-xs font-medium text-lime-700 dark:text-lime-300 hover:underline underline-offset-2"
-                >
-                  {allOpen ? 'Tout replier' : 'Tout déplier'}
-                </button>
-              </div>
-              <div className="space-y-5">
-                {/* Inline ad slots: one card after every second menu category. */}
-                {menu.map((cat, catIndex) => (
-                  <Fragment key={cat.id}>
-                  <div>
-                    <button
-                      onClick={() => toggleCategory(cat.id)}
-                      className="w-full flex items-center justify-between gap-3 text-left group"
-                      aria-expanded={openCategories.has(cat.id)}
-                    >
-                      <span className="flex items-center gap-2">
-                        <h3 className="text-sm font-semibold text-lime-700 dark:text-lime-300 uppercase tracking-wide group-hover:underline underline-offset-4">{cat.name}</h3>
-                        <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-medium text-stone-500 dark:bg-stone-800 dark:text-stone-400">{cat.items.length}</span>
-                      </span>
-                      <ChevronDown className={`h-4 w-4 shrink-0 text-stone-400 transition-transform duration-200 ${openCategories.has(cat.id) ? 'rotate-180' : ''}`} />
-                    </button>
-                    <div className={`grid transition-all duration-300 ease-out ${openCategories.has(cat.id) ? 'grid-rows-[1fr] opacity-100 mt-3' : 'grid-rows-[0fr] opacity-0'}`}>
-                    <div className="overflow-hidden">
-                    <ul className="grid gap-3 sm:grid-cols-2">
-                      {cat.items.map((item) => (
-                        <li key={item.id} className="overflow-hidden rounded-lg border border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 text-sm">
-                          {restaurant.showMenuImages && (
-                            <div className="h-28 bg-stone-100 dark:bg-stone-800">
-                              {item.photoUrl ? <img src={item.photoUrl} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center"><ImagePlus className="h-7 w-7 text-stone-400" /></div>}
-                            </div>
-                          )}
-                          <div className="flex justify-between gap-3 p-3">
-                            <div>
-                              <p className={item.available ? 'font-medium text-stone-800 dark:text-stone-200' : 'font-medium text-stone-400 dark:text-stone-500 line-through'}>{item.name}</p>
-                              <p className="text-stone-500 dark:text-stone-400">{item.description}</p>
-                            </div>
-                            <span className="shrink-0 font-semibold text-stone-900 dark:text-stone-100">{formatPriceDA(item.price)}</span>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                    </div>
-                    </div>
+<div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 p-4 sm:p-6 shadow-sm">
+              <button
+                onClick={() => setMenuOpen((o) => !o)}
+                aria-expanded={menuOpen}
+                className="w-full flex items-center justify-between gap-3 text-left"
+              >
+                <span className="flex items-center gap-2.5">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-lime-100 dark:bg-lime-500/15">
+                    <UtensilsCrossed className="h-5 w-5 text-lime-700 dark:text-lime-300" />
+                  </span>
+                  <span>
+                    <span className="block font-semibold text-stone-900 dark:text-stone-100">Menu</span>
+                    <span className="block text-xs text-stone-500 dark:text-stone-400">
+                      {menu.length} catégorie{menu.length > 1 ? 's' : ''} · {totalDishes} plat{totalDishes > 1 ? 's' : ''}
+                    </span>
+                  </span>
+                </span>
+                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 dark:border-stone-700 dark:text-stone-300">
+                  {menuOpen ? 'Masquer' : 'Voir le menu'}
+                  <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${menuOpen ? 'rotate-180' : ''}`} />
+                </span>
+              </button>
+
+              <div className={`grid transition-all duration-300 ease-out ${menuOpen ? 'mt-5 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                <div className="overflow-hidden">
+                  <div className="space-y-6">
+                    {menu.map((cat) => (
+                      <div key={cat.id}>
+                        <h3 className="flex items-center gap-3 text-sm font-semibold uppercase tracking-wide text-lime-700 dark:text-lime-300">
+                          {cat.name}
+                          <span className="h-px flex-1 bg-stone-100 dark:bg-stone-800" aria-hidden="true" />
+                        </h3>
+                        <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+                          {cat.items.map((item) => (
+                            <li key={item.id} className="overflow-hidden rounded-lg border border-stone-100 bg-stone-50 text-sm dark:border-stone-800 dark:bg-stone-950">
+                              {restaurant.showMenuImages && (
+                                <div className="h-28 bg-stone-100 dark:bg-stone-800">
+                                  {item.photoUrl ? <img src={item.photoUrl} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center"><ImagePlus className="h-7 w-7 text-stone-400" /></div>}
+                                </div>
+                              )}
+                              <div className="flex justify-between gap-3 p-3">
+                                <div className="min-w-0">
+                                  <p className={item.available ? 'font-medium text-stone-800 dark:text-stone-200' : 'font-medium text-stone-400 dark:text-stone-500 line-through'}>{item.name}</p>
+                                  <p className="text-stone-500 dark:text-stone-400">{item.description}</p>
+                                </div>
+                                <span className="shrink-0 font-semibold text-stone-900 dark:text-stone-100">{formatPriceDA(item.price)}</span>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
                   </div>
-                  {catIndex % 2 === 1 && ads[Math.floor(catIndex / 2) + 1] && (
-                    <AdCard ad={ads[Math.floor(catIndex / 2) + 1]} className="mt-5" />
-                  )}
-                  </Fragment>
-                ))}
+                </div>
               </div>
             </div>
 

@@ -9,7 +9,10 @@ export const Route = createFileRoute('/owner/_authed/settings')({
   component: SettingsPage,
 })
 
-const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const
+const DAYS = [
+  ['mon', 'Lun'], ['tue', 'Mar'], ['wed', 'Mer'], ['thu', 'Jeu'],
+  ['fri', 'Ven'], ['sat', 'Sam'], ['sun', 'Dim'],
+] as const
 
 function SettingsPage() {
   const initial = Route.useLoaderData()
@@ -78,7 +81,7 @@ function SettingsPage() {
       return
     }
     setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' })
-    setPasswordMessage('Password updated.')
+    setPasswordMessage('Mot de passe mis à jour.')
   }
 
   async function updateEmail(e: React.FormEvent) {
@@ -98,10 +101,10 @@ function SettingsPage() {
     <div className="p-6 lg:p-8 max-w-5xl space-y-6">
       <div className="flex items-end justify-between gap-4 flex-wrap">
         <div>
-          <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Workspace</p>
-          <h1 className="text-3xl font-bold text-stone-950 dark:text-stone-50 tracking-tight">Restaurant settings</h1>
+          <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Espace de travail</p>
+          <h1 className="text-3xl font-bold text-stone-950 dark:text-stone-50 tracking-tight">Paramètres du restaurant</h1>
         </div>
-        {saved && <span className="rounded-full bg-emerald-100 dark:bg-emerald-500/15 px-3 py-1 text-sm font-medium text-emerald-700 dark:text-emerald-400">Saved</span>}
+        {saved && <span className="rounded-full bg-emerald-100 dark:bg-emerald-500/15 px-3 py-1 text-sm font-medium text-emerald-700 dark:text-emerald-400">Enregistré</span>}
       </div>
 
       <form onSubmit={saveSettings} className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 overflow-hidden shadow-sm">
@@ -118,7 +121,7 @@ function SettingsPage() {
               {logoUrl ? <img src={logoUrl} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-xl font-bold text-stone-500 dark:text-stone-400">{name.slice(0, 1) || 'R'}</div>}
             </div>
             <div className="rounded-lg bg-white/90 px-4 py-2 backdrop-blur">
-              <p className="text-lg font-semibold text-stone-950 dark:text-stone-50">{name || 'Restaurant name'}</p>
+              <p className="text-lg font-semibold text-stone-950 dark:text-stone-50">{name || "Nom du restaurant"}</p>
               <p className="text-sm text-stone-500 dark:text-stone-400">{overview.restaurant?.cuisine}</p>
             </div>
           </div>
@@ -126,24 +129,24 @@ function SettingsPage() {
 
         <div className="grid gap-6 p-6 lg:grid-cols-[1.2fr_.8fr]">
           <div className="space-y-4">
-            <p className="font-semibold text-stone-900 dark:text-stone-100">Profile</p>
+            <p className="font-semibold text-stone-900 dark:text-stone-100">Profil</p>
             <input value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-lg border border-stone-300 dark:border-stone-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="w-full rounded-lg border border-stone-300 dark:border-stone-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
             <div>
-              <label className="text-xs font-medium text-stone-500 dark:text-stone-400">Average ticket price ($)</label>
+              <label className="text-xs font-medium text-stone-500 dark:text-stone-400">Prix moyen du couvert (DA)</label>
               <input value={avgTicketPrice} onChange={(e) => setAvgTicketPrice(e.target.value)} className="mt-1 w-full rounded-lg border border-stone-300 dark:border-stone-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              <ImageField label="Logo image" value={logoUrl} onChange={setLogoUrl} onFile={(file) => setImageFromFile(file, setLogoUrl)} />
-              <ImageField label="Cover image" value={coverImageUrl} onChange={setCoverImageUrl} onFile={(file) => setImageFromFile(file, setCoverImageUrl)} />
+              <ImageField label="Logo" value={logoUrl} onChange={setLogoUrl} onFile={(file) => setImageFromFile(file, setLogoUrl)} />
+              <ImageField label="Image de couverture" value={coverImageUrl} onChange={setCoverImageUrl} onFile={(file) => setImageFromFile(file, setCoverImageUrl)} />
             </div>
           </div>
 
           <div className="space-y-3">
-            <p className="font-semibold text-stone-900 dark:text-stone-100">Opening hours</p>
-            {DAYS.map((d) => (
+            <p className="font-semibold text-stone-900 dark:text-stone-100">Horaires d'ouverture</p>
+            {DAYS.map(([d, label]) => (
               <div key={d} className="grid grid-cols-[42px_1fr_1fr] items-center gap-2 text-sm">
-                <span className="uppercase text-stone-500 dark:text-stone-400">{d}</span>
+                <span className="uppercase text-stone-500 dark:text-stone-400">{label}</span>
                 <input
                   type="time"
                   value={hours[d]?.[0]?.open ?? ''}
@@ -158,7 +161,7 @@ function SettingsPage() {
                 />
               </div>
             ))}
-            <button className="inline-flex items-center gap-2 rounded-lg bg-stone-950 px-4 py-2 text-sm font-medium text-white dark:ring-1 dark:ring-stone-700 hover:bg-stone-800"><Save className="h-4 w-4" /> Save settings</button>
+            <button className="inline-flex items-center gap-2 rounded-lg bg-stone-950 px-4 py-2 text-sm font-medium text-white dark:ring-1 dark:ring-stone-700 hover:bg-stone-800"><Save className="h-4 w-4" /> Enregistrer</button>
           </div>
         </div>
       </form>
@@ -180,14 +183,14 @@ function SettingsPage() {
       </Link>
 
       <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 p-6 space-y-3 shadow-sm">
-        <p className="font-semibold text-stone-900 dark:text-stone-100">Areas & tables</p>
+        <p className="font-semibold text-stone-900 dark:text-stone-100">Espaces & tables</p>
         {overview.areas.map((area) => (
           <div key={area.id} className="rounded-lg border border-stone-100 dark:border-stone-800 p-3">
             <p className="text-sm font-medium text-stone-700 dark:text-stone-300">{area.name}</p>
             <ul className="mt-2 space-y-1">
               {overview.tables.filter((t) => t.areaId === area.id).map((t) => (
                 <li key={t.id} className="flex items-center justify-between text-sm text-stone-600 dark:text-stone-400">
-                  <span>{t.label} — seats {t.capacity} ({t.shape})</span>
+                  <span>{t.label} — {t.capacity} places ({t.shape})</span>
                   <button onClick={() => removeTable(t.id)} className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -198,7 +201,7 @@ function SettingsPage() {
         ))}
 
         <form onSubmit={createArea} className="flex gap-2 pt-2">
-          <input placeholder="New area name" value={newAreaName} onChange={(e) => setNewAreaName(e.target.value)} className="flex-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm" />
+          <input placeholder="Nom du nouvel espace" value={newAreaName} onChange={(e) => setNewAreaName(e.target.value)} className="flex-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm" />
           <button className="flex items-center gap-1 rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"><Plus className="h-4 w-4" /> Area</button>
         </form>
 
@@ -211,9 +214,9 @@ function SettingsPage() {
           <input placeholder="Label" value={newTable.label} onChange={(e) => setNewTable({ ...newTable, label: e.target.value })} className="w-24 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm" />
           <input type="number" min={1} value={newTable.capacity} onChange={(e) => setNewTable({ ...newTable, capacity: Number(e.target.value) })} className="w-20 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm" />
           <select value={newTable.shape} onChange={(e) => setNewTable({ ...newTable, shape: e.target.value })} className="px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm">
-            <option value="square">Square</option>
-            <option value="round">Round</option>
-            <option value="rect">Rect</option>
+            <option value="square">Carrée</option>
+            <option value="round">Ronde</option>
+            <option value="rect">Rectangulaire</option>
           </select>
           <button className="flex items-center gap-1 rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"><Plus className="h-4 w-4" /> Table</button>
         </form>
@@ -235,12 +238,12 @@ function SettingsPage() {
       <form onSubmit={updatePassword} className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 p-6 space-y-3 shadow-sm">
         <p className="font-semibold text-stone-900 dark:text-stone-100 flex items-center gap-2"><KeyRound className="h-4 w-4" /> Owner password</p>
         <div className="grid gap-3 sm:grid-cols-3">
-          <input required type="password" value={passwords.currentPassword} onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })} placeholder="Current password" className="w-full rounded-lg border border-stone-300 dark:border-stone-700 px-3 py-2 text-sm" />
-          <input required type="password" value={passwords.newPassword} onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })} placeholder="New password" className="w-full rounded-lg border border-stone-300 dark:border-stone-700 px-3 py-2 text-sm" />
-          <input required type="password" value={passwords.confirmPassword} onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })} placeholder="Confirm new password" className="w-full rounded-lg border border-stone-300 dark:border-stone-700 px-3 py-2 text-sm" />
+          <input required type="password" value={passwords.currentPassword} onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })} placeholder="Mot de passe actuel" className="w-full rounded-lg border border-stone-300 dark:border-stone-700 px-3 py-2 text-sm" />
+          <input required type="password" value={passwords.newPassword} onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })} placeholder="Nouveau mot de passe" className="w-full rounded-lg border border-stone-300 dark:border-stone-700 px-3 py-2 text-sm" />
+          <input required type="password" value={passwords.confirmPassword} onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })} placeholder="Confirmer le nouveau mot de passe" className="w-full rounded-lg border border-stone-300 dark:border-stone-700 px-3 py-2 text-sm" />
         </div>
         {passwordMessage && <p className={`text-sm ${passwordMessage.includes('updated') ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>{passwordMessage}</p>}
-        <button className="inline-flex items-center gap-2 rounded-lg bg-stone-950 px-4 py-2 text-sm font-medium text-white dark:ring-1 dark:ring-stone-700 hover:bg-stone-800"><Save className="h-4 w-4" /> Change password</button>
+        <button className="inline-flex items-center gap-2 rounded-lg bg-stone-950 px-4 py-2 text-sm font-medium text-white dark:ring-1 dark:ring-stone-700 hover:bg-stone-800"><Save className="h-4 w-4" /> Changer le mot de passe</button>
       </form>
     </div>
   )

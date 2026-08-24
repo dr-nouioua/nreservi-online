@@ -265,20 +265,34 @@ function OwnerReservationsBoard() {
         </table>
       </div>
 
-      <h2 className="text-base sm:text-lg font-semibold text-stone-900 dark:text-stone-100 mt-10 mb-3">Plan de salle</h2>
+      <h2 className="text-base sm:text-lg font-semibold text-stone-900 dark:text-stone-100 mt-10 mb-2">Plan de salle</h2>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-4">
+        {[['confirmed', 'bg-blue-500'], ['seated', 'bg-emerald-500'], ['completed', 'bg-stone-400'], ['no_show', 'bg-red-500']].map(([st, color]) => (
+          <span key={st} className="inline-flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400">
+            <span className={`h-2.5 w-2.5 rounded-full ${color}`} /> {STATUS_LABELS_FR[st]}
+          </span>
+        ))}
+        <span className="inline-flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400">
+          <span className="h-2.5 w-2.5 rounded-full border-2 border-dashed border-stone-300 dark:border-stone-600" /> Libre
+        </span>
+      </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
         {overview.areas.map((area: any) => (
           <div key={area.id} className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-3 sm:p-4">
             <p className="text-sm font-medium text-stone-700 dark:text-stone-300 mb-3 truncate">{area.name}</p>
             <div className="grid grid-cols-3 gap-2">
               {overview.tables.filter((t: any) => t.areaId === area.id).map((t: any) => {
-                const res = reservations.find((r) => r.tableId === t.id && ['seated', 'confirmed', 'pending'].includes(r.status))
-                const color = res?.status === 'seated' ? 'bg-emerald-500' : res ? 'bg-amber-400' : 'bg-stone-200 dark:bg-stone-700'
+                const res = reservations.find((r) => r.tableId === t.id && ['seated', 'confirmed'].includes(r.status))
+                const planColor: Record<string, string> = {
+                  confirmed: 'bg-blue-500',
+                  seated: 'bg-emerald-500',
+                }
+                const color = res ? planColor[res.status] ?? 'bg-stone-400' : 'bg-white border-2 border-dashed border-stone-300 text-stone-400 dark:bg-stone-900 dark:border-stone-600 dark:text-stone-500'
                 return (
                   <div
                     key={t.id}
-                    title={res ? `${res.guestName} (${res.status})` : 'Libre'}
-                    className={`aspect-square rounded-lg ${color} text-white text-xs flex flex-col items-center justify-center ${t.shape === 'round' ? 'rounded-full' : ''}`}
+                    title={res ? `${res.guestName} — ${STATUS_LABELS_FR[res.status] ?? res.status}` : 'Libre'}
+                    className={`aspect-square rounded-lg ${color} ${res ? 'text-white' : ''} text-xs flex flex-col items-center justify-center ${t.shape === 'round' ? 'rounded-full' : ''}`}
                   >
                     <span className="font-semibold">{t.label}</span>
                     <span>{t.capacity}p</span>

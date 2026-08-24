@@ -20,8 +20,8 @@ export const Route = createFileRoute('/owner/login')({
 
 function OwnerLogin() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState('owner@olivetable.dev')
-  const [password, setPassword] = useState('owner123')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -65,9 +65,6 @@ function OwnerLogin() {
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>
         </form>
-        <p className="text-xs text-stone-400 dark:text-stone-500 mt-4">
-          Comptes de démonstration pré-remplis. Autre établissement : owner@sakurahouse.dev / owner123
-        </p>
       </div>
       <a href="/" className="mt-6 text-sm text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100">
         Retour à nreservi.online

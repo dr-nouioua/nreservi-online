@@ -33,7 +33,7 @@ export async function runReservationReminders(): Promise<Response> {
         customerId: row.customer.id,
         direction: "outbound",
         kind: "reminder",
-        body: `Reminder: your table for ${row.reservation.partySize} at ${row.restaurant.name} is today at ${row.reservation.time.slice(0, 5)}. Reply CANCEL if you can't make it.`,
+        body: `Rappel : votre table pour ${row.reservation.partySize} personnes chez ${row.restaurant.name} est aujourd'hui à ${row.reservation.time.slice(0, 5)}. Répondez CANCEL si vous ne pouvez pas venir.`,
         status: "sent",
       });
       sent++;

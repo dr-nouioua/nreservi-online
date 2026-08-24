@@ -22,11 +22,11 @@ export const loginOwner = createServerFn({ method: "POST" })
   .inputValidator((data: { email: string; password: string }) => data)
   .handler(async ({ data }) => {
     if (!rateLimit(`login:${data.email.toLowerCase()}`, 10, 15 * 60 * 1000)) {
-      return { error: "Too many attempts. Please try again in a few minutes." };
+      return { error: "Trop de tentatives. Réessayez dans quelques minutes." };
     }
     const [owner] = await db.select().from(restaurantOwners).where(eq(restaurantOwners.email, data.email));
     if (!owner || !verifyPassword(data.password, owner.passwordHash)) {
-      return { error: "Invalid email or password" };
+      return { error: "E-mail ou mot de passe incorrect" };
     }
     const token = signSession({
       role: "owner",
@@ -43,11 +43,11 @@ export const loginStaff = createServerFn({ method: "POST" })
   .inputValidator((data: { email: string; password: string }) => data)
   .handler(async ({ data }) => {
     if (!rateLimit(`login:${data.email.toLowerCase()}`, 10, 15 * 60 * 1000)) {
-      return { error: "Too many attempts. Please try again in a few minutes." };
+      return { error: "Trop de tentatives. Réessayez dans quelques minutes." };
     }
     const [staff] = await db.select().from(staffUsers).where(eq(staffUsers.email, data.email));
     if (!staff || !verifyPassword(data.password, staff.passwordHash)) {
-      return { error: "Invalid email or password" };
+      return { error: "E-mail ou mot de passe incorrect" };
     }
     const token = signSession({
       role: "staff",
@@ -65,11 +65,11 @@ export const loginAdmin = createServerFn({ method: "POST" })
   .inputValidator((data: { email: string; password: string }) => data)
   .handler(async ({ data }) => {
     if (!rateLimit(`login:${data.email.toLowerCase()}`, 10, 15 * 60 * 1000)) {
-      return { error: "Too many attempts. Please try again in a few minutes." };
+      return { error: "Trop de tentatives. Réessayez dans quelques minutes." };
     }
     const [admin] = await db.select().from(adminUsers).where(eq(adminUsers.email, data.email));
     if (!admin || !verifyPassword(data.password, admin.passwordHash)) {
-      return { error: "Invalid email or password" };
+      return { error: "E-mail ou mot de passe incorrect" };
     }
     const token = signSession({ role: "admin", id: admin.id, email: admin.email, name: admin.name });
     setCookie(COOKIE, token, { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 * 24 * 7 });
@@ -89,16 +89,16 @@ export const changePassword = createServerFn({ method: "POST" })
     const session = await requireSession();
     if (!session) throw new Error("Not authorized");
     if (data.newPassword.length < 8) {
-      return { error: "New password must be at least 8 characters." };
+      return { error: "Le nouveau mot de passe doit contenir au moins 8 caractères." };
     }
     if (data.newPassword !== data.confirmPassword) {
-      return { error: "New passwords do not match." };
+      return { error: "Les mots de passe ne correspondent pas." };
     }
 
     if (session.role === "admin") {
       const [admin] = await db.select().from(adminUsers).where(eq(adminUsers.id, session.id));
       if (!admin || !verifyPassword(data.currentPassword, admin.passwordHash)) {
-        return { error: "Current password is incorrect." };
+        return { error: "Mot de passe actuel incorrect." };
       }
       await db.update(adminUsers).set({ passwordHash: hashPassword(data.newPassword) }).where(eq(adminUsers.id, session.id));
       return { success: true };
@@ -107,7 +107,7 @@ export const changePassword = createServerFn({ method: "POST" })
     if (session.role === "staff") {
       const [staff] = await db.select().from(staffUsers).where(eq(staffUsers.id, session.id));
       if (!staff || !verifyPassword(data.currentPassword, staff.passwordHash)) {
-        return { error: "Current password is incorrect." };
+        return { error: "Mot de passe actuel incorrect." };
       }
       await db.update(staffUsers).set({ passwordHash: hashPassword(data.newPassword) }).where(eq(staffUsers.id, session.id));
       return { success: true };
@@ -115,7 +115,7 @@ export const changePassword = createServerFn({ method: "POST" })
 
     const [owner] = await db.select().from(restaurantOwners).where(eq(restaurantOwners.id, session.id));
     if (!owner || !verifyPassword(data.currentPassword, owner.passwordHash)) {
-      return { error: "Current password is incorrect." };
+      return { error: "Mot de passe actuel incorrect." };
     }
     await db.update(restaurantOwners).set({ passwordHash: hashPassword(data.newPassword) }).where(eq(restaurantOwners.id, session.id));
     return { success: true };
