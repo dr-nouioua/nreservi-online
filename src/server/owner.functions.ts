@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../../db/index.js";
 import {
   reservations,
@@ -127,7 +127,31 @@ export const createWalkIn = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const restaurantId = await requireRestaurantId();
-    const [table] = await db.select().from(tables).where(eq(tables.id, data.tableId));
+    // Table must belong to THIS restaurant (never trust client ids)…
+    const [table] = await db
+      .select()
+      .from(tables)
+      .where(and(eq(tables.id, data.tableId), eq(tables.restaurantId, restaurantId)));
+    if (!table) return { error: "Table introuvable." };
+    // …and must be free at that date/time — a confirmed/installed reservation
+    // keeps its table until it is cancelled or completed.
+    const timePrefix = `${data.time.slice(0, 5)}:`;
+    const [conflict] = await db
+      .select({ id: reservations.id })
+      .from(reservations)
+      .where(
+        and(
+          eq(reservations.restaurantId, restaurantId),
+          eq(reservations.tableId, data.tableId),
+          eq(reservations.date, data.date),
+          sql`${reservations.time} LIKE ${timePrefix}%`,
+          inArray(reservations.status, ["confirmed", "seated"]),
+        ),
+      )
+      .limit(1);
+    if (conflict) {
+      return { error: `La table ${table.label} est déjà réservée à ${data.time.slice(0, 5)}. Choisissez une autre table ou un autre horaire.` };
+    }
     const [reservation] = await db
       .insert(reservations)
       .values({

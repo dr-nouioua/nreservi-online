@@ -116,7 +116,7 @@ function MenuPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
       <div className="flex items-end justify-between gap-4 flex-wrap">
         <div>
           <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Catalogue</p>
@@ -169,7 +169,7 @@ function MenuPage() {
                       </button>
                     </div>
                   </div>
-                  <div className="mt-2 flex items-center justify-between gap-2 pl-[68px]">
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2 sm:pl-[68px]">
                     <button
                       onClick={() => toggleAvailability(item.id, !item.available)}
                       className={`px-2 py-1 rounded-full text-xs ${item.available ? 'bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400' : 'bg-red-100 dark:bg-red-500/15 text-red-600 dark:bg-red-500/15 dark:text-red-400'}`}

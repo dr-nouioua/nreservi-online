@@ -169,6 +169,30 @@ export function formatPhoneForDisplay(digits: string): string {
   return `+${digits}`
 }
 
+/**
+ * Customer numbers are used EXACTLY as entered — the platform never adds or
+ * guesses a country code (owner request). Only separators are stripped, a
+ * leading 00 is normalised away, and the total length is sanity-checked.
+ *
+ *   +213 555 12 34 56  → 213555123456   (country code typed by customer)
+ *   00 1 415 555 2671  → 14155552671    (international prefix typed)
+ *   06 12 34 56 78     → 0612345678     (kept as typed — no prefix added)
+ */
+export function customerWhatsAppDigits(raw: string): { ok: true; digits: string } | { ok: false; error: string } {
+  const cleaned = (raw ?? '').replace(/[\s.\-()]/g, '')
+  if (!cleaned) return { ok: false, error: 'Entrez un numéro WhatsApp.' }
+
+  let digits = cleaned
+  if (digits.startsWith('+')) digits = digits.slice(1)
+  else if (digits.startsWith('00')) digits = digits.slice(2)
+
+  if (!/^\d+$/.test(digits)) return { ok: false, error: 'Le numéro ne peut contenir que des chiffres.' }
+  if (digits.length < 8 || digits.length > 15) {
+    return { ok: false, error: 'Numéro invalide : entre 8 et 15 chiffres.' }
+  }
+  return { ok: true, digits }
+}
+
 /** Country code of the restaurant's own number, so customer numbers default to the same country. */
 export function countryCodeFromNumber(e164: string | null | undefined): string {
   const digits = (e164 ?? '').replace(/\D/g, '')
@@ -238,14 +262,14 @@ export function generateWhatsAppLink(opts: {
   message: string
   defaultCountryCode?: string
 }): WhatsappLink {
-  const normalized = normalizePhoneNumber(opts.phone, opts.defaultCountryCode)
-  if (!normalized.ok) return { ok: false, error: `Numéro du client inutilisable : ${normalized.error}` }
+  const checked = customerWhatsAppDigits(opts.phone)
+  if (!checked.ok) return { ok: false, error: `Numéro du client inutilisable : ${checked.error}` }
   const text = encodeURIComponent(opts.message)
   return {
     ok: true,
-    url: `https://wa.me/${normalized.digits}?text=${text}`,
-    webUrl: `https://web.whatsapp.com/send?phone=${normalized.digits}&text=${text}`,
-    e164: normalized.e164,
+    url: `https://wa.me/${checked.digits}?text=${text}`,
+    webUrl: `https://web.whatsapp.com/send?phone=${checked.digits}&text=${text}`,
+    e164: `+${checked.digits}`,
   }
 }
 
@@ -261,4 +285,5 @@ export const whatsappService = {
   countryCodeFromNumber,
   buildMessage,
   generateWhatsAppLink,
+  customerWhatsAppDigits,
 }

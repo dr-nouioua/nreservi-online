@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { CalendarDays, CheckCircle2, ChevronDown, Clock, ImagePlus, MapPin, Sparkles, Star, Users, UtensilsCrossed } from 'lucide-react'
+import { CalendarDays, CheckCircle2, ChevronDown, ImagePlus, MapPin, Sparkles, Star, Users, UtensilsCrossed } from 'lucide-react'
 import { getRestaurantBySlug, getAvailability, createReservation } from '../server/booking.functions'
 import { formatPriceDA } from '../services/format'
 import { AdCard, type Ad } from '../components/AdCard'
@@ -47,7 +47,6 @@ function RestaurantPage() {
   }
 
   // Whole menu collapsed by default — long catalogs stay light to load & scan.
-  const totalDishes = menu.reduce((n, c) => n + c.items.length, 0)
   const [menuOpen, setMenuOpen] = useState(false)
   const [date, setDate] = useState(todayISO())
   const [partySize, setPartySize] = useState(2)
@@ -163,21 +162,19 @@ function RestaurantPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 pb-16">
           <div className="lg:col-span-2 space-y-6">
-<div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 p-4 sm:p-6 shadow-sm">
+<div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden">
               <button
                 onClick={() => setMenuOpen((o) => !o)}
                 aria-expanded={menuOpen}
-                className="w-full flex items-center justify-between gap-3 text-left"
+                className="w-full flex items-center justify-between gap-3 text-left p-4 sm:p-5 bg-stone-50 dark:bg-stone-950/40"
               >
-                <span className="flex items-center gap-2.5">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-lime-100 dark:bg-lime-500/15">
-                    <UtensilsCrossed className="h-5 w-5 text-lime-700 dark:text-lime-300" />
+                <span className="flex items-center gap-3.5">
+                  <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-lime-100 dark:bg-lime-500/15">
+                    <UtensilsCrossed className="h-7 w-7 text-lime-700 dark:text-lime-300" />
                   </span>
                   <span>
-                    <span className="block font-semibold text-stone-900 dark:text-stone-100">Menu</span>
-                    <span className="block text-xs text-stone-500 dark:text-stone-400">
-                      {menu.length} catégorie{menu.length > 1 ? 's' : ''} · {totalDishes} plat{totalDishes > 1 ? 's' : ''}
-                    </span>
+                    <span className="block text-lg font-semibold text-stone-900 dark:text-stone-100">Menu</span>
+                    <span className="block text-sm text-stone-500 dark:text-stone-400">Découvrez nos plats</span>
                   </span>
                 </span>
                 <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 dark:border-stone-700 dark:text-stone-300">
@@ -188,7 +185,7 @@ function RestaurantPage() {
 
               <div className={`grid transition-all duration-300 ease-out ${menuOpen ? 'mt-5 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
                 <div className="overflow-hidden">
-                  <div className="space-y-6">
+                  <div className="space-y-6 p-4 sm:p-6">
                     {menu.map((cat) => (
                       <div key={cat.id}>
                         <h3 className="flex items-center gap-3 text-sm font-semibold uppercase tracking-wide text-lime-700 dark:text-lime-300">
@@ -220,16 +217,7 @@ function RestaurantPage() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 p-6 shadow-sm">
-              <h2 className="font-semibold text-stone-900 dark:text-stone-100 mb-4 flex items-center gap-2">
-                <Clock className="w-4 h-4" /> Espaces
-              </h2>
-              <div className="flex gap-2 flex-wrap">
-                {areas.map((a) => (
-                  <span key={a.id} className="px-3 py-1 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-sm">{a.name}</span>
-                ))}
-              </div>
-            </div>
+            
           </div>
 
           <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 p-6 h-fit sticky top-20 shadow-xl">

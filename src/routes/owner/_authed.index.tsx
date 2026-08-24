@@ -131,7 +131,7 @@ function OwnerReservationsBoard() {
             onClick={() => setShowWalkIn(true)}
             className="flex items-center gap-1 px-3 py-2 rounded-lg bg-stone-950 text-white text-sm font-medium hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white dark:ring-1 dark:ring-stone-700"
           >
-            <Plus className="w-4 h-4" /> Sans résa
+            <Plus className="w-4 h-4" /> Walk-in
           </button>
         </div>
       </div>
@@ -307,6 +307,7 @@ function OwnerReservationsBoard() {
       {showWalkIn && (
         <WalkInModal
           tables={overview.tables}
+          reservations={reservations}
           date={date}
           onClose={() => setShowWalkIn(false)}
           onCreated={() => {
@@ -329,16 +330,32 @@ function OwnerReservationsBoard() {
   )
 }
 
-function WalkInModal({ tables, date, onClose, onCreated }: { tables: any[]; date: string; onClose: () => void; onCreated: () => void }) {
+function WalkInModal({ tables, reservations, date, onClose, onCreated }: { tables: any[]; reservations: any[]; date: string; onClose: () => void; onCreated: () => void }) {
   const [guestName, setGuestName] = useState('')
   const [guestPhone, setGuestPhone] = useState('')
   const [partySize, setPartySize] = useState(2)
   const [tableId, setTableId] = useState(tables[0]?.id)
   const [time, setTime] = useState(new Date().toISOString().slice(11, 16))
+  const [error, setError] = useState<string | null>(null)
+
+  // Tables already taken at the selected date/time — greyed out in the list.
+  const occupiedIds = new Set(
+    reservations
+      .filter((r) => r.date === date && r.time.slice(0, 5) === time && ['confirmed', 'seated'].includes(r.status))
+      .map((r) => r.tableId),
+  )
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    await createWalkIn({ data: { guestName, guestPhone, partySize, date, time, tableId } })
+    if (occupiedIds.has(tableId)) {
+      setError('Cette table est déjà occupée à cette heure.')
+      return
+    }
+    const result = await createWalkIn({ data: { guestName, guestPhone, partySize, date, time, tableId } })
+    if ('error' in result && result.error) {
+      setError(result.error)
+      return
+    }
     onCreated()
   }
 
@@ -354,9 +371,12 @@ function WalkInModal({ tables, date, onClose, onCreated }: { tables: any[]; date
         </div>
         <select value={tableId} onChange={(e) => setTableId(Number(e.target.value))} className="w-full px-3 py-2.5 rounded-lg border border-stone-300 dark:border-stone-700 text-sm">
           {tables.map((t) => (
-            <option key={t.id} value={t.id}>{t.label} ({t.capacity}p)</option>
+            <option key={t.id} value={t.id} disabled={occupiedIds.has(t.id)}>
+              {t.label} ({t.capacity}p){occupiedIds.has(t.id) ? ' — occupée' : ''}
+            </option>
           ))}
         </select>
+        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" onClick={onClose} className="px-3 py-1.5 text-sm text-stone-500 dark:text-stone-400">Annuler</button>
           <button type="submit" className="px-3 py-1.5 rounded-lg bg-stone-950 text-white dark:bg-stone-100 dark:text-stone-900 dark:ring-1 dark:ring-stone-700 text-sm">Ajouter</button>
