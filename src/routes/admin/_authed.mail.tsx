@@ -62,6 +62,11 @@ function MailServerPage() {
           Configurez une passerelle SMTP (ex. Hostinger : smtp.hostinger.com, port 465) — utilisée pour notifier
           les restaurants (bienvenue, abonnement, expiration) et vos envois manuels.
         </p>
+        <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-900 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300">
+          <strong>Identifiants :</strong> créez une boîte mail dédiée dans hPanel → Emails (ex. notifications@nreservi.online),
+          définissez son mot de passe, puis utilisez <strong>l'adresse complète</strong> comme utilisateur SMTP.
+          Erreur « 535 auth failed » = mauvais identifiant ou mot de passe de la boîte mail.
+        </div>
       </div>
 
       <form onSubmit={save} className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-4 sm:p-6 space-y-4 shadow-sm">
