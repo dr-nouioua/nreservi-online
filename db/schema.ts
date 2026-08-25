@@ -47,7 +47,9 @@ export const restaurants = pgTable("restaurants", {
    subscriptionStart: date("subscription_start"),
    subscriptionEnd: date("subscription_end"), // null = no expiry (grandfathered)
    subscriptionHistory: jsonb("subscription_history").notNull().default([]),
-   menuFixed: boolean("menu_fixed").notNull().default(false), // false = collapsible menu, true = always open // [{start,end,tier,changedAt}]
+   menuFixed: boolean("menu_fixed").notNull().default(false), // false = collapsible menu, true = always open
+   babySeatAvailable: boolean("baby_seat_available").notNull().default(false), // show baby-seat option in the booking form
+   hasParking: boolean("has_parking").notNull().default(false), // parking badge on the public page
    createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -144,6 +146,7 @@ export const reservations = pgTable("reservations", {
   guestName: text("guest_name").notNull(),
   guestPhone: text("guest_phone").notNull(),
   partySize: integer("party_size").notNull(),
+  babySeats: integer("baby_seats").notNull().default(0),
   date: date("date").notNull(),
   time: time("time").notNull(),
   status: text("status").notNull().default("confirmed"), // confirmed | seated | completed | no_show | cancelled

@@ -278,6 +278,22 @@ export const setShowMenuImages = createServerFn({ method: "POST" })
     return { success: true };
   });
 
+export const setBabySeatAvailable = createServerFn({ method: "POST" })
+  .inputValidator((data: { enabled: boolean }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    await db.update(restaurants).set({ babySeatAvailable: data.enabled }).where(eq(restaurants.id, restaurantId));
+    return { success: true };
+  });
+
+export const setHasParking = createServerFn({ method: "POST" })
+  .inputValidator((data: { enabled: boolean }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    await db.update(restaurants).set({ hasParking: data.enabled }).where(eq(restaurants.id, restaurantId));
+    return { success: true };
+  });
+
 export const setMenuFixed = createServerFn({ method: "POST" })
   .inputValidator((data: { fixed: boolean }) => data)
   .handler(async ({ data }) => {

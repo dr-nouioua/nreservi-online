@@ -113,6 +113,7 @@ export const createReservation = createServerFn({ method: "POST" })
       time: string;
       areaId?: number;
       specialRequests?: string;
+      babySeats?: number;
     }) => data,
   )
   .handler(async ({ data }) => {
@@ -184,6 +185,11 @@ export const createReservation = createServerFn({ method: "POST" })
       const whatsappOptIn = customer.whatsappOptIn;
       const customerId = customer.id;
 
+      // Baby seats only if the restaurant offers them; hard-capped at 4.
+      const babySeats = restaurant.babySeatAvailable
+        ? Math.min(4, Math.max(0, Math.round(data.babySeats ?? 0)))
+        : 0;
+
       const [created] = await tx
         .insert(reservations)
         .values({
@@ -194,6 +200,7 @@ export const createReservation = createServerFn({ method: "POST" })
           guestName: data.guestName,
           guestPhone: data.guestPhone,
           partySize: data.partySize,
+          babySeats,
           date: data.date,
           time: `${data.time}:00`,
           status: "confirmed",

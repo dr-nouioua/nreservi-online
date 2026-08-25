@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { MessageCircle, Plus, RefreshCw, Users } from 'lucide-react'
+import { Baby, MessageCircle, Plus, RefreshCw, Users } from 'lucide-react'
 import {
   getOwnerOverview,
   listReservationsForDate,
@@ -178,7 +178,10 @@ function OwnerReservationsBoard() {
               </div>
               <div className="rounded-lg bg-stone-50 py-1.5 dark:bg-stone-800/60">
                 <dt className="text-stone-400">Personnes</dt>
-                <dd className="font-semibold inline-flex items-center gap-1 text-stone-800 dark:text-stone-200">{r.partySize}<Users className="h-3 w-3 text-stone-400" /></dd>
+                <dd className="font-semibold inline-flex items-center gap-1 text-stone-800 dark:text-stone-200">
+                  {r.partySize}<Users className="h-3 w-3 text-stone-400" />
+                  {r.babySeats > 0 && <span className="inline-flex items-center gap-0.5 text-amber-600 dark:text-amber-400" title={`${r.babySeats} chaise(s) bébé`}><Baby className="h-3 w-3" />{r.babySeats}</span>}
+                </dd>
               </div>
               <div className="rounded-lg bg-stone-50 py-1.5 dark:bg-stone-800/60">
                 <dt className="text-stone-400">Table</dt>
@@ -240,7 +243,14 @@ function OwnerReservationsBoard() {
                   <div className="text-xs text-stone-400">{r.guestPhone}</div>
                   {r.specialRequests && <div className="text-xs text-amber-600 dark:text-amber-400">{r.specialRequests}</div>}
                 </td>
-                <td className="px-4 py-3">{r.partySize}</td>
+                <td className="px-4 py-3">
+                  {r.partySize}
+                  {r.babySeats > 0 && (
+                    <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-400" title={`${r.babySeats} chaise(s) bébé`}>
+                      <Baby className="h-3 w-3" /> {r.babySeats}
+                    </span>
+                  )}
+                </td>
                 <td className="px-4 py-3">{tablesById.get(r.tableId)?.label ?? '—'}</td>
                 <td className="px-4 py-3">{statusSelect(r)}</td>
                 <td className="px-4 py-3">

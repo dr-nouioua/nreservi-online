@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { CalendarDays, CheckCircle2, ChevronDown, ImagePlus, MapPin, Sparkles, Star, Users, UtensilsCrossed } from 'lucide-react'
+import { Baby, CalendarDays, Car, CheckCircle2, ChevronDown, ImagePlus, MapPin, Sparkles, Star, Users, UtensilsCrossed } from 'lucide-react'
 import { getRestaurantBySlug, getAvailability, createReservation } from '../server/booking.functions'
 import { formatPriceDA } from '../services/format'
 import { type Ad } from '../components/AdCard'
@@ -37,6 +37,8 @@ function RestaurantPage() {
       rating: string | null
       showMenuImages: boolean
       menuFixed: boolean
+      babySeatAvailable: boolean
+      hasParking: boolean
       subscriptionTier: string
     }
     areas: { id: number; name: string }[]
@@ -53,6 +55,7 @@ function RestaurantPage() {
   const [menuOpen, setMenuOpen] = useState(restaurant.menuFixed)
   const [date, setDate] = useState(todayISO())
   const [partySize, setPartySize] = useState(2)
+  const [babySeats, setBabySeats] = useState(0)
   const [areaId, setAreaId] = useState<number | undefined>(undefined)
   const [slots, setSlots] = useState<{ time: string; available: boolean; tableCount: number }[]>([])
   const [loadingSlots, setLoadingSlots] = useState(false)
@@ -88,6 +91,7 @@ function RestaurantPage() {
           guestName,
           guestPhone,
           partySize,
+          babySeats,
           date,
           time: selectedTime,
           areaId,
@@ -121,6 +125,7 @@ function RestaurantPage() {
             <p><span className="text-stone-500 dark:text-stone-400">Date :</span> {confirmation.reservation.date}</p>
             <p><span className="text-stone-500 dark:text-stone-400">Heure :</span> {confirmation.reservation.time.slice(0, 5)}</p>
             <p><span className="text-stone-500 dark:text-stone-400">Nombre de personnes :</span> {confirmation.reservation.partySize}</p>
+            {confirmation.reservation.babySeats > 0 && <p><span className="text-stone-500 dark:text-stone-400">Chaises bébé :</span> {confirmation.reservation.babySeats}</p>}
             <p><span className="text-stone-500 dark:text-stone-400">Code de confirmation :</span> <span className="font-mono font-semibold">{confirmation.reservation.confirmationCode}</span></p>
           </div>
           <a href="/" className="inline-block mt-8 text-lime-700 dark:text-lime-300 hover:underline">Réserver ailleurs</a>
@@ -147,7 +152,12 @@ function RestaurantPage() {
                 {restaurant.logoUrl ? <img src={restaurant.logoUrl} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-2xl font-bold text-stone-700 dark:text-stone-300">{restaurant.name.slice(0, 1)}</div>}
               </div>
               <div>
-                <p className="mb-2 inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur"><Sparkles className="h-3.5 w-3.5" /> {restaurant.cuisine}</p>
+                <p className="mb-2 flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur"><Sparkles className="h-3.5 w-3.5" /> {restaurant.cuisine}</span>
+                  {restaurant.hasParking && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur"><Car className="h-3.5 w-3.5" /> Parking sur place</span>
+                  )}
+                </p>
                 <h1 className="text-4xl font-bold tracking-tight">{restaurant.name}</h1>
                 <p className="mt-2 flex items-center gap-1 text-stone-200"><MapPin className="h-4 w-4" /> {restaurant.address}</p>
               </div>
@@ -252,6 +262,24 @@ function RestaurantPage() {
                   />
                 </div>
               </div>
+              {restaurant.babySeatAvailable && (
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400">
+                    <Baby className="h-3.5 w-3.5" /> Chaises bébé
+                  </label>
+                  <div className="w-full mt-1">
+                    <select
+                      value={babySeats}
+                      onChange={(e) => setBabySeats(Number(e.target.value))}
+                      className="h-11 w-full rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
+                    >
+                      {[0, 1, 2, 3].map((n) => (
+                        <option key={n} value={n}>{n === 0 ? 'Aucune' : `${n} chaise${n > 1 ? 's' : ''} bébé`}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
               <div>
                 <label className="text-xs text-stone-500 dark:text-stone-400">Espace (facultatif)</label>
                 <select

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
-import { AtSign, ChevronRight, ImagePlus, KeyRound, MessageCircle, Pencil, Plus, Save, Trash2, Upload } from 'lucide-react'
-import { getOwnerOverview, updateRestaurantSettings, addArea, addTable, deleteTable, renameArea, deleteArea } from '../../server/owner.functions'
+import { AtSign, Baby, Car, ChevronRight, ImagePlus, KeyRound, MessageCircle, Pencil, Plus, Save, Trash2, Upload } from 'lucide-react'
+import { getOwnerOverview, updateRestaurantSettings, addArea, addTable, deleteTable, renameArea, deleteArea, setBabySeatAvailable, setHasParking } from '../../server/owner.functions'
 import { changePassword, updateAccountEmail } from '../../server/auth.functions'
 
 export const Route = createFileRoute('/owner/_authed/settings')({
@@ -27,6 +27,8 @@ function SettingsPage() {
   const [hours, setHours] = useState<Record<string, { open: string; close: string }[]>>(
     (initial.restaurant?.openingHours as any) ?? {},
   )
+  const [babySeat, setBabySeat] = useState(initial.restaurant?.babySeatAvailable ?? false)
+  const [parking, setParking] = useState(initial.restaurant?.hasParking ?? false)
   const [newAreaName, setNewAreaName] = useState('')
   const [editingAreaId, setEditingAreaId] = useState<number | null>(null)
   const [areaName, setAreaName] = useState('')
@@ -76,6 +78,13 @@ function SettingsPage() {
     }
     setAreaMessage(null)
     refresh()
+  }
+
+  async function toggleFlag(kind: 'baby' | 'parking') {
+    const next = kind === 'baby' ? !babySeat : !parking
+    if (kind === 'baby') setBabySeat(next)
+    else setParking(next)
+    await (kind === 'baby' ? setBabySeatAvailable({ data: { enabled: next } }) : setHasParking({ data: { enabled: next } }))
   }
 
   async function createArea(e: React.FormEvent) {
@@ -163,6 +172,10 @@ function SettingsPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               <ImageField label="Logo" value={logoUrl} onChange={setLogoUrl} onFile={(file) => setImageFromFile(file, setLogoUrl)} />
               <ImageField label="Image de couverture" value={coverImageUrl} onChange={setCoverImageUrl} onFile={(file) => setImageFromFile(file, setCoverImageUrl)} />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 pt-1">
+              <ServiceToggle enabled={babySeat} onToggle={() => toggleFlag('baby')} label="Chaises bébé" icon={Baby} hint="Proposez ce service aux clients qui réservent" />
+              <ServiceToggle enabled={parking} onToggle={() => toggleFlag('parking')} label="Parking sur place" icon={Car} hint="Affiché sur votre page publique" />
             </div>
           </div>
 
@@ -313,5 +326,39 @@ function ImageField({ label, value, onChange, onFile }: { label: string; value: 
         </label>
       </div>
     </div>
+  )
+}
+
+
+function ServiceToggle({ enabled, onToggle, label, hint, icon: Icon }: {
+  enabled: boolean
+  onToggle: () => void
+  label: string
+  hint: string
+  icon: typeof Baby
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      role="switch"
+      aria-checked={enabled}
+      className={`inline-flex items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-all duration-200 ${
+        enabled
+          ? 'border-lime-400/70 bg-lime-50 dark:border-lime-500/40 dark:bg-lime-500/10'
+          : 'border-stone-200 bg-white hover:border-stone-300 dark:border-stone-700 dark:bg-stone-900 dark:hover:border-stone-600'
+      }`}
+    >
+      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors ${enabled ? 'bg-lime-400 text-stone-950' : 'bg-stone-100 text-stone-400 dark:bg-stone-800 dark:text-stone-500'}`}>
+        <Icon className="h-4 w-4" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className={`block text-sm font-medium ${enabled ? 'text-stone-900 dark:text-stone-100' : 'text-stone-500 dark:text-stone-400'}`}>{label}</span>
+        <span className="block text-[11px] text-stone-400">{hint}</span>
+      </span>
+      <span className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${enabled ? 'bg-lime-500' : 'bg-stone-300 dark:bg-stone-600'}`}>
+        <span className={`absolute h-4 w-4 rounded-full bg-white shadow transition-all ${enabled ? 'left-[18px]' : 'left-0.5'}`} />
+      </span>
+    </button>
   )
 }
