@@ -278,6 +278,7 @@ export const updateRestaurantSettings = createServerFn({ method: "POST" })
         coverImageUrl: data.coverImageUrl || null,
         facebookUrl: link(data.facebookUrl),
         instagramUrl: link(data.instagramUrl),
+        tiktokUrl: link(data.tiktokUrl),
         mapsUrl: link(data.mapsUrl),
         openingHours: data.openingHours,
       })
