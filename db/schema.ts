@@ -50,6 +50,9 @@ export const restaurants = pgTable("restaurants", {
    babySeatAvailable: boolean("baby_seat_available").notNull().default(false), // show baby-seat option in the booking form
    expiryWarningSentFor: date("expiry_warning_sent_for"), // end-date the 14-day warning was last sent for
    hasParking: boolean("has_parking").notNull().default(false), // parking badge on the public page
+   facebookUrl: text("facebook_url"),
+   instagramUrl: text("instagram_url"),
+   mapsUrl: text("maps_url"), // hidden Google Maps destination behind the clickable address
    createdAt: timestamp("created_at").defaultNow(),
 });
 

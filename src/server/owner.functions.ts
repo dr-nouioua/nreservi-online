@@ -251,11 +251,24 @@ export const updateRestaurantSettings = createServerFn({ method: "POST" })
       logoUrl: string;
       coverImageUrl: string;
       avgTicketPrice: string;
+      facebookUrl?: string;
+      instagramUrl?: string;
+      mapsUrl?: string;
       openingHours: Record<string, { open: string; close: string }[]>;
     }) => data,
   )
   .handler(async ({ data }) => {
     const restaurantId = await requireRestaurantId();
+    const badLink = [data.facebookUrl, data.instagramUrl, data.mapsUrl].find(
+      (v) => v && v.trim() && !/^https:\/\//.test(v.trim()),
+    );
+    if (badLink) {
+      return { error: "Les liens Facebook, Instagram et Google Maps doivent commencer par https://" };
+    }
+    const link = (v?: string) => {
+      const t = v?.trim() ?? "";
+      return t ? t : null;
+    };
     await db
       .update(restaurants)
       .set({
@@ -264,6 +277,9 @@ export const updateRestaurantSettings = createServerFn({ method: "POST" })
         logoUrl: data.logoUrl || null,
         coverImageUrl: data.coverImageUrl || null,
         avgTicketPrice: data.avgTicketPrice,
+        facebookUrl: link(data.facebookUrl),
+        instagramUrl: link(data.instagramUrl),
+        mapsUrl: link(data.mapsUrl),
         openingHours: data.openingHours,
       })
       .where(eq(restaurants.id, restaurantId));

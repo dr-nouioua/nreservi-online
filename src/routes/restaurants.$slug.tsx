@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { Baby, CalendarDays, Car, CheckCircle2, ChevronDown, ImagePlus, MapPin, Sparkles, Star, Users, UtensilsCrossed } from 'lucide-react'
+import { Baby, CalendarDays, Car, CheckCircle2, ChevronDown, ImagePlus, MapPin, Sparkles, Users, UtensilsCrossed } from 'lucide-react'
 import { getRestaurantBySlug, getAvailability, createReservation } from '../server/booking.functions'
 import { formatPriceDA } from '../services/format'
 import { type Ad } from '../components/AdCard'
@@ -39,6 +39,9 @@ function RestaurantPage() {
       babySeatAvailable: boolean
       hasParking: boolean
       subscriptionTier: string
+      facebookUrl: string | null
+      instagramUrl: string | null
+      mapsUrl: string | null
     }
     areas: { id: number; name: string }[]
     tables: unknown[]
@@ -158,7 +161,39 @@ function RestaurantPage() {
                   )}
                 </p>
                 <h1 className="text-4xl font-bold tracking-tight">{restaurant.name}</h1>
-                <p className="mt-2 flex items-center gap-1 text-stone-200"><MapPin className="h-4 w-4" /> {restaurant.address}</p>
+                <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-stone-200">
+                  {(() => {
+                    const short = restaurant.address.length > 42 ? restaurant.address.slice(0, 42).trimEnd() + "…" : restaurant.address;
+                    const inner = (
+                      <>
+                        <MapPin className="h-4 w-4 shrink-0" /> {short}
+                      </>
+                    );
+                    return restaurant.mapsUrl ? (
+                      <a
+                        href={restaurant.mapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Voir l'itinéraire sur Google Maps"
+                        className="inline-flex items-center gap-1 underline-offset-4 hover:text-lime-300 hover:underline"
+                      >
+                        {inner}
+                      </a>
+                    ) : (
+                      <span className="inline-flex items-center gap-1">{inner}</span>
+                    );
+                  })()}
+                  {restaurant.facebookUrl && (
+                    <a href={restaurant.facebookUrl} target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook" className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/15 backdrop-blur transition hover:bg-lime-400 hover:text-stone-950">
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M13.5 21v-7h2.4l.4-3h-2.8V9.1c0-.9.3-1.5 1.6-1.5h1.3V4.9c-.3 0-1.1-.1-2.1-.1-2.1 0-3.6 1.3-3.6 3.7V11H8.3v3h2.4v7h2.8z"/></svg>
+                    </a>
+                  )}
+                  {restaurant.instagramUrl && (
+                    <a href={restaurant.instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram" className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/15 backdrop-blur transition hover:bg-lime-400 hover:text-stone-950">
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.1 0-3.5 0-4.8.1-1.1.1-1.4.2-1.7.3-.4.2-.7.4-1 .7-.3.3-.5.6-.7 1-.1.3-.3.6-.3 1.7-.1 1.3-.1 1.7-.1 4.8s0 3.5.1 4.8c.1 1.1.2 1.4.3 1.7.2.4.4.7.7 1 .3.3.6.5 1 .7.3.1.6.3 1.7.3 1.3.1 1.7.1 4.8.1s3.5 0 4.8-.1c1.1-.1 1.4-.2 1.7-.3.4-.2.7-.4 1-.7.3-.3.5-.6.7-1 .1-.3.3-.6.3-1.7.1-1.3.1-1.7.1-4.8s0-3.5-.1-4.8c-.1-1.1-.2-1.4-.3-1.7-.2-.4-.4-.7-.7-1-.3-.3-.6-.5-1-.7-.3-.1-.6-.3-1.7-.3-1.3-.1-1.7-.1-4.8-.1zm0 3.1a4.9 4.9 0 1 1 0 9.8 4.9 4.9 0 0 1 0-9.8zm0 8.1a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zm6.2-8.3a1.1 1.1 0 1 1-2.3 0 1.1 1.1 0 0 1 2.3 0z"/></svg>
+                    </a>
+                  )}
+                </p>
               </div>
             </div>
           </div>

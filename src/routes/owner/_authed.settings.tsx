@@ -24,6 +24,9 @@ function SettingsPage() {
   const [logoUrl, setLogoUrl] = useState(initial.restaurant?.logoUrl ?? '')
   const [coverImageUrl, setCoverImageUrl] = useState(initial.restaurant?.coverImageUrl ?? '')
   const [avgTicketPrice, setAvgTicketPrice] = useState(initial.restaurant?.avgTicketPrice ?? '0')
+  const [facebookUrl, setFacebookUrl] = useState(initial.restaurant?.facebookUrl ?? '')
+  const [instagramUrl, setInstagramUrl] = useState(initial.restaurant?.instagramUrl ?? '')
+  const [mapsUrl, setMapsUrl] = useState(initial.restaurant?.mapsUrl ?? '')
   const [hours, setHours] = useState<Record<string, { open: string; close: string }[]>>(
     (initial.restaurant?.openingHours as any) ?? {},
   )
@@ -34,7 +37,7 @@ function SettingsPage() {
   const [areaName, setAreaName] = useState('')
   const [areaMessage, setAreaMessage] = useState<string | null>(null)
   const [newTable, setNewTable] = useState({ areaId: initial.areas[0]?.id, label: '', capacity: 2, shape: 'square' })
-  const [saved, setSaved] = useState(false)
+  const [saved, setSaved] = useState<string | null>(null)
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null)
   const [email, setEmail] = useState('')
@@ -47,8 +50,13 @@ function SettingsPage() {
 
   async function saveSettings(e: React.FormEvent) {
     e.preventDefault()
-    await updateRestaurantSettings({ data: { name, description, logoUrl, coverImageUrl, avgTicketPrice, openingHours: hours } })
-    setSaved(true)
+    const result = await updateRestaurantSettings({ data: { name, description, logoUrl, coverImageUrl, avgTicketPrice, facebookUrl, instagramUrl, mapsUrl, openingHours: hours } })
+    if ('error' in result && result.error) {
+      setSaved(result.error)
+      setTimeout(() => setSaved(false), 3500)
+      return
+    }
+    setSaved('Enregistré')
     setTimeout(() => setSaved(false), 2000)
   }
 
@@ -176,6 +184,20 @@ function SettingsPage() {
             <div className="grid gap-3 sm:grid-cols-2 pt-1">
               <ServiceToggle enabled={babySeat} onToggle={() => toggleFlag('baby')} label="Chaises bébé" icon={Baby} hint="Proposez ce service aux clients qui réservent" />
               <ServiceToggle enabled={parking} onToggle={() => toggleFlag('parking')} label="Parking sur place" icon={Car} hint="Affiché sur votre page publique" />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="text-xs font-medium text-stone-500 dark:text-stone-400">Facebook (https://…)</label>
+                <input value={facebookUrl} onChange={(e) => setFacebookUrl(e.target.value)} placeholder="https://facebook.com/monrestaurant" className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm dark:border-stone-700" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-stone-500 dark:text-stone-400">Instagram (https://…)</label>
+                <input value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} placeholder="https://instagram.com/monrestaurant" className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm dark:border-stone-700" />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="text-xs font-medium text-stone-500 dark:text-stone-400">Lien Google Maps (itinéraire — invisible pour le client)</label>
+                <input value={mapsUrl} onChange={(e) => setMapsUrl(e.target.value)} placeholder="https://maps.google.com/?q=…" className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm dark:border-stone-700" />
+              </div>
             </div>
           </div>
 
