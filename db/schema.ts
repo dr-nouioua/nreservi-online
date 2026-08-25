@@ -39,7 +39,6 @@ export const restaurants = pgTable("restaurants", {
   coverImageUrl: text("cover_image_url"),
   description: text("description").default(""),
   avgTicketPrice: numeric("avg_ticket_price", { precision: 10, scale: 2 }).default("0"),
-  rating: numeric("rating", { precision: 3, scale: 2 }).default("4.5"),
   status: text("status").notNull().default("pending"), // pending | active | suspended
   subscriptionTier: text("subscription_tier").notNull().default("basic"), // basic | premium
    openingHours: jsonb("opening_hours").notNull().default({}), // { mon: [{open, close}], ... }

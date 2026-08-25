@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
-import { MapPin, Search, SlidersHorizontal, Star, UtensilsCrossed } from 'lucide-react'
+import { MapPin, Search, SlidersHorizontal, UtensilsCrossed } from 'lucide-react'
 import { listRestaurants } from '../server/booking.functions'
 import { SiteHeader } from '../components/SiteHeader'
 import { SiteFooter } from '../components/SiteFooter'
@@ -98,10 +98,6 @@ function Home() {
                   <UtensilsCrossed className="h-10 w-10 text-stone-700 dark:text-stone-300/60" />
                 </div>
               )}
-              <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-sm font-medium text-stone-800 dark:text-stone-200 backdrop-blur">
-                <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
-                {r.rating}
-              </span>
             </div>
             <div className="p-4">
               <div className="flex items-start justify-between gap-2">

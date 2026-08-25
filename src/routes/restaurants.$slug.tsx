@@ -34,7 +34,6 @@ function RestaurantPage() {
       logoUrl: string | null
       cuisine: string
       address: string
-      rating: string | null
       showMenuImages: boolean
       menuFixed: boolean
       babySeatAvailable: boolean
@@ -162,9 +161,6 @@ function RestaurantPage() {
                 <p className="mt-2 flex items-center gap-1 text-stone-200"><MapPin className="h-4 w-4" /> {restaurant.address}</p>
               </div>
             </div>
-            <span className="flex items-center gap-1 rounded-full bg-white/95 px-3 py-1.5 font-semibold text-stone-900 shadow-sm dark:bg-stone-900/95 dark:text-stone-100 dark:ring-1 dark:ring-stone-700">
-              <Star className="h-4 w-4 fill-amber-500 text-amber-500" /> {restaurant.rating}
-            </span>
           </div>
         </div>
       </div>
