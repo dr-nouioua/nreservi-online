@@ -36,7 +36,7 @@ for (const folder of folders) {
     // record the migration and keep going so any starting state converges.
     const code = e.code ?? e.originalError?.code;
     const msg = String(e.message ?? "");
-    if (["42P07", "42701", "42710", "42P16", "23505"].includes(code) || /already exists/i.test(msg)) {
+    if (["42P07", "42701", "42710", "42P16", "42703", "23505"].includes(code) || /already exists/i.test(msg) || /does not exist/i.test(msg)) {
       console.log(`  ${folder}: already applied (skipped)`);
       await sql`INSERT INTO __drizzle_migrations (name) VALUES (${folder})`.catch(() => {});
       continue;

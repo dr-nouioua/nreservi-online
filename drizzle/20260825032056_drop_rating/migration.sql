@@ -1,1 +1,1 @@
-ALTER TABLE "restaurants" DROP COLUMN "rating";
+ALTER TABLE "restaurants" DROP COLUMN IF EXISTS "rating";
