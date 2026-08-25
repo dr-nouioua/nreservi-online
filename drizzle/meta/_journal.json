@@ -1,0 +1,104 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 20260811122424,
+      "tag": "20260811122424_create_core_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 20260817153121,
+      "tag": "20260817153121_create_whatsapp_templates",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 20260821194943,
+      "tag": "20260821194943_add_show_menu_images",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 20260821203601,
+      "tag": "20260821203601_add_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 20260822014702,
+      "tag": "20260822014702_add_ads",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 20260822134629,
+      "tag": "20260822134629_add_subscriptions",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 20260824152718,
+      "tag": "20260824152718_add_menu_fixed",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 20260824170749,
+      "tag": "20260824170749_add_ad_duration",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 20260824185126,
+      "tag": "20260824185126_tiers_basic_premium",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 20260824200546,
+      "tag": "20260824200546_marketing_campaigns",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 20260825020302,
+      "tag": "20260825020302_baby_seats_parking",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 20260825022437,
+      "tag": "20260825022437_mail_server",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 20260825032056,
+      "tag": "20260825032056_drop_rating",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 20260825032802,
+      "tag": "20260825032802_social_maps_links",
+      "breakpoints": true
+    }
+  ]
+}
