@@ -29,7 +29,7 @@ export const Route = createFileRoute('/admin/_authed')({
 })
 
 const nav = [
-  { to: '/admin', label: 'Restaurants', icon: Building2 },
+  { to: '/admin', label: 'Dashboard', icon: Building2 },
   { to: '/admin/onboard', label: 'Créer un restaurant', icon: Plus },
   { to: '/admin/subscriptions', label: 'Abonnements', icon: CreditCard },
   { to: '/admin/ads', label: 'Publicités', icon: Megaphone },

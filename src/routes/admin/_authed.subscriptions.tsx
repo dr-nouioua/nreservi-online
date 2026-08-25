@@ -46,6 +46,7 @@ function SubscriptionsPage() {
   const [renewMonths, setRenewMonths] = useState<Record<number, number>>({})
   const [renewAmounts, setRenewAmounts] = useState<Record<number, string>>({})
   const [groupOpen, setGroupOpen] = useState(false)
+  const [posApplied, setPosApplied] = useState(false)
   const [group, setGroup] = useState({ subject: '', body: '' })
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [groupMessage, setGroupMessage] = useState<string | null>(null)
@@ -149,6 +150,19 @@ function SubscriptionsPage() {
               className="w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm dark:border-stone-700"
             />
             <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setGroup({
+                    subject: "Nouvelle solution nreservi.online — le module POS arrive",
+                    body: "Bonjour {{owner_name}},\n\nGrande nouvelle : nreservi.online lance prochainement son module de caisse (POS), entièrement connecté à vos réservations.\n\nEn tant que partenaire, vous bénéficierez d'un accès prioritaire et de conditions préférentielles.\n\nRépondez à cet e-mail pour être recontacté.\n\nL'équipe nreservi.online",
+                  })
+                  setPosApplied(true)
+                }}
+                className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800 hover:bg-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:hover:bg-amber-500/25"
+              >
+                Modèle : nouvelle solution POS
+              </button>
               {['{{restaurant_name}}', '{{owner_name}}'].map((v) => (
                 <button
                   key={v}

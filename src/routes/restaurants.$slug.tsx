@@ -176,9 +176,12 @@ function RestaurantPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Voir l'itinéraire sur Google Maps"
-                        className="inline-flex items-center gap-1 underline-offset-4 hover:text-lime-300 hover:underline"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur transition hover:bg-lime-400 hover:text-stone-950"
                       >
                         {inner}
+                        <span className="hidden items-center gap-1 text-xs font-medium sm:inline-flex">
+                          · Itinéraire
+                        </span>
                       </a>
                     ) : (
                       <span className="inline-flex items-center gap-1">{inner}</span>

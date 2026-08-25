@@ -28,22 +28,24 @@ const barScales = {
 }
 const doughnutLegend = { legend: { position: 'bottom' as const, labels: { color: CHART_TICK } } }
 
-function exportCsv(data: any) {
+function exportExcel(data: any) {
   const rows = [
-    ["Indicateur", "Valeur"],
-    ["Réservations totales", data.total],
-    ["Taux de no-show (%)", data.noShowRate],
+    ['Indicateur', 'Valeur'],
+    ['Réservations totales', data.total],
+    ['Taux de no-show (%)', data.noShowRate],
     ["Taux d'annulation (%)", data.cancellationRate],
     ["Taux d'occupation (%)", data.occupancyRate],
-    ["Clients fidèles", data.repeatCustomers],
-    ["Nouveaux clients", data.newCustomers],
+    ['Clients fidèles', data.repeatCustomers],
+    ['Nouveaux clients', data.newCustomers],
   ]
-  const csv = rows.map((r) => r.join(',')).join('\n')
-  const blob = new Blob([csv], { type: 'text/csv' })
+  const table = `<table><tr><td><b>Indicateur</b></td><td><b>Valeur</b></td></tr>${rows
+    .map((r) => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`)
+    .join('')}</table>`
+  const blob = new Blob([`<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head><body>${table}</body></html>`], { type: 'application/vnd.ms-excel' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = 'statistiques-nreservi.csv'
+  a.download = 'statistiques-nreservi.xls'
   a.click()
   URL.revokeObjectURL(url)
 }
@@ -67,7 +69,7 @@ function AnalyticsPage() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Statistiques</h1>
-        <button onClick={() => exportCsv(data)} className="px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm hover:bg-stone-100 dark:hover:bg-stone-800">
+        <button onClick={() => exportExcel(data)} className="px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm hover:bg-stone-100 dark:hover:bg-stone-800">
           Export CSV
         </button>
       </div>

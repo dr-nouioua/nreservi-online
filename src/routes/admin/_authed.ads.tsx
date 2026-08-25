@@ -138,6 +138,32 @@ function AdminAdsPage() {
             ))}
           </select>
           <input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} placeholder="URL de l'image (facultatif)" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
+            <label className="inline-flex cursor-pointer items-center justify-center rounded-lg border border-stone-300 px-3 py-2.5 text-sm text-stone-600 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">
+              🖼️ Importer
+              <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+                  const reader = new FileReader()
+                  reader.onload = () => {
+                    const img = new Image()
+                    img.onload = () => {
+                      const canvas = document.createElement('canvas')
+                      const scale = Math.min(1, 1200 / img.width)
+                      canvas.width = Math.round(img.width * scale)
+                      canvas.height = Math.round(img.height * scale)
+                      canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height)
+                      setForm((f2) => ({ ...f2, imageUrl: canvas.toDataURL('image/jpeg', 0.82) }))
+                    }
+                    img.src = String(reader.result)
+                  }
+                  reader.readAsDataURL(file)
+                }}
+              />
+            </label>
           <input value={form.linkUrl} onChange={(e) => setForm({ ...form, linkUrl: e.target.value })} placeholder="Lien https://… (facultatif)" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
           <input value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} placeholder="Texte de la publicité" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm sm:col-span-2 dark:border-stone-700" />
           <div className="grid grid-cols-3 gap-3">
@@ -224,6 +250,32 @@ function AdminAdsPage() {
                     ))}
                   </select>
                   <input value={editForm.imageUrl} onChange={(e) => setEditForm({ ...editForm, imageUrl: e.target.value })} placeholder="URL de l'image" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
+              <label className="inline-flex cursor-pointer items-center rounded-lg border border-stone-300 px-2.5 py-2 text-xs text-stone-600 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">
+                🖼️
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    const reader = new FileReader()
+                    reader.onload = () => {
+                      const img = new Image()
+                      img.onload = () => {
+                        const canvas = document.createElement('canvas')
+                        const scale = Math.min(1, 1200 / img.width)
+                        canvas.width = Math.round(img.width * scale)
+                        canvas.height = Math.round(img.height * scale)
+                        canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height)
+                        setEditForm((f2) => ({ ...f2, imageUrl: canvas.toDataURL('image/jpeg', 0.82) }))
+                      }
+                      img.src = String(reader.result)
+                    }
+                    reader.readAsDataURL(file)
+                  }}
+                />
+              </label>
                   <input value={editForm.linkUrl} onChange={(e) => setEditForm({ ...editForm, linkUrl: e.target.value })} placeholder="Lien https://…" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
                   <input value={editForm.body} onChange={(e) => setEditForm({ ...editForm, body: e.target.value })} placeholder="Texte" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
                   <div className="grid grid-cols-3 gap-3">

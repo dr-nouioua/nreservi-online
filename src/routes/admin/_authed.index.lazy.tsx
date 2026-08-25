@@ -63,7 +63,7 @@ function AdminIndex() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Vue d'ensemble</h1>
+      <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Dashboard</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-6">
         {stats.map((s) => (
