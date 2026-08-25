@@ -214,6 +214,18 @@ export const campaignLogs = pgTable("campaign_logs", {
   index("campaign_logs_restaurant_idx").on(table.restaurantId),
 ]);
 
+// ---------- Password resets (e-mail tokens, single use, 1h) ----------
+
+export const passwordResets = pgTable("password_resets", {
+  id: serial().primaryKey(),
+  role: text("role").notNull(), // admin | owner | staff
+  userId: integer("user_id").notNull(),
+  tokenHash: text("token_hash").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  usedAt: timestamp("used_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // ---------- Mail server (SMTP, configured by the super-admin) ----------
 
 // Single row (id=1). The SMTP password never leaves the server: the admin UI

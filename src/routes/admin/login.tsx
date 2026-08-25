@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { BrandLogo } from "../../components/BrandLogo"
 import { useState } from 'react'
 import { createServerFn } from '@tanstack/react-start'
@@ -50,6 +50,9 @@ function AdminLogin() {
         <form onSubmit={submit} className="mt-6 space-y-3">
           <input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm" />
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm" />
+          <div className="text-right mt-2">
+            <Link to="/forgot-password" className="text-xs text-stone-500 hover:text-stone-900 hover:underline dark:text-stone-400 dark:hover:text-stone-100">Mot de passe oublié ?</Link>
+          </div>
           {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
           <button disabled={loading} className="w-full py-2.5 rounded-lg bg-stone-950 text-white dark:ring-1 dark:ring-stone-700 text-sm font-medium disabled:opacity-50">
             {loading ? 'Connexion...' : 'Se connecter'}

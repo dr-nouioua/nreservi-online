@@ -53,11 +53,11 @@ function SettingsPage() {
     const result = await updateRestaurantSettings({ data: { name, description, logoUrl, coverImageUrl, avgTicketPrice, facebookUrl, instagramUrl, mapsUrl, openingHours: hours } })
     if ('error' in result && result.error) {
       setSaved(result.error)
-      setTimeout(() => setSaved(false), 3500)
+      setTimeout(() => setSaved(null), 3500)
       return
     }
     setSaved('Enregistré')
-    setTimeout(() => setSaved(false), 2000)
+    setTimeout(() => setSaved(null), 2000)
   }
 
   async function setImageFromFile(file: File | undefined, setter: (value: string) => void) {

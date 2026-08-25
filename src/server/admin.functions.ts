@@ -360,7 +360,7 @@ export const updateSubscriptionDates = createServerFn({ method: "POST" })
 
 /** Renewal shortcut: extends by N months from the later of (today, current end). */
 export const renewSubscription = createServerFn({ method: "POST" })
-  .inputValidator((data: { id: number; months: number }) => data)
+  .inputValidator((data: { id: number; months: number; amountDA?: string | null }) => data)
   .handler(async ({ data }) => {
     await requireAdmin();
     if (!(data.months >= 1 && data.months <= 36)) return { error: "Durée invalide (1–36 mois)." };
@@ -371,6 +371,7 @@ export const renewSubscription = createServerFn({ method: "POST" })
     const base = row.subscriptionEnd && row.subscriptionEnd > today ? row.subscriptionEnd : today;
     const [y, m, d] = base.split("-").map(Number);
     const endISO = new Date(Date.UTC(y, m - 1 + data.months, d) - 1).toISOString().slice(0, 10);
+    const amount = data.amountDA?.trim() || null;
 
     await db
       .update(restaurants)
@@ -384,7 +385,45 @@ export const renewSubscription = createServerFn({ method: "POST" })
       start: row.subscriptionStart ?? today,
       end: endISO,
       tier: row.subscriptionTier,
+      amount,
     });
+
+    // Reçu PDF joint, envoyé aux comptes propriétaires (best-effort).
+    try {
+      const owners = await db
+        .select({ email: restaurantOwners.email })
+        .from(restaurantOwners)
+        .where(eq(restaurantOwners.restaurantId, data.id));
+      if (owners.length > 0) {
+        const { generateReceiptPdf } = await import("./receipt.server.js");
+        const { sendMail, brandedEmail } = await import("./mail.server.js");
+        const number = `REC-${Date.now().toString(36).toUpperCase()}`;
+        const pdf = await generateReceiptPdf({
+          number,
+          restaurantName: row.name,
+          tier: row.subscriptionTier,
+          start: row.subscriptionStart ?? today,
+          end: endISO,
+          amountDA: amount,
+          issuedAt: new Date(),
+        });
+        for (const owner of owners) {
+          await sendMail({
+            to: owner.email,
+            subject: `Reçu de renouvellement — ${row.name} (${endISO})`,
+            kind: "receipt",
+            html: brandedEmail("Votre abonnement a été renouvelé", [
+              `Le restaurant <strong>${row.name}</strong> est abonné jusqu'au <strong>${endISO}</strong>.`,
+              amount ? `Montant réglé : <strong>${amount} DA</strong>.` : "",
+              "Le reçu PDF est joint à cet e-mail.",
+            ]),
+            attachments: [{ filename: `recu-${number}.pdf`, content: pdf }],
+          });
+        }
+      }
+    } catch {
+      // l'envoi ne doit jamais bloquer le renouvellement
+    }
     return { success: true as const, newEnd: endISO };
   });
 
@@ -503,3 +542,44 @@ export const listMailLog = createServerFn({ method: "GET" }).handler(async () =>
   const { mailLog } = await import("../../db/schema.js");
   return db.select().from(mailLog).orderBy(sql`created_at desc`).limit(30);
 });
+
+/** Group/template email: personalized per owner ({{restaurant_name}}, {{owner_name}}). */
+export const emailRestaurants = createServerFn({ method: "POST" })
+  .inputValidator((data: { ids: number[]; subject: string; body: string }) => data)
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    if (data.ids.length === 0) return { error: "Sélectionnez au moins un restaurant." };
+    const subject = data.subject.trim();
+    const body = data.body.trim();
+    if (!subject) return { error: "L'objet est requis." };
+    if (!body) return { error: "Le message est requis." };
+
+    const { sendMail, brandedEmail } = await import("./mail.server.js");
+    let sent = 0;
+    let failed = 0;
+    let lastError: string | null = null;
+    for (const id of data.ids) {
+      const [r] = await db.select({ name: restaurants.name }).from(restaurants).where(eq(restaurants.id, id));
+      if (!r) continue;
+      const owners = await db
+        .select({ email: restaurantOwners.email, name: restaurantOwners.name })
+        .from(restaurantOwners)
+        .where(eq(restaurantOwners.restaurantId, id));
+      for (const o of owners) {
+        const personalized = body
+          .replace(/\{\{restaurant_name\}\}/g, r.name)
+          .replace(/\{\{owner_name\}\}/g, o.name ?? "cher partenaire")
+          .replace(/\n/g, "<br/>");
+        const result = await sendMail({
+          to: o.email,
+          subject,
+          kind: "custom",
+          html: brandedEmail(subject, [personalized]),
+        });
+        if (result.ok) sent++;
+        else { failed++; lastError = result.error; }
+      }
+    }
+    if (sent === 0 && failed > 0) return { error: lastError ?? "Échec de l'envoi." };
+    return { success: true as const, sent, failed };
+  });

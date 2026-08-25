@@ -93,6 +93,7 @@ export async function appendSubscriptionHistory(restaurantId: number, entry: {
   start: string | null;
   end: string | null;
   tier: string;
+  amount?: string | null;
 }) {
   const [row] = await db
     .select({ history: restaurants.subscriptionHistory })

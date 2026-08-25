@@ -23,6 +23,7 @@ export async function sendMail(opts: {
   subject: string
   html: string
   kind?: string
+  attachments?: { filename: string; content: Buffer }[]
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const cfg = await getMailConfig();
 
@@ -44,6 +45,7 @@ export async function sendMail(opts: {
       to: opts.to,
       subject: opts.subject,
       html: opts.html,
+      attachments: opts.attachments,
     });
     await log(opts.to, opts.subject, opts.kind ?? "custom", "sent", null);
     return { ok: true };
