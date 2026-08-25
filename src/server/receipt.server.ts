@@ -7,6 +7,7 @@ export type ReceiptData = {
   start: string | null
   end: string
   amountDA: string | null
+  discountPercent?: number | null
   issuedAt: Date
 }
 
@@ -40,10 +41,15 @@ export function generateReceiptPdf(data: ReceiptData): Promise<Buffer> {
 
     if (data.amountDA) {
       const y = doc.y;
-      doc.roundedRect(56, y, 483, 44, 8).fillAndStroke("#ecfccb", "#a3e635");
-      doc.fillColor("#1c1917").font("Helvetica-Bold").fontSize(14)
-        .text(`Montant : ${data.amountDA} DA`, 72, y + 15);
-      doc.y = y + 56;
+      const boxH = data.discountPercent ? 60 : 44;
+      doc.roundedRect(56, y, 483, boxH, 8).fillAndStroke("#ecfccb", "#a3e635");
+      doc.fillColor("#1c1917").font("Helvetica-Bold").fontSize(13)
+        .text(`Prix : ${data.amountDA} DA`, 72, y + 13);
+      if (data.discountPercent) {
+        doc.font("Helvetica-Bold").fontSize(13)
+          .text(`Remise : ${data.discountPercent} %  —  Prix final : ${data.amountDA} DA`, 72, y + 33);
+      }
+      doc.y = y + boxH + 12;
     }
 
     doc.moveDown(1.5);

@@ -52,6 +52,7 @@ export const restaurants = pgTable("restaurants", {
    hasParking: boolean("has_parking").notNull().default(false), // parking badge on the public page
    facebookUrl: text("facebook_url"),
    instagramUrl: text("instagram_url"),
+   tiktokUrl: text("tiktok_url"),
    mapsUrl: text("maps_url"), // hidden Google Maps destination behind the clickable address
    createdAt: timestamp("created_at").defaultNow(),
 });
@@ -213,6 +214,15 @@ export const campaignLogs = pgTable("campaign_logs", {
 }, (table) => [
   index("campaign_logs_restaurant_idx").on(table.restaurantId),
 ]);
+
+// ---------- Visitor analytics (daily counters, "" slug = global) ----------
+
+export const visitCounts = pgTable("visit_counts", {
+  id: serial().primaryKey(),
+  day: date("day").notNull(),
+  slug: text("slug").notNull().default(""), // restaurant slug, empty = whole platform
+  count: integer("count").notNull().default(0),
+}, (t) => [unique("visit_counts_day_slug_key").on(t.day, t.slug)]);
 
 // ---------- Password resets (e-mail tokens, single use, 1h) ----------
 

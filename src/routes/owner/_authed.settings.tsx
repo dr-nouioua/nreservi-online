@@ -23,9 +23,9 @@ function SettingsPage() {
   const [description, setDescription] = useState(initial.restaurant?.description ?? '')
   const [logoUrl, setLogoUrl] = useState(initial.restaurant?.logoUrl ?? '')
   const [coverImageUrl, setCoverImageUrl] = useState(initial.restaurant?.coverImageUrl ?? '')
-  const [avgTicketPrice, setAvgTicketPrice] = useState(initial.restaurant?.avgTicketPrice ?? '0')
   const [facebookUrl, setFacebookUrl] = useState(initial.restaurant?.facebookUrl ?? '')
   const [instagramUrl, setInstagramUrl] = useState(initial.restaurant?.instagramUrl ?? '')
+  const [tiktokUrl, setTiktokUrl] = useState(initial.restaurant?.tiktokUrl ?? '')
   const [mapsUrl, setMapsUrl] = useState(initial.restaurant?.mapsUrl ?? '')
   const [hours, setHours] = useState<Record<string, { open: string; close: string }[]>>(
     (initial.restaurant?.openingHours as any) ?? {},
@@ -50,7 +50,7 @@ function SettingsPage() {
 
   async function saveSettings(e: React.FormEvent) {
     e.preventDefault()
-    const result = await updateRestaurantSettings({ data: { name, description, logoUrl, coverImageUrl, avgTicketPrice, facebookUrl, instagramUrl, mapsUrl, openingHours: hours } })
+    const result = await updateRestaurantSettings({ data: { name, description, logoUrl, coverImageUrl, facebookUrl, instagramUrl, tiktokUrl, mapsUrl, openingHours: hours } })
     if ('error' in result && result.error) {
       setSaved(result.error)
       setTimeout(() => setSaved(null), 3500)
@@ -173,10 +173,6 @@ function SettingsPage() {
             <p className="font-semibold text-stone-900 dark:text-stone-100">Profil</p>
             <input value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-lg border border-stone-300 dark:border-stone-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="w-full rounded-lg border border-stone-300 dark:border-stone-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
-            <div>
-              <label className="text-xs font-medium text-stone-500 dark:text-stone-400">Prix moyen du couvert (DA)</label>
-              <input value={avgTicketPrice} onChange={(e) => setAvgTicketPrice(e.target.value)} className="mt-1 w-full rounded-lg border border-stone-300 dark:border-stone-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
-            </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <ImageField label="Logo" value={logoUrl} onChange={setLogoUrl} onFile={(file) => setImageFromFile(file, setLogoUrl)} />
               <ImageField label="Image de couverture" value={coverImageUrl} onChange={setCoverImageUrl} onFile={(file) => setImageFromFile(file, setCoverImageUrl)} />
@@ -194,6 +190,10 @@ function SettingsPage() {
                 <label className="text-xs font-medium text-stone-500 dark:text-stone-400">Instagram (https://…)</label>
                 <input value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} placeholder="https://instagram.com/monrestaurant" className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm dark:border-stone-700" />
               </div>
+              <div>
+                <label className="text-xs font-medium text-stone-500 dark:text-stone-400">TikTok (https://…)</label>
+                <input value={tiktokUrl} onChange={(e) => setTiktokUrl(e.target.value)} placeholder="https://tiktok.com/@monrestaurant" className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm dark:border-stone-700" />
+              </div>
               <div className="sm:col-span-2">
                 <label className="text-xs font-medium text-stone-500 dark:text-stone-400">Lien Google Maps (itinéraire — invisible pour le client)</label>
                 <input value={mapsUrl} onChange={(e) => setMapsUrl(e.target.value)} placeholder="https://maps.google.com/?q=…" className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm dark:border-stone-700" />
@@ -207,16 +207,24 @@ function SettingsPage() {
               <div key={d} className="grid grid-cols-[42px_1fr_1fr] items-center gap-2 text-sm">
                 <span className="uppercase text-stone-500 dark:text-stone-400">{label}</span>
                 <input
-                  type="time"
+                  inputMode="numeric"
+                  placeholder="HH:MM"
                   value={hours[d]?.[0]?.open ?? ''}
-                  onChange={(e) => setHours({ ...hours, [d]: [{ open: e.target.value, close: hours[d]?.[0]?.close ?? '22:00' }] })}
-                  className="min-w-0 rounded border border-stone-300 dark:border-stone-700 px-2 py-1"
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/[^0-9:]/g, "").slice(0, 5)
+                    setHours({ ...hours, [d]: [{ open: v, close: hours[d]?.[0]?.close ?? "22:00" }] })
+                  }}
+                  className={`min-w-0 rounded border px-2 py-1 text-center text-sm ${/^([01]\d|2[0-3]):[0-5]\d$/.test(hours[d]?.[0]?.open ?? "") || !hours[d]?.[0]?.open ? "border-stone-300 dark:border-stone-700" : "border-red-400"}`}
                 />
                 <input
-                  type="time"
+                  inputMode="numeric"
+                  placeholder="HH:MM"
                   value={hours[d]?.[0]?.close ?? ''}
-                  onChange={(e) => setHours({ ...hours, [d]: [{ open: hours[d]?.[0]?.open ?? '12:00', close: e.target.value }] })}
-                  className="min-w-0 rounded border border-stone-300 dark:border-stone-700 px-2 py-1"
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/[^0-9:]/g, "").slice(0, 5)
+                    setHours({ ...hours, [d]: [{ open: hours[d]?.[0]?.open ?? "12:00", close: v }] })
+                  }}
+                  className={`min-w-0 rounded border px-2 py-1 text-center text-sm ${/^([01]\d|2[0-3]):[0-5]\d$/.test(hours[d]?.[0]?.close ?? "") || !hours[d]?.[0]?.close ? "border-stone-300 dark:border-stone-700" : "border-red-400"}`}
                 />
               </div>
             ))}

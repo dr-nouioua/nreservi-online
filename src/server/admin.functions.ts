@@ -360,7 +360,7 @@ export const updateSubscriptionDates = createServerFn({ method: "POST" })
 
 /** Renewal shortcut: extends by N months from the later of (today, current end). */
 export const renewSubscription = createServerFn({ method: "POST" })
-  .inputValidator((data: { id: number; months: number; amountDA?: string | null }) => data)
+  .inputValidator((data: { id: number; months: number; amountDA?: string | null; discountPercent?: number | null }) => data)
   .handler(async ({ data }) => {
     await requireAdmin();
     if (!(data.months >= 1 && data.months <= 36)) return { error: "Durée invalide (1–36 mois)." };
@@ -372,6 +372,12 @@ export const renewSubscription = createServerFn({ method: "POST" })
     const [y, m, d] = base.split("-").map(Number);
     const endISO = new Date(Date.UTC(y, m - 1 + data.months, d) - 1).toISOString().slice(0, 10);
     const amount = data.amountDA?.trim() || null;
+    const discount = data.discountPercent != null && data.discountPercent > 0 && data.discountPercent < 100
+      ? Math.round(data.discountPercent)
+      : null;
+    const finalDA = amount && discount != null
+      ? String(Math.round(Number(amount) * (1 - discount / 100)))
+      : amount;
 
     await db
       .update(restaurants)
@@ -386,6 +392,7 @@ export const renewSubscription = createServerFn({ method: "POST" })
       end: endISO,
       tier: row.subscriptionTier,
       amount,
+      discount,
     });
 
     // Reçu PDF joint, envoyé aux comptes propriétaires (best-effort).
@@ -404,7 +411,8 @@ export const renewSubscription = createServerFn({ method: "POST" })
           tier: row.subscriptionTier,
           start: row.subscriptionStart ?? today,
           end: endISO,
-          amountDA: amount,
+          amountDA: finalDA,
+          discountPercent: discount,
           issuedAt: new Date(),
         });
         for (const owner of owners) {
@@ -414,7 +422,8 @@ export const renewSubscription = createServerFn({ method: "POST" })
             kind: "receipt",
             html: brandedEmail("Votre abonnement a été renouvelé", [
               `Le restaurant <strong>${row.name}</strong> est abonné jusqu'au <strong>${endISO}</strong>.`,
-              amount ? `Montant réglé : <strong>${amount} DA</strong>.` : "",
+              amount ? `Prix : <strong>${amount} DA</strong>.` : "",
+              discount ? `Remise : <strong>${discount} %</strong> — Prix final : <strong>${finalDA} DA</strong>.` : "",
               "Le reçu PDF est joint à cet e-mail.",
             ]),
             attachments: [{ filename: `recu-${number}.pdf`, content: pdf }],
@@ -426,6 +435,39 @@ export const renewSubscription = createServerFn({ method: "POST" })
     }
     return { success: true as const, newEnd: endISO };
   });
+
+// ---------- Visitor analytics ----------
+
+export const getVisitStats = createServerFn({ method: "GET" }).handler(async () => {
+  await requireAdmin();
+  const today = todayISO();
+  const from30 = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10);
+
+  const counts = await db.execute(sql`
+    SELECT slug, SUM(count)::int AS visits
+    FROM visit_counts
+    WHERE day >= ${from30}
+    GROUP BY slug
+  `);
+  const rows = (counts as any).rows ?? counts ?? [];
+  const global30 = rows.filter((r: any) => r.slug === "").reduce((a: number, r: any) => a + Number(r.visits), 0);
+  const todayRows = await db.execute(sql`
+    SELECT COALESCE(SUM(count), 0)::int AS visits
+    FROM visit_counts
+    WHERE day = ${today} AND slug = ''
+  `);
+  const todayRowsArr = (todayRows as any).rows ?? todayRows ?? [];
+  const todayVisits = Number(todayRowsArr[0]?.visits ?? 0);
+
+  const perRestaurantRaw = rows.filter((r: any) => r.slug !== "");
+  const named = await Promise.all(perRestaurantRaw.map(async (r: any) => {
+    const [rest] = await db.select({ name: restaurants.name }).from(restaurants).where(eq(restaurants.slug, r.slug));
+    return { slug: r.slug as string, name: rest?.name ?? r.slug, visits: Number(r.visits) };
+  }));
+  named.sort((a, b) => b.visits - a.visits);
+
+  return { today: todayVisits, last30Days: global30, perRestaurant: named.slice(0, 10) };
+});
 
 // ---------- Mail server (SMTP) — configured by the super-admin ----------
 

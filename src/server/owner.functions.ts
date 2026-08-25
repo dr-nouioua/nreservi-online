@@ -250,16 +250,16 @@ export const updateRestaurantSettings = createServerFn({ method: "POST" })
       description: string;
       logoUrl: string;
       coverImageUrl: string;
-      avgTicketPrice: string;
       facebookUrl?: string;
       instagramUrl?: string;
+      tiktokUrl?: string;
       mapsUrl?: string;
       openingHours: Record<string, { open: string; close: string }[]>;
     }) => data,
   )
   .handler(async ({ data }) => {
     const restaurantId = await requireRestaurantId();
-    const badLink = [data.facebookUrl, data.instagramUrl, data.mapsUrl].find(
+    const badLink = [data.facebookUrl, data.instagramUrl, data.tiktokUrl, data.mapsUrl].find(
       (v) => v && v.trim() && !/^https:\/\//.test(v.trim()),
     );
     if (badLink) {
@@ -276,7 +276,6 @@ export const updateRestaurantSettings = createServerFn({ method: "POST" })
         description: data.description,
         logoUrl: data.logoUrl || null,
         coverImageUrl: data.coverImageUrl || null,
-        avgTicketPrice: data.avgTicketPrice,
         facebookUrl: link(data.facebookUrl),
         instagramUrl: link(data.instagramUrl),
         mapsUrl: link(data.mapsUrl),

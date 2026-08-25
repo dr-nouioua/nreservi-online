@@ -51,6 +51,26 @@ async function cronGuard(c: { req: { header: (k: string) => string | undefined }
 // ---- Static client assets (Vite emits them under dist/client) ----
 app.use("*", serveStatic({ root: "./dist/client" }));
 
+// ---- Visitor counting (GET pages only; "" slug = whole platform) ----
+app.all("*", async (c, next) => {
+  await next();
+  try {
+    const isHtmlGet = c.req.method === "GET"
+      && !c.req.path.startsWith("/assets")
+      && !c.req.path.startsWith("/api")
+      && !c.req.path.startsWith("/brand")
+      && (c.res.headers.get("content-type") ?? "").includes("text/html");
+    if (isHtmlGet) {
+      const day = new Date().toISOString().slice(0, 10);
+      const slug = c.req.path.startsWith("/restaurants/") ? decodeURIComponent(c.req.path.split("/")[2] ?? "") : "";
+      await sqlClient`
+        INSERT INTO visit_counts (day, slug, count) VALUES (${day}, ${slug}, 1)
+        ON CONFLICT (day, slug) DO UPDATE SET count = visit_counts.count + 1`;
+    }
+  } catch { /* counting must never break a page render */ }
+  return c.res;
+});
+
 // ---- Everything else: TanStack Start SSR ----
 app.all("*", async (c) => {
   const response = await ssr.fetch(c.req.raw);

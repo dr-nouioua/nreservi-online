@@ -41,6 +41,7 @@ function RestaurantPage() {
       subscriptionTier: string
       facebookUrl: string | null
       instagramUrl: string | null
+      tiktokUrl: string | null
       mapsUrl: string | null
     }
     areas: { id: number; name: string }[]
@@ -186,6 +187,11 @@ function RestaurantPage() {
                   {restaurant.facebookUrl && (
                     <a href={restaurant.facebookUrl} target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook" className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/15 backdrop-blur transition hover:bg-lime-400 hover:text-stone-950">
                       <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M13.5 21v-7h2.4l.4-3h-2.8V9.1c0-.9.3-1.5 1.6-1.5h1.3V4.9c-.3 0-1.1-.1-2.1-.1-2.1 0-3.6 1.3-3.6 3.7V11H8.3v3h2.4v7h2.8z"/></svg>
+                    </a>
+                  )}
+                  {restaurant.tiktokUrl && (
+                    <a href={restaurant.tiktokUrl} target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok" className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/15 backdrop-blur transition hover:bg-lime-400 hover:text-stone-950">
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 1 1-2.59-2.59c.27 0 .53.04.78.12V9.77a5.76 5.76 0 0 0-.78-.05 5.66 5.66 0 1 0 5.66 5.66V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3a4.28 4.28 0 0 1-3.22-1.48z"/></svg>
                     </a>
                   )}
                   {restaurant.instagramUrl && (
