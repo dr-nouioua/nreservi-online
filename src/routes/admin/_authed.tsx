@@ -4,6 +4,7 @@ import {
   Building2,
   CreditCard,
   LogOut,
+  Mail,
   Megaphone,
   Menu,
   PanelLeftClose,
@@ -33,6 +34,7 @@ const nav = [
   { to: '/admin/subscriptions', label: 'Abonnements', icon: CreditCard },
   { to: '/admin/ads', label: 'Publicités', icon: Megaphone },
   { to: '/admin/account', label: 'Compte', icon: ShieldCheck },
+  { to: '/admin/mail', label: 'Serveur e-mail', icon: Mail },
 ] as const
 
 function AdminLayout() {

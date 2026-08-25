@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "../../db/index.js";
-import { adminUsers, ads, restaurants, restaurantOwners, reservations, areas } from "../../db/schema.js";
+import { adminUsers, ads, mailSettings, restaurants, restaurantOwners, reservations, areas } from "../../db/schema.js";
 import { requireSession } from "./auth.functions.js";
 import { appendSubscriptionHistory, syncExpiredSubscriptionsInternal } from "./subscription.server.js";
 import { computeSubscriptionStatus, daysUntil, SUBSCRIPTION_WARNING_DAYS } from "./subscriptions.shared.js";
@@ -135,6 +135,23 @@ export const onboardRestaurant = createServerFn({ method: "POST" })
       passwordHash: hashPassword(data.ownerPassword),
       name: data.ownerName,
     });
+
+    // Welcome e-mail with the owner's credentials (best-effort, never blocks).
+    try {
+      const { sendMail, brandedEmail } = await import("./mail.server.js");
+      const base = process.env.PUBLIC_APP_URL ?? "https://nreservi.online";
+      await sendMail({
+        to: data.ownerEmail,
+        subject: `Votre restaurant ${restaurant.name} est en ligne sur nreservi.online`,
+        kind: "welcome",
+        html: brandedEmail("Bienvenue sur nreservi.online 🎉", [
+          `Bonjour ${data.ownerName},`,
+          `Votre établissement <strong>${restaurant.name}</strong> est maintenant en ligne. Voici vos accès à l'espace professionnel :`,
+          `E-mail : <strong>${data.ownerEmail}</strong><br/>Mot de passe : <strong>${data.ownerPassword}</strong>`,
+          "Pensez à changer votre mot de passe après votre première connexion.",
+        ], { label: "Accéder à mon espace", url: `${base}/owner/login` }),
+      });
+    } catch { /* l'e-mail ne doit jamais bloquer la création */ }
 
     return restaurant;
   });
@@ -370,3 +387,119 @@ export const renewSubscription = createServerFn({ method: "POST" })
     });
     return { success: true as const, newEnd: endISO };
   });
+
+// ---------- Mail server (SMTP) — configured by the super-admin ----------
+
+export const getMailSettings = createServerFn({ method: "GET" }).handler(async () => {
+  await requireAdmin();
+  const [cfg] = await db.select().from(mailSettings).where(eq(mailSettings.id, 1));
+  if (!cfg) {
+    return {
+      enabled: false, smtpHost: "", smtpPort: 587, smtpSecure: false,
+      smtpUser: "", hasPassword: false, fromName: "nreservi.online", fromEmail: "",
+    };
+  }
+  // The password never leaves the server — the UI only knows that one exists.
+  return {
+    enabled: cfg.enabled,
+    smtpHost: cfg.smtpHost,
+    smtpPort: cfg.smtpPort,
+    smtpSecure: cfg.smtpSecure,
+    smtpUser: cfg.smtpUser,
+    hasPassword: Boolean(cfg.smtpPass),
+    fromName: cfg.fromName,
+    fromEmail: cfg.fromEmail,
+  };
+});
+
+export const saveMailSettings = createServerFn({ method: "POST" })
+  .inputValidator((data: {
+    enabled: boolean; smtpHost: string; smtpPort: number; smtpSecure: boolean;
+    smtpUser: string; smtpPass?: string; fromName: string; fromEmail: string;
+  }) => data)
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    if (!data.smtpHost.trim()) return { error: "L'hôte SMTP est requis." };
+    if (!data.fromEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.fromEmail.trim())) {
+      return { error: "L'e-mail expéditeur est requis et doit être valide." };
+    }
+    if (!(data.smtpPort >= 1 && data.smtpPort <= 65535)) return { error: "Port invalide." };
+
+    const [existing] = await db.select().from(mailSettings).where(eq(mailSettings.id, 1));
+    // Empty password field = keep the stored one.
+    const smtpPass = data.smtpPass && data.smtpPass.length > 0 ? data.smtpPass : existing?.smtpPass ?? "";
+    if (!smtpPass) return { error: "Le mot de passe SMTP est requis (au moins lors de la première configuration)." };
+
+    const values = {
+      enabled: data.enabled,
+      smtpHost: data.smtpHost.trim(),
+      smtpPort: data.smtpPort,
+      smtpSecure: data.smtpSecure,
+      smtpUser: data.smtpUser.trim(),
+      smtpPass,
+      fromName: data.fromName.trim() || "nreservi.online",
+      fromEmail: data.fromEmail.trim(),
+      updatedAt: new Date(),
+    };
+    await db
+      .insert(mailSettings)
+      .values({ id: 1, ...values })
+      .onConflictDoUpdate({ target: mailSettings.id, set: values });
+    return { success: true as const };
+  });
+
+export const sendTestEmail = createServerFn({ method: "POST" })
+  .inputValidator((data: { to: string }) => data)
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.to.trim())) return { error: "Adresse e-mail invalide." };
+    const { sendMail, brandedEmail } = await import("./mail.server.js");
+    const result = await sendMail({
+      to: data.to.trim(),
+      subject: "nreservi.online — e-mail de test",
+      kind: "test",
+      html: brandedEmail("Configuration réussie 🎉", [
+        "Le serveur d'e-mails de nreservi.online est correctement configuré.",
+        "Les restaurants recevront leurs notifications (bienvenue, abonnement, expiration) sur cette base.",
+      ]),
+    });
+    return result.ok ? { success: true as const } : { error: result.error };
+  });
+
+/** Sends an email to every owner account of one restaurant (admin-composed). */
+export const emailRestaurant = createServerFn({ method: "POST" })
+  .inputValidator((data: { restaurantId: number; subject: string; body: string }) => data)
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    const subject = data.subject.trim();
+    const body = data.body.trim().replace(/\n/g, "<br/>");
+    if (!subject) return { error: "L'objet est requis." };
+    if (!body) return { error: "Le message est requis." };
+
+    const owners = await db
+      .select({ email: restaurantOwners.email })
+      .from(restaurantOwners)
+      .where(eq(restaurantOwners.restaurantId, data.restaurantId));
+    if (owners.length === 0) return { error: "Ce restaurant n'a pas de compte propriétaire." };
+
+    const { sendMail, brandedEmail } = await import("./mail.server.js");
+    let sent = 0;
+    let lastError: string | null = null;
+    for (const owner of owners) {
+      const result = await sendMail({
+        to: owner.email,
+        subject,
+        kind: "custom",
+        html: brandedEmail(subject, [body]),
+      });
+      if (result.ok) sent++;
+      else lastError = result.error;
+    }
+    return sent > 0 ? { success: true as const, sent } : { error: lastError ?? "Échec de l'envoi." };
+  });
+
+export const listMailLog = createServerFn({ method: "GET" }).handler(async () => {
+  await requireAdmin();
+  const { mailLog } = await import("../../db/schema.js");
+  return db.select().from(mailLog).orderBy(sql`created_at desc`).limit(30);
+});

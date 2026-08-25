@@ -12,7 +12,6 @@ import {
 } from 'chart.js'
 import { Bar, Doughnut } from 'react-chartjs-2'
 import { TrendingUp, Users, AlertTriangle } from 'lucide-react'
-import { formatPriceDA } from '../../services/format'
 
 export const Route = createLazyFileRoute('/owner/_authed/analytics')({
   component: AnalyticsPage,

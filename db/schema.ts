@@ -49,6 +49,7 @@ export const restaurants = pgTable("restaurants", {
    subscriptionHistory: jsonb("subscription_history").notNull().default([]),
    menuFixed: boolean("menu_fixed").notNull().default(false), // false = collapsible menu, true = always open
    babySeatAvailable: boolean("baby_seat_available").notNull().default(false), // show baby-seat option in the booking form
+   expiryWarningSentFor: date("expiry_warning_sent_for"), // end-date the 14-day warning was last sent for
    hasParking: boolean("has_parking").notNull().default(false), // parking badge on the public page
    createdAt: timestamp("created_at").defaultNow(),
 });
@@ -210,6 +211,34 @@ export const campaignLogs = pgTable("campaign_logs", {
 }, (table) => [
   index("campaign_logs_restaurant_idx").on(table.restaurantId),
 ]);
+
+// ---------- Mail server (SMTP, configured by the super-admin) ----------
+
+// Single row (id=1). The SMTP password never leaves the server: the admin UI
+// only ever receives a hasPassword flag.
+export const mailSettings = pgTable("mail_settings", {
+  id: integer("id").primaryKey().default(1),
+  enabled: boolean("enabled").notNull().default(false),
+  smtpHost: text("smtp_host").notNull().default(""),
+  smtpPort: integer("smtp_port").notNull().default(587),
+  smtpSecure: boolean("smtp_secure").notNull().default(false), // true = implicit TLS (465)
+  smtpUser: text("smtp_user").notNull().default(""),
+  smtpPass: text("smtp_pass").notNull().default(""),
+  fromName: text("from_name").notNull().default("nreservi.online"),
+  fromEmail: text("from_email").notNull().default(""),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Every outgoing email is journaled here (to, subject, status, error).
+export const mailLog = pgTable("mail_log", {
+  id: serial().primaryKey(),
+  toEmail: text("to_email").notNull(),
+  subject: text("subject").notNull(),
+  kind: text("kind").notNull().default("custom"), // test | welcome | expiry_warning | expiry_notice | custom
+  status: text("status").notNull().default("sent"), // sent | failed | skipped
+  error: text("error"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
 
 // ---------- WhatsApp message log ----------
 

@@ -25,6 +25,7 @@ import { Route as OwnerAuthedBillingRouteImport } from './routes/owner/_authed.b
 import { Route as OwnerAuthedAnalyticsRouteImport } from './routes/owner/_authed.analytics'
 import { Route as AdminAuthedSubscriptionsRouteImport } from './routes/admin/_authed.subscriptions'
 import { Route as AdminAuthedOnboardRouteImport } from './routes/admin/_authed.onboard'
+import { Route as AdminAuthedMailRouteImport } from './routes/admin/_authed.mail'
 import { Route as AdminAuthedAdsRouteImport } from './routes/admin/_authed.ads'
 import { Route as AdminAuthedAccountRouteImport } from './routes/admin/_authed.account'
 import { Route as OwnerAuthedSettingsWhatsappRouteImport } from './routes/owner/_authed.settings_.whatsapp'
@@ -114,6 +115,11 @@ const AdminAuthedOnboardRoute = AdminAuthedOnboardRouteImport.update({
   path: '/onboard',
   getParentRoute: () => AdminAuthedRoute,
 } as any)
+const AdminAuthedMailRoute = AdminAuthedMailRouteImport.update({
+  id: '/mail',
+  path: '/mail',
+  getParentRoute: () => AdminAuthedRoute,
+} as any)
 const AdminAuthedAdsRoute = AdminAuthedAdsRouteImport.update({
   id: '/ads',
   path: '/ads',
@@ -141,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/restaurants/$slug': typeof RestaurantsSlugRoute
   '/admin/account': typeof AdminAuthedAccountRoute
   '/admin/ads': typeof AdminAuthedAdsRoute
+  '/admin/mail': typeof AdminAuthedMailRoute
   '/admin/onboard': typeof AdminAuthedOnboardRoute
   '/admin/subscriptions': typeof AdminAuthedSubscriptionsRoute
   '/owner/analytics': typeof OwnerAuthedAnalyticsRoute
@@ -160,6 +167,7 @@ export interface FileRoutesByTo {
   '/restaurants/$slug': typeof RestaurantsSlugRoute
   '/admin/account': typeof AdminAuthedAccountRoute
   '/admin/ads': typeof AdminAuthedAdsRoute
+  '/admin/mail': typeof AdminAuthedMailRoute
   '/admin/onboard': typeof AdminAuthedOnboardRoute
   '/admin/subscriptions': typeof AdminAuthedSubscriptionsRoute
   '/owner/analytics': typeof OwnerAuthedAnalyticsRoute
@@ -182,6 +190,7 @@ export interface FileRoutesById {
   '/restaurants/$slug': typeof RestaurantsSlugRoute
   '/admin/_authed/account': typeof AdminAuthedAccountRoute
   '/admin/_authed/ads': typeof AdminAuthedAdsRoute
+  '/admin/_authed/mail': typeof AdminAuthedMailRoute
   '/admin/_authed/onboard': typeof AdminAuthedOnboardRoute
   '/admin/_authed/subscriptions': typeof AdminAuthedSubscriptionsRoute
   '/owner/_authed/analytics': typeof OwnerAuthedAnalyticsRoute
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/restaurants/$slug'
     | '/admin/account'
     | '/admin/ads'
+    | '/admin/mail'
     | '/admin/onboard'
     | '/admin/subscriptions'
     | '/owner/analytics'
@@ -224,6 +234,7 @@ export interface FileRouteTypes {
     | '/restaurants/$slug'
     | '/admin/account'
     | '/admin/ads'
+    | '/admin/mail'
     | '/admin/onboard'
     | '/admin/subscriptions'
     | '/owner/analytics'
@@ -245,6 +256,7 @@ export interface FileRouteTypes {
     | '/restaurants/$slug'
     | '/admin/_authed/account'
     | '/admin/_authed/ads'
+    | '/admin/_authed/mail'
     | '/admin/_authed/onboard'
     | '/admin/_authed/subscriptions'
     | '/owner/_authed/analytics'
@@ -381,6 +393,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuthedOnboardRouteImport
       parentRoute: typeof AdminAuthedRoute
     }
+    '/admin/_authed/mail': {
+      id: '/admin/_authed/mail'
+      path: '/mail'
+      fullPath: '/admin/mail'
+      preLoaderRoute: typeof AdminAuthedMailRouteImport
+      parentRoute: typeof AdminAuthedRoute
+    }
     '/admin/_authed/ads': {
       id: '/admin/_authed/ads'
       path: '/ads'
@@ -408,6 +427,7 @@ declare module '@tanstack/react-router' {
 interface AdminAuthedRouteChildren {
   AdminAuthedAccountRoute: typeof AdminAuthedAccountRoute
   AdminAuthedAdsRoute: typeof AdminAuthedAdsRoute
+  AdminAuthedMailRoute: typeof AdminAuthedMailRoute
   AdminAuthedOnboardRoute: typeof AdminAuthedOnboardRoute
   AdminAuthedSubscriptionsRoute: typeof AdminAuthedSubscriptionsRoute
   AdminAuthedIndexRoute: typeof AdminAuthedIndexRoute
@@ -416,6 +436,7 @@ interface AdminAuthedRouteChildren {
 const AdminAuthedRouteChildren: AdminAuthedRouteChildren = {
   AdminAuthedAccountRoute: AdminAuthedAccountRoute,
   AdminAuthedAdsRoute: AdminAuthedAdsRoute,
+  AdminAuthedMailRoute: AdminAuthedMailRoute,
   AdminAuthedOnboardRoute: AdminAuthedOnboardRoute,
   AdminAuthedSubscriptionsRoute: AdminAuthedSubscriptionsRoute,
   AdminAuthedIndexRoute: AdminAuthedIndexRoute,

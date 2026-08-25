@@ -30,6 +30,12 @@ app.post("/api/cron/sync-subscriptions", async (c) =>
     return Response.json({ suspended: await syncExpiredSubscriptionsInternal() });
   }),
 );
+app.post("/api/cron/subscription-warnings", async (c) =>
+  cronGuard(c, async () => {
+    const { sendSubscriptionWarningsInternal } = await import("../src/server/subscription.server.js");
+    return Response.json(await sendSubscriptionWarningsInternal());
+  }),
+);
 
 async function cronGuard(c: { req: { header: (k: string) => string | undefined } }, run: () => Promise<Response>) {
   const secret = process.env.CRON_SECRET;
