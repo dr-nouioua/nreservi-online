@@ -8,7 +8,7 @@ export const DARK_CLASS = "dark";
 export function getStoredTheme(): Theme {
   if (typeof window === "undefined") return "light";
   try {
-    return window.localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light";
+    return window.localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "dark";
   } catch {
     return "light";
   }

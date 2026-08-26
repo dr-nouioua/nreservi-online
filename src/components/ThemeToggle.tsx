@@ -6,7 +6,7 @@ import { getStoredTheme, setTheme, type Theme } from "../services/theme"
 // The initial theme is applied pre-hydration by the inline script in __root.tsx;
 // this component only reads it to render the right icon.
 export function ThemeToggle({ className = "" }: { className?: string }) {
-  const [theme, setThemeState] = useState<Theme>("light")
+  const [theme, setThemeState] = useState<Theme>("dark")
 
   useEffect(() => {
     setThemeState(getStoredTheme())
