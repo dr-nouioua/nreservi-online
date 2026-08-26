@@ -38,6 +38,7 @@ const nav: { to: string; label: string; icon: typeof Building2; module?: string 
   { to: '/admin/emails', label: 'E-mails', icon: Send, module: 'emails' },
   { to: '/admin/ads', label: 'Publicités', icon: Megaphone, module: 'ads' },
   { to: '/admin/mail', label: 'Serveur e-mail', icon: Mail, module: 'mail' },
+  { to: '/admin/logs', label: 'Journal', icon: History, module: undefined },
   { to: '/admin/account', label: 'Compte', icon: ShieldCheck },
 ]
 
