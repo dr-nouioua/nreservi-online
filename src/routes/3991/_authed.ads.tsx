@@ -120,7 +120,7 @@ function AdminAdsPage() {
   )
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="w-full space-y-6">
       <div>
         <p className="text-sm font-medium text-lime-300">Administration</p>
         <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Publicités intégrées</h1>
