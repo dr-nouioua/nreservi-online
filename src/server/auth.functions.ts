@@ -16,7 +16,7 @@ export const requireSession = createServerOnlyFn(async (): Promise<SessionPayloa
   // active admin/owner is never logged out mid-work — 2h of inactivity is.
   if (session && token) {
     try {
-      setCookie(COOKIE, signSession(session), { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 * 2 });
+      setCookie(COOKIE, signSession(session), { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 * 2 , secure: process.env.NODE_ENV === "production" });
     } catch { /* response context unavailable — ignore */ }
   }
   return session;
@@ -43,7 +43,7 @@ export const loginOwner = createServerFn({ method: "POST" })
       name: owner.name,
       restaurantId: owner.restaurantId,
     });
-    setCookie(COOKIE, token, { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 * 2 });
+    setCookie(COOKIE, token, { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 * 2 , secure: process.env.NODE_ENV === "production" });
     return { success: true };
   });
 
@@ -65,7 +65,7 @@ export const loginStaff = createServerFn({ method: "POST" })
       restaurantId: staff.restaurantId,
       staffRole: staff.role,
     });
-    setCookie(COOKIE, token, { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 * 2 });
+    setCookie(COOKIE, token, { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 * 2 , secure: process.env.NODE_ENV === "production" });
     return { success: true };
   });
 
@@ -87,7 +87,7 @@ export const loginAdmin = createServerFn({ method: "POST" })
       adminRole: (admin.role as "super" | "admin") ?? "admin",
       permissions: (admin.permissions as string[]) ?? [],
     });
-    setCookie(COOKIE, token, { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 * 2 });
+    setCookie(COOKIE, token, { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 * 2 , secure: process.env.NODE_ENV === "production" });
     return { success: true };
   });
 
@@ -188,6 +188,6 @@ export const updateAccountEmail = createServerFn({ method: "POST" })
         : session.role === "staff"
           ? { role: "staff" as const, id: session.id, email: newEmail, name: session.name, restaurantId: session.restaurantId, staffRole: session.staffRole }
           : { role: "owner" as const, id: session.id, email: newEmail, name: session.name, restaurantId: session.restaurantId };
-    setCookie(COOKIE, signSession(payload), { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 * 2 });
+    setCookie(COOKIE, signSession(payload), { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 * 2, secure: process.env.NODE_ENV === "production" });
     return { success: true };
   });

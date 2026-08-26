@@ -25,11 +25,13 @@ export const listRestaurants = createServerFn({ method: "GET" })
     const conds = [eq(restaurants.status, "active")];
     const q = data?.q?.trim();
     if (q) {
+      // Escape LIKE wildcards so "%"/"_" can't widen the match.
+      const safe = q.replace(/[\\%_]/g, "\\$&");
       conds.push(
         or(
-          ilike(restaurants.name, `%${q}%`),
-          ilike(restaurants.cuisine, `%${q}%`),
-          ilike(restaurants.city, `%${q}%`),
+          ilike(restaurants.name, `%${safe}%`),
+          ilike(restaurants.cuisine, `%${safe}%`),
+          ilike(restaurants.city, `%${safe}%`),
         )!,
       );
     }

@@ -4,6 +4,7 @@ import { and, eq, gt, isNull } from "drizzle-orm";
 import { db } from "../../db/index.js";
 import { adminUsers, passwordResets, restaurantOwners, staffUsers } from "../../db/schema.js";
 import { hashPassword } from "./crypto.server.js";
+import { rateLimit } from "./rate-limit.server.js";
 
 const TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
 
@@ -36,6 +37,8 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
   .inputValidator((data: { email: string }) => data)
   .handler(async ({ data }) => {
     const email = data.email.trim().toLowerCase();
+    // Silent throttle: prevents mail-bombing through this endpoint.
+    if (!rateLimit(`pwreset:${email}`, 3, 60 * 60 * 1000)) return { success: true as const };
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { success: true as const };
 
     const accounts = await findAccountsByEmail(email);

@@ -25,6 +25,28 @@ export const Route = createRootRoute({
     ],
   }),
   shellComponent: RootDocument,
+  // Generic error screen: raw errors (which can contain SQL fragments) are
+  // never shown to visitors — they only go to the server logs.
+  errorComponent: ({ error }) => {
+    console.error("[app error]", error);
+    return (
+      <div className="min-h-screen bg-stone-50 dark:bg-stone-950 flex items-center justify-center p-4">
+        <div className="max-w-md rounded-xl border border-stone-200 bg-white p-8 text-center dark:border-stone-800 dark:bg-stone-900">
+          <p className="text-4xl">😔</p>
+          <h1 className="mt-4 text-xl font-bold text-stone-900 dark:text-stone-100">Une erreur est survenue</h1>
+          <p className="mt-3 text-sm text-stone-600 dark:text-stone-400">
+            Une erreur inattendue s'est produite. Rechargez la page ou réessayez dans un instant.
+          </p>
+          <a
+            href="/"
+            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-stone-950 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white"
+          >
+            Retour à l'accueil
+          </a>
+        </div>
+      </div>
+    );
+  },
 })
 
 // Applied before first paint so the page never flashes light when dark mode is on.

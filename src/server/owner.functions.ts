@@ -287,6 +287,11 @@ export const updateRestaurantSettings = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const restaurantId = await requireRestaurantId();
+    for (const img of [data.logoUrl, data.coverImageUrl]) {
+      if (img && img.length > 3_000_000) {
+        return { error: "Image trop volumineuse (max ~2 Mo). Utilisez une image plus petite." };
+      }
+    }
     const badLink = [data.facebookUrl, data.instagramUrl, data.tiktokUrl, data.mapsUrl].find(
       (v) => v && v.trim() && !/^https:\/\//.test(v.trim()),
     );

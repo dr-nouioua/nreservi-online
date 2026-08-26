@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { eq, sql } from "drizzle-orm";
 import { db } from "../../db/index.js";
-import { adminUsers, ads, mailSettings, marketingCampaigns, marketingRules, marketingSegments, marketingTemplates, menuCategories, menuItems, restaurants, restaurantOwners, reservations, areas, staffUsers, whatsappMessages, campaignLogs } from "../../db/schema.js";
+import { adminUsers, ads, mailSettings, marketingCampaigns, marketingRules, marketingSegments, marketingTemplates, menuCategories, menuItems, restaurants, restaurantOwners, reservations, areas, staffUsers, tables, whatsappMessages, campaignLogs } from "../../db/schema.js";
 import { requireSession } from "./auth.functions.js";
 import { appendSubscriptionHistory, syncExpiredSubscriptionsInternal } from "./subscription.server.js";
 import { computeSubscriptionStatus, daysUntil, SUBSCRIPTION_WARNING_DAYS } from "./subscriptions.shared.js";
@@ -92,7 +92,7 @@ export const suspendRestaurant = createServerFn({ method: "POST" })
 export const deleteRestaurant = createServerFn({ method: "POST" })
   .inputValidator((data: { id: number; confirmName: string }) => data)
   .handler(async ({ data }) => {
-    const session = await requireAdmin();
+    await requireAdmin();
     const [row] = await db.select().from(restaurants).where(eq(restaurants.id, data.id));
     if (!row) return { error: "Restaurant introuvable." };
     // Second confirmation, enforced server-side: the typed name must match.
@@ -336,6 +336,9 @@ export const createAd = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     await requireAdminWithModule('ads');
+    if (data.imageUrl && data.imageUrl.length > 3_000_000) {
+      return { error: "Image trop volumineuse (max ~2 Mo)." };
+    }
     const values = normalizeAdInput(data);
     if (!values.title) return { error: "Le titre est requis." };
     if (values.linkUrl && !/^https?:\/\//.test(values.linkUrl)) {
@@ -352,6 +355,9 @@ export const updateAd = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     await requireAdminWithModule('ads');
+    if (data.imageUrl && data.imageUrl.length > 3_000_000) {
+      return { error: "Image trop volumineuse (max ~2 Mo)." };
+    }
     const values = normalizeAdInput(data);
     if (!values.title) return { error: "Le titre est requis." };
     if (values.linkUrl && !/^https?:\/\//.test(values.linkUrl)) {
