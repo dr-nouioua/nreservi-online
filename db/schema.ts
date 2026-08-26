@@ -248,7 +248,10 @@ export const visitCounts = pgTable("visit_counts", {
   day: date("day").notNull(),
   slug: text("slug").notNull().default(""), // restaurant slug, empty = whole platform
   count: integer("count").notNull().default(0),
-}, (t) => [unique("visit_counts_day_slug_key").on(t.day, t.slug)]);
+}, (t) => [
+  unique("visit_counts_day_slug_key").on(t.day, t.slug),
+  index("visit_counts_slug_day_idx").on(t.slug, t.day),
+]);
 
 // ---------- Admin activity log ----------
 
@@ -259,7 +262,7 @@ export const adminLogs = pgTable("admin_logs", {
   action: text("action").notNull(),
   details: text("details"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => [index("admin_logs_created_idx").on(t.createdAt)]);
 
 // ---------- Password resets (e-mail tokens, single use, 1h) ----------
 
@@ -299,7 +302,7 @@ export const mailLog = pgTable("mail_log", {
   status: text("status").notNull().default("sent"), // sent | failed | skipped
   error: text("error"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (t) => [index("mail_log_created_idx").on(t.createdAt)]);
 
 // ---------- WhatsApp message log ----------
 

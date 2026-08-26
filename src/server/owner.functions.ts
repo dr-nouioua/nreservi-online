@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { db } from "../../db/index.js";
 import {
   reservations,
@@ -193,36 +193,69 @@ export const createWalkIn = createServerFn({ method: "POST" })
 
 export const getAnalytics = createServerFn({ method: "GET" }).handler(async () => {
   const restaurantId = await requireRestaurantId();
-  const [restaurant] = await db.select().from(restaurants).where(eq(restaurants.id, restaurantId));
-  const allRes = await db.select().from(reservations).where(eq(reservations.restaurantId, restaurantId));
-  const tableRows = await db.select().from(tables).where(eq(tables.restaurantId, restaurantId));
+  const rid = eq(reservations.restaurantId, restaurantId);
+  const c = sql<number>`count(*)::int`;
 
-  const total = allRes.length;
-  const noShows = allRes.filter((r) => r.status === "no_show").length;
-  const cancelled = allRes.filter((r) => r.status === "cancelled").length;
-  const completed = allRes.filter((r) => r.status === "completed" || r.status === "seated").length;
+  // All aggregation in SQL — raw reservation rows are never loaded, so this
+  // stays fast regardless of how many years of data accumulate.
+  const [statusRows, hourRows, dayRows, areaRows, phoneRows, tableCountRows, restRows, areaNameRows] = await Promise.all([
+    db.select({ status: reservations.status, c }).from(reservations).where(rid).groupBy(reservations.status),
+    db
+      .select({ h: sql<string>`to_char(${reservations.time}, 'HH24')`, c })
+      .from(reservations)
+      .where(rid)
+      .groupBy(sql`to_char(${reservations.time}, 'HH24')`),
+    db
+      .select({ d: sql<string>`to_char(${reservations.date}, 'Dy')`, c })
+      .from(reservations)
+      .where(rid)
+      .groupBy(sql`to_char(${reservations.date}, 'Dy')`),
+    db
+      .select({ areaId: reservations.areaId, c })
+      .from(reservations)
+      .where(and(rid, isNotNull(reservations.areaId)))
+      .groupBy(reservations.areaId),
+    db
+      .select({ phone: reservations.guestPhone, visits: c })
+      .from(reservations)
+      .where(rid)
+      .groupBy(reservations.guestPhone),
+    db.select({ c }).from(tables).where(eq(tables.restaurantId, restaurantId)),
+    db
+      .select({ avgTicket: restaurants.avgTicketPrice })
+      .from(restaurants)
+      .where(eq(restaurants.id, restaurantId)),
+    db.select({ id: areas.id, name: areas.name }).from(areas).where(eq(areas.restaurantId, restaurantId)),
+  ]);
+
+  const byStatus = Object.fromEntries(statusRows.map((r) => [r.status, r.c]));
+  const total = statusRows.reduce((acc, r) => acc + r.c, 0);
+  const completed = (byStatus.completed ?? 0) + (byStatus.seated ?? 0);
+  const noShows = byStatus.no_show ?? 0;
+  const cancelled = byStatus.cancelled ?? 0;
 
   const byHour: Record<string, number> = {};
+  for (const r of hourRows) byHour[r.h] = r.c;
   const byDay: Record<string, number> = {};
-  const byArea: Record<number, number> = {};
-  const customerVisits: Record<string, number> = {};
-
-  for (const r of allRes) {
-    const hour = r.time.slice(0, 2);
-    byHour[hour] = (byHour[hour] ?? 0) + 1;
-    const weekday = new Date(r.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short" });
-    byDay[weekday] = (byDay[weekday] ?? 0) + 1;
-    if (r.areaId) byArea[r.areaId] = (byArea[r.areaId] ?? 0) + 1;
-    customerVisits[r.guestPhone] = (customerVisits[r.guestPhone] ?? 0) + 1;
+  for (const r of dayRows) byDay[r.d.trim()] = r.c;
+  const areaNames = new Map(areaNameRows.map((a) => [a.id, a.name]));
+  const byArea: Record<string, number> = {};
+  for (const r of areaRows) {
+    if (r.areaId == null) continue;
+    byArea[areaNames.get(r.areaId) ?? String(r.areaId)] = r.c;
   }
 
-  const repeatCustomers = Object.values(customerVisits).filter((v) => v > 1).length;
-  const newCustomers = Object.values(customerVisits).filter((v) => v === 1).length;
+  let repeatCustomers = 0;
+  let newCustomers = 0;
+  for (const p of phoneRows) {
+    if (p.visits > 1) repeatCustomers++;
+    else newCustomers++;
+  }
 
-  const occupancyRate = tableRows.length > 0 ? Math.min(100, Math.round((total / (tableRows.length * 7)) * 100)) : 0;
-  const revenueEstimate = completed * Number(restaurant?.avgTicketPrice ?? 0);
-
-  const areaRows = await db.select().from(areas).where(eq(areas.restaurantId, restaurantId));
+  const tableCount = tableCountRows[0]?.c ?? 0;
+  const occupancyRate = tableCount > 0 ? Math.min(100, Math.round((total / (tableCount * 7)) * 100)) : 0;
+  const avgTicket = Number(restRows[0]?.avgTicket ?? 0);
+  const revenueEstimate = completed * avgTicket;
 
   return {
     total,
@@ -234,12 +267,7 @@ export const getAnalytics = createServerFn({ method: "GET" }).handler(async () =
     newCustomers,
     byHour,
     byDay,
-    byArea: Object.fromEntries(
-      Object.entries(byArea).map(([areaId, count]) => [
-        areaRows.find((a) => a.id === Number(areaId))?.name ?? areaId,
-        count,
-      ]),
-    ),
+    byArea,
   };
 });
 

@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, isNull, ne, or, sql } from "drizzle-orm";
+import { and, eq, ilike, isNull, ne, or, sql } from "drizzle-orm";
 import { db } from "../../db/index.js";
 import {
   restaurants,
@@ -21,16 +21,33 @@ export const listRestaurants = createServerFn({ method: "GET" })
   .inputValidator((data: { q?: string; city?: string; cuisine?: string } | undefined) => data)
   .handler(async ({ data }) => {
     await ensureSeeded();
-    const all = await db.select().from(restaurants).where(eq(restaurants.status, "active"));
-    const q = data?.q?.toLowerCase();
-    const city = data?.city?.toLowerCase();
-    const cuisine = data?.cuisine?.toLowerCase();
-    return all.filter((r) => {
-      if (q && !r.name.toLowerCase().includes(q) && !r.cuisine.toLowerCase().includes(q)) return false;
-      if (city && r.city.toLowerCase() !== city) return false;
-      if (cuisine && r.cuisine.toLowerCase() !== cuisine) return false;
-      return true;
-    });
+    // SQL-level filtering + minimal columns: scales to hundreds of restaurants.
+    const conds = [eq(restaurants.status, "active")];
+    const q = data?.q?.trim();
+    if (q) {
+      conds.push(
+        or(
+          ilike(restaurants.name, `%${q}%`),
+          ilike(restaurants.cuisine, `%${q}%`),
+          ilike(restaurants.city, `%${q}%`),
+        )!,
+      );
+    }
+    if (data?.city) conds.push(eq(restaurants.city, data.city));
+    if (data?.cuisine) conds.push(eq(restaurants.cuisine, data.cuisine));
+
+    return db
+      .select({
+        id: restaurants.id,
+        slug: restaurants.slug,
+        name: restaurants.name,
+        city: restaurants.city,
+        cuisine: restaurants.cuisine,
+        coverImageUrl: restaurants.coverImageUrl,
+      })
+      .from(restaurants)
+      .where(and(...conds))
+      .orderBy(restaurants.name);
   });
 
 export const getRestaurantBySlug = createServerFn({ method: "GET" })

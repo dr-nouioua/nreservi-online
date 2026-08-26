@@ -43,20 +43,30 @@ export const listAllRestaurants = createServerFn({ method: "GET" }).handler(asyn
 
 export const getPlatformAnalytics = createServerFn({ method: "GET" }).handler(async () => {
   await requireAdmin();
-  const allRestaurants = await db.select().from(restaurants);
-  const allReservations = await db.select().from(reservations);
-  const active = allRestaurants.filter((r) => r.status === "active").length;
-  const pending = allRestaurants.filter((r) => r.status === "pending").length;
+  const c = sql<number>`count(*)::int`;
+  // Aggregated in SQL — scales to millions of reservations.
+  const [restRows, countRows] = await Promise.all([
+    db.select({ id: restaurants.id, name: restaurants.name, status: restaurants.status }).from(restaurants).orderBy(restaurants.id),
+    db
+      .select({ rid: reservations.restaurantId, c })
+      .from(reservations)
+      .groupBy(reservations.restaurantId),
+  ]);
+
+  const countMap = new Map(countRows.map((r) => [r.rid, r.c]));
   const byRestaurant: Record<string, number> = {};
-  for (const r of allReservations) {
-    const name = allRestaurants.find((x) => x.id === r.restaurantId)?.name ?? "Unknown";
-    byRestaurant[name] = (byRestaurant[name] ?? 0) + 1;
+  let totalBookings = 0;
+  for (const r of restRows) {
+    const n = countMap.get(r.id) ?? 0;
+    byRestaurant[r.name] = n;
+    totalBookings += n;
   }
+
   return {
-    totalRestaurants: allRestaurants.length,
-    activeRestaurants: active,
-    pendingRestaurants: pending,
-    totalBookings: allReservations.length,
+    totalRestaurants: restRows.length,
+    activeRestaurants: restRows.filter((r) => r.status === "active").length,
+    pendingRestaurants: restRows.filter((r) => r.status === "pending").length,
+    totalBookings,
     byRestaurant,
   };
 });

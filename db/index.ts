@@ -13,6 +13,6 @@ if (!url) {
 }
 
 // Lazy connections; max 10 suits a small VPS next to Postgres.
-export const sqlClient = postgres(url, { max: 10 });
+export const sqlClient = postgres(url, { max: Number(process.env.DB_POOL_MAX ?? 10) });
 
 export const db = drizzle({ client: sqlClient, schema });
