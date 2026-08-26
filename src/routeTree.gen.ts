@@ -13,6 +13,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as MyReservationsRouteImport } from './routes/my-reservations'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RestaurantsSlugRouteImport } from './routes/restaurants.$slug'
 import { Route as OwnerLoginRouteImport } from './routes/owner/login'
@@ -30,6 +31,7 @@ import { Route as AdminAuthedSubscriptionsRouteImport } from './routes/admin/_au
 import { Route as AdminAuthedOnboardRouteImport } from './routes/admin/_authed.onboard'
 import { Route as AdminAuthedMailRouteImport } from './routes/admin/_authed.mail'
 import { Route as AdminAuthedLogsRouteImport } from './routes/admin/_authed.logs'
+import { Route as AdminAuthedLandingRouteImport } from './routes/admin/_authed.landing'
 import { Route as AdminAuthedEmailsRouteImport } from './routes/admin/_authed.emails'
 import { Route as AdminAuthedAdsRouteImport } from './routes/admin/_authed.ads'
 import { Route as AdminAuthedAccountRouteImport } from './routes/admin/_authed.account'
@@ -53,6 +55,11 @@ const MyReservationsRoute = MyReservationsRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -145,6 +152,11 @@ const AdminAuthedLogsRoute = AdminAuthedLogsRouteImport.update({
   path: '/logs',
   getParentRoute: () => AdminAuthedRoute,
 } as any)
+const AdminAuthedLandingRoute = AdminAuthedLandingRouteImport.update({
+  id: '/landing',
+  path: '/landing',
+  getParentRoute: () => AdminAuthedRoute,
+} as any)
 const AdminAuthedEmailsRoute = AdminAuthedEmailsRouteImport.update({
   id: '/emails',
   path: '/emails',
@@ -169,6 +181,7 @@ const OwnerAuthedSettingsWhatsappRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/my-reservations': typeof MyReservationsRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -181,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/admin/account': typeof AdminAuthedAccountRoute
   '/admin/ads': typeof AdminAuthedAdsRoute
   '/admin/emails': typeof AdminAuthedEmailsRoute
+  '/admin/landing': typeof AdminAuthedLandingRoute
   '/admin/logs': typeof AdminAuthedLogsRoute
   '/admin/mail': typeof AdminAuthedMailRoute
   '/admin/onboard': typeof AdminAuthedOnboardRoute
@@ -196,6 +210,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/my-reservations': typeof MyReservationsRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -206,6 +221,7 @@ export interface FileRoutesByTo {
   '/admin/account': typeof AdminAuthedAccountRoute
   '/admin/ads': typeof AdminAuthedAdsRoute
   '/admin/emails': typeof AdminAuthedEmailsRoute
+  '/admin/landing': typeof AdminAuthedLandingRoute
   '/admin/logs': typeof AdminAuthedLogsRoute
   '/admin/mail': typeof AdminAuthedMailRoute
   '/admin/onboard': typeof AdminAuthedOnboardRoute
@@ -222,6 +238,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/my-reservations': typeof MyReservationsRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -234,6 +251,7 @@ export interface FileRoutesById {
   '/admin/_authed/account': typeof AdminAuthedAccountRoute
   '/admin/_authed/ads': typeof AdminAuthedAdsRoute
   '/admin/_authed/emails': typeof AdminAuthedEmailsRoute
+  '/admin/_authed/landing': typeof AdminAuthedLandingRoute
   '/admin/_authed/logs': typeof AdminAuthedLogsRoute
   '/admin/_authed/mail': typeof AdminAuthedMailRoute
   '/admin/_authed/onboard': typeof AdminAuthedOnboardRoute
@@ -251,6 +269,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/forgot-password'
     | '/my-reservations'
     | '/reset-password'
@@ -263,6 +282,7 @@ export interface FileRouteTypes {
     | '/admin/account'
     | '/admin/ads'
     | '/admin/emails'
+    | '/admin/landing'
     | '/admin/logs'
     | '/admin/mail'
     | '/admin/onboard'
@@ -278,6 +298,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/forgot-password'
     | '/my-reservations'
     | '/reset-password'
@@ -288,6 +309,7 @@ export interface FileRouteTypes {
     | '/admin/account'
     | '/admin/ads'
     | '/admin/emails'
+    | '/admin/landing'
     | '/admin/logs'
     | '/admin/mail'
     | '/admin/onboard'
@@ -303,6 +325,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/forgot-password'
     | '/my-reservations'
     | '/reset-password'
@@ -315,6 +338,7 @@ export interface FileRouteTypes {
     | '/admin/_authed/account'
     | '/admin/_authed/ads'
     | '/admin/_authed/emails'
+    | '/admin/_authed/landing'
     | '/admin/_authed/logs'
     | '/admin/_authed/mail'
     | '/admin/_authed/onboard'
@@ -331,6 +355,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   MyReservationsRoute: typeof MyReservationsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -370,6 +395,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -491,6 +523,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuthedLogsRouteImport
       parentRoute: typeof AdminAuthedRoute
     }
+    '/admin/_authed/landing': {
+      id: '/admin/_authed/landing'
+      path: '/landing'
+      fullPath: '/admin/landing'
+      preLoaderRoute: typeof AdminAuthedLandingRouteImport
+      parentRoute: typeof AdminAuthedRoute
+    }
     '/admin/_authed/emails': {
       id: '/admin/_authed/emails'
       path: '/emails'
@@ -526,6 +565,7 @@ interface AdminAuthedRouteChildren {
   AdminAuthedAccountRoute: typeof AdminAuthedAccountRoute
   AdminAuthedAdsRoute: typeof AdminAuthedAdsRoute
   AdminAuthedEmailsRoute: typeof AdminAuthedEmailsRoute
+  AdminAuthedLandingRoute: typeof AdminAuthedLandingRoute
   AdminAuthedLogsRoute: typeof AdminAuthedLogsRoute
   AdminAuthedMailRoute: typeof AdminAuthedMailRoute
   AdminAuthedOnboardRoute: typeof AdminAuthedOnboardRoute
@@ -537,6 +577,7 @@ const AdminAuthedRouteChildren: AdminAuthedRouteChildren = {
   AdminAuthedAccountRoute: AdminAuthedAccountRoute,
   AdminAuthedAdsRoute: AdminAuthedAdsRoute,
   AdminAuthedEmailsRoute: AdminAuthedEmailsRoute,
+  AdminAuthedLandingRoute: AdminAuthedLandingRoute,
   AdminAuthedLogsRoute: AdminAuthedLogsRoute,
   AdminAuthedMailRoute: AdminAuthedMailRoute,
   AdminAuthedOnboardRoute: AdminAuthedOnboardRoute,
@@ -574,6 +615,7 @@ const OwnerAuthedRouteWithChildren = OwnerAuthedRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   MyReservationsRoute: MyReservationsRoute,
   ResetPasswordRoute: ResetPasswordRoute,

@@ -784,3 +784,93 @@ export const listAdminLogs = createServerFn({ method: "GET" }).handler(async () 
   const { adminLogs } = await import("../../db/schema.js");
   return db.select().from(adminLogs).orderBy(sql`created_at desc`).limit(100);
 });
+
+// ---------- Public landing page content (/about) ----------
+
+const DEFAULT_PACKAGES = [
+  {
+    name: "Basique",
+    price: "0 DA",
+    period: "par mois",
+    features: ["Fiche restaurant publique", "Menu en ligne", "Espaces & tables (vue)"],
+    kind: "subscription",
+    popular: false,
+  },
+  {
+    name: "Premium",
+    price: "2 500 DA",
+    period: "par mois",
+    features: ["Module de réservation en ligne", "Chaises bébé & options", "Marketing WhatsApp", "Statistiques avancées"],
+    kind: "subscription",
+    popular: true,
+  },
+  {
+    name: "Publicité",
+    price: "à partir de 5 000 DA",
+    period: "par mois",
+    features: ["Carte mise en avant sur les pages restaurants", "Carrousel 2 emplacements", "Audience ciblée par établissement"],
+    kind: "ads",
+    popular: false,
+  },
+];
+
+export const getSiteContent = createServerFn({ method: "GET" }).handler(async () => {
+  const { siteContent } = await import("../../db/schema.js");
+  const [row] = await db.select().from(siteContent).where(eq(siteContent.id, 1));
+  if (!row) {
+    return {
+      about: "nreservi.online est une solution digitale algérienne de réservation de table en ligne. Nous simplifions la relation entre les restaurants et leurs clients : réservation en temps réel, confirmation par WhatsApp et gestion complète pour les professionnels.",
+      contactEmail: "",
+      contactPhone: "",
+      homeHeroImageUrl: null,
+      packages: DEFAULT_PACKAGES,
+    };
+  }
+  return {
+    about: row.about,
+    contactEmail: row.contactEmail,
+    contactPhone: row.contactPhone,
+    homeHeroImageUrl: row.homeHeroImageUrl,
+    packages: (row.packages as unknown[]) ?? DEFAULT_PACKAGES,
+  };
+});
+
+export const saveSiteContent = createServerFn({ method: "POST" })
+  .inputValidator((data: {
+    about: string
+    contactEmail: string
+    contactPhone: string
+    homeHeroImageUrl?: string | null
+    packages: { name: string; price: string; period?: string; features: string[]; kind: string; popular?: boolean }[]
+  }) => data)
+  .handler(async ({ data }) => {
+    const session = await requireAdmin();
+    if (session.adminRole !== "super") return { error: "Seul le super administrateur peut modifier la page de présentation." };
+
+    const packages = (data.packages ?? [])
+      .filter((p) => p.name?.trim())
+      .map((p) => ({
+        name: p.name.trim(),
+        price: p.price?.trim() ?? "",
+        period: p.period?.trim() ?? "",
+        features: (p.features ?? []).filter((f) => f.trim()),
+        kind: p.kind === "ads" ? "ads" : "subscription",
+        popular: Boolean(p.popular),
+      }));
+
+    const values = {
+      about: data.about.trim(),
+      contactEmail: data.contactEmail.trim(),
+      contactPhone: data.contactPhone.trim(),
+      homeHeroImageUrl: data.homeHeroImageUrl?.trim() || null,
+      packages,
+      updatedAt: new Date(),
+    };
+    const { siteContent } = await import("../../db/schema.js");
+    await db
+      .insert(siteContent)
+      .values({ id: 1, ...values })
+      .onConflictDoUpdate({ target: siteContent.id, set: values });
+    await logAdmin("landing.update", "Page de présentation mise à jour");
+    return { success: true as const };
+  });

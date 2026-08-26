@@ -5,6 +5,7 @@ import {
   CreditCard,
   LogOut,
   Mail,
+  Globe,
   Megaphone,
   Menu,
   PanelLeftClose,
@@ -39,6 +40,7 @@ const nav: { to: string; label: string; icon: typeof Building2; module?: string 
   { to: '/admin/ads', label: 'Publicités', icon: Megaphone, module: 'ads' },
   { to: '/admin/mail', label: 'Serveur e-mail', icon: Mail, module: 'mail' },
   { to: '/admin/logs', label: 'Journal', icon: History, module: undefined },
+  { to: '/admin/landing', label: 'Présentation', icon: Globe, module: 'landing' },
   { to: '/admin/account', label: 'Compte', icon: ShieldCheck },
 ]
 

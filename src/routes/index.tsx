@@ -2,19 +2,23 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { MapPin, Search, SlidersHorizontal, UtensilsCrossed } from 'lucide-react'
 import { listRestaurants } from '../server/booking.functions'
+import { getSiteContent } from '../server/admin.functions'
 import { SiteHeader } from '../components/SiteHeader'
 import { SiteFooter } from '../components/SiteFooter'
 
 export const Route = createFileRoute('/')({
   loader: async () => {
-    const restaurants = await listRestaurants({ data: undefined })
-    return { restaurants }
+    const [restaurants, site] = await Promise.all([
+      listRestaurants({ data: undefined }),
+      getSiteContent(),
+    ])
+    return { restaurants, heroImage: site.homeHeroImageUrl }
   },
   component: Home,
 })
 
 function Home() {
-  const { restaurants } = Route.useLoaderData()
+  const { restaurants, heroImage } = Route.useLoaderData() as { restaurants: any[]; heroImage: string | null }
   const [q, setQ] = useState('')
   const [city, setCity] = useState('all')
   const [cuisine, setCuisine] = useState('all')
@@ -67,7 +71,7 @@ function Home() {
             </div>
             <div className="relative min-h-[220px]">
               <img
-                src={restaurants[0]?.coverImageUrl || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80'}
+                src={heroImage || restaurants[0]?.coverImageUrl || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80'}
                 alt=""
                 className="h-full w-full object-cover opacity-90"
               />

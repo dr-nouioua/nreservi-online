@@ -228,6 +228,18 @@ export const mailContacts = pgTable("mail_contacts", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// ---------- Public landing page content (edited by the super admin) ----------
+
+export const siteContent = pgTable("site_content", {
+  id: integer("id").primaryKey().default(1),
+  about: text("about").notNull().default(""),
+  contactEmail: text("contact_email").notNull().default(""),
+  contactPhone: text("contact_phone").notNull().default(""),
+  homeHeroImageUrl: text("home_hero_image_url"), // image under the customer search card
+  packages: jsonb("packages").notNull().default([]), // [{name, price, features: string[], kind: "subscription"|"ads", popular?: bool}]
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // ---------- Visitor analytics (daily counters, "" slug = global) ----------
 
 export const visitCounts = pgTable("visit_counts", {
