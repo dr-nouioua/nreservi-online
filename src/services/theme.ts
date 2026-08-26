@@ -6,11 +6,13 @@ export const THEME_STORAGE_KEY = "nreservi-theme";
 export const DARK_CLASS = "dark";
 
 export function getStoredTheme(): Theme {
-  if (typeof window === "undefined") return "light";
+  if (typeof window === "undefined") return "dark";
   try {
-    return window.localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "dark";
+    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+    if (stored === "light") return "light";
+    return "dark";
   } catch {
-    return "light";
+    return "dark";
   }
 }
 
