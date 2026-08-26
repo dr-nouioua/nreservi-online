@@ -14,7 +14,7 @@ export function SiteHeader() {
           <nav aria-label="Navigation client">
             <Link
               to="/my-reservations"
-              className="rounded-full border px-3 py-1.5 text-sm font-medium whitespace-nowrap transition sm:px-4 dark:border-stone-700 dark:text-stone-200 dark:hover:border-lime-500 dark:hover:bg-lime-50 dark:hover:bg-lime-500/100/10"
+              className="rounded-full border px-2.5 py-1.5 text-xs sm:px-4 sm:py-1.5 sm:text-sm font-medium whitespace-nowrap transition dark:border-stone-700 dark:text-stone-200 dark:hover:border-lime-500 dark:hover:bg-lime-50 dark:hover:bg-lime-500/100/10"
               activeProps={{ className: 'border-lime-400 bg-lime-50 text-stone-900 dark:border-lime-500/60 dark:bg-lime-500/15 dark:text-lime-300' }}
               inactiveProps={{
                 className:

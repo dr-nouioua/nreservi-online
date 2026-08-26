@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as MyReservationsRouteImport } from './routes/my-reservations'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -32,6 +33,11 @@ import { Route as AdminAuthedAdsRouteImport } from './routes/admin/_authed.ads'
 import { Route as AdminAuthedAccountRouteImport } from './routes/admin/_authed.account'
 import { Route as OwnerAuthedSettingsWhatsappRouteImport } from './routes/owner/_authed.settings_.whatsapp'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -154,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/my-reservations': typeof MyReservationsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms': typeof TermsRoute
   '/admin': typeof AdminAuthedRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/owner': typeof OwnerAuthedRouteWithChildren
@@ -178,6 +185,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/my-reservations': typeof MyReservationsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms': typeof TermsRoute
   '/admin/login': typeof AdminLoginRoute
   '/owner/login': typeof OwnerLoginRoute
   '/restaurants/$slug': typeof RestaurantsSlugRoute
@@ -201,6 +209,7 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/my-reservations': typeof MyReservationsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms': typeof TermsRoute
   '/admin/_authed': typeof AdminAuthedRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/owner/_authed': typeof OwnerAuthedRouteWithChildren
@@ -227,6 +236,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/my-reservations'
     | '/reset-password'
+    | '/terms'
     | '/admin'
     | '/admin/login'
     | '/owner'
@@ -251,6 +261,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/my-reservations'
     | '/reset-password'
+    | '/terms'
     | '/admin/login'
     | '/owner/login'
     | '/restaurants/$slug'
@@ -273,6 +284,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/my-reservations'
     | '/reset-password'
+    | '/terms'
     | '/admin/_authed'
     | '/admin/login'
     | '/owner/_authed'
@@ -298,6 +310,7 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   MyReservationsRoute: typeof MyReservationsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  TermsRoute: typeof TermsRoute
   AdminAuthedRoute: typeof AdminAuthedRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
   OwnerAuthedRoute: typeof OwnerAuthedRouteWithChildren
@@ -307,6 +320,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -515,6 +535,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   MyReservationsRoute: MyReservationsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  TermsRoute: TermsRoute,
   AdminAuthedRoute: AdminAuthedRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   OwnerAuthedRoute: OwnerAuthedRouteWithChildren,

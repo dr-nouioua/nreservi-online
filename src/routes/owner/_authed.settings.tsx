@@ -139,7 +139,7 @@ function SettingsPage() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-5xl space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl space-y-6">
       <div className="flex items-end justify-between gap-4 flex-wrap">
         <div>
           <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Espace de travail</p>
@@ -157,13 +157,13 @@ function SettingsPage() {
               <ImagePlus className="h-12 w-12 text-stone-500 dark:text-stone-400/70" />
             </div>
           )}
-          <div className="absolute bottom-4 left-5 flex items-center gap-3">
-            <div className="h-20 w-20 overflow-hidden rounded-lg border-4 border-white bg-white dark:bg-stone-900 shadow-sm">
+          <div className="absolute bottom-4 left-4 right-4 flex items-center gap-3 min-w-0">
+            <div className="h-16 w-16 sm:h-20 sm:w-20 shrink-0 overflow-hidden rounded-lg border-4 border-white bg-white dark:bg-stone-900 shadow-sm">
               {logoUrl ? <img src={logoUrl} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-xl font-bold text-stone-500 dark:text-stone-400">{name.slice(0, 1) || 'R'}</div>}
             </div>
-            <div className="rounded-lg bg-white/90 px-4 py-2 backdrop-blur">
-              <p className="text-lg font-semibold text-stone-950 dark:text-stone-50">{name || "Nom du restaurant"}</p>
-              <p className="text-sm text-stone-500 dark:text-stone-400">{overview.restaurant?.cuisine}</p>
+            <div className="rounded-lg bg-white/90 px-4 py-2 backdrop-blur min-w-0">
+              <p className="text-lg font-semibold text-stone-950 dark:text-stone-50 truncate">{name || "Nom du restaurant"}</p>
+              <p className="text-sm text-stone-500 dark:text-stone-400 truncate">{overview.restaurant?.cuisine}</p>
             </div>
           </div>
         </div>

@@ -145,7 +145,7 @@ function AdminIndex() {
                   <span className={`px-2 py-0.5 rounded-full text-xs ${STATUS_COLORS[r.status]}`}>{r.status}</span>
                 </td>
                 <td className="px-4 py-3 capitalize">{r.subscriptionTier === 'premium' ? 'Premium' : 'Basique'}</td>
-                <td className="px-4 py-3 space-x-2 whitespace-nowrap">
+                <td className="px-4 py-3 space-x-2">
                   {r.status !== 'active' && (
                     <button onClick={async () => { await approveRestaurant({ data: { id: r.id } }); refresh() }} className="text-emerald-600 dark:text-emerald-400 hover:underline text-xs">Valider</button>
                   )}

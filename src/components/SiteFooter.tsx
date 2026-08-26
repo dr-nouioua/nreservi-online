@@ -21,6 +21,20 @@ export function SiteFooter() {
           <Link to="/owner/login" className="text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100">
             Espace professionnel
           </Link>
+          <Link to="/terms" className="text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100">
+            Conditions générales
+          </Link>
+        </div>
+      </div>
+      <div className="border-t border-stone-200 dark:border-stone-800">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between text-xs text-stone-500 dark:text-stone-400">
+          <p>© {new Date().getFullYear()} nreservi.online — Tous droits réservés.</p>
+          <p>
+            Données personnelles traitées conformément à la loi algérienne n° 18-07 du 10 juin 2018.{' '}
+            <Link to="/terms" className="underline hover:text-stone-900 dark:hover:text-stone-100">
+              En savoir plus
+            </Link>
+          </p>
         </div>
       </div>
     </footer>

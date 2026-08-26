@@ -154,14 +154,14 @@ function RestaurantPage() {
               <div className="h-20 w-20 overflow-hidden rounded-lg border-4 border-white bg-white dark:bg-stone-900 shadow-lg">
                 {restaurant.logoUrl ? <img src={restaurant.logoUrl} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-2xl font-bold text-stone-700 dark:text-stone-300">{restaurant.name.slice(0, 1)}</div>}
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="mb-2 flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur"><Sparkles className="h-3.5 w-3.5" /> {restaurant.cuisine}</span>
                   {restaurant.hasParking && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur"><Car className="h-3.5 w-3.5" /> Parking sur place</span>
                   )}
                 </p>
-                <h1 className="text-4xl font-bold tracking-tight">{restaurant.name}</h1>
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight break-words">{restaurant.name}</h1>
                 <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-stone-200">
                   {(() => {
                     const short = restaurant.address.length > 42 ? restaurant.address.slice(0, 42).trimEnd() + "…" : restaurant.address;
