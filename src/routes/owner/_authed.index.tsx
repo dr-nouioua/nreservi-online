@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
-import { Baby, MessageCircle, Plus, RefreshCw, Users } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Baby, BellRing, MessageCircle, Plus, RefreshCw, Users, Volume2, VolumeX, X } from 'lucide-react'
 import {
   getOwnerOverview,
   listReservationsForDate,
@@ -10,6 +10,7 @@ import {
 } from '../../server/owner.functions'
 import { getWhatsappSettings } from '../../server/whatsapp.functions'
 import { WhatsappComposer, type ComposerReservation } from '../../components/WhatsappComposer'
+import { ensureAudio, playReservationChime, setSoundEnabled, soundEnabled } from '../../services/notification-sound'
 
 export const Route = createFileRoute('/owner/_authed/')({
   loader: async () => {
@@ -53,13 +54,49 @@ function OwnerReservationsBoard() {
   const [statusFilter, setStatusFilter] = useState<string | 'all'>('all')
   const [showWalkIn, setShowWalkIn] = useState(false)
   const [composing, setComposing] = useState<ComposerReservation | null>(null)
+  const [toasts, setToasts] = useState<{ id: number; guestName: string; time: string; partySize: number }[]>([])
+  const [soundOn, setSoundOn] = useState(true)
+  const knownIdsRef = useRef<Set<number> | null>(null)
+  const lastDateRef = useRef<string>(today)
   const [expandedId, setExpandedId] = useState<number | null>(null)
   const whatsappReady = Boolean(whatsapp.whatsappNumber)
 
   async function refresh(d = date) {
     const rows = await listReservationsForDate({ data: { date: d } })
     setReservations(rows)
+
+    // New-reservation detection (poll-based): chime + toast + browser notification.
+    const ids = new Set(rows.map((r) => r.id))
+    const sameDate = lastDateRef.current === d
+    if (knownIdsRef.current && sameDate) {
+      const fresh = rows.filter((r) => !knownIdsRef.current!.has(r.id))
+      if (fresh.length > 0) {
+        playReservationChime()
+        for (const r of fresh) {
+          const toastId = r.id
+          setToasts((ts) => [...ts, { id: toastId, guestName: r.guestName, time: r.time.slice(0, 5), partySize: r.partySize }])
+          window.setTimeout(() => setToasts((ts) => ts.filter((t) => t.id !== toastId)), 9000)
+          try {
+            if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+              new Notification('Nouvelle réservation — ' + (overview.restaurant?.name ?? ''), {
+                body: `${r.guestName} — ${r.partySize} personne(s) à ${r.time.slice(0, 5)}`,
+                icon: '/brand/nreservi-mark.png',
+              })
+            }
+          } catch {}
+        }
+      }
+    }
+    knownIdsRef.current = ids
+    lastDateRef.current = d
   }
+
+  useEffect(() => {
+    setSoundOn(soundEnabled())
+    const unlock = () => ensureAudio()
+    window.addEventListener('pointerdown', unlock, { once: true })
+    return () => window.removeEventListener('pointerdown', unlock)
+  }, [])
 
   useEffect(() => {
     const interval = setInterval(() => refresh(), 15000)
@@ -127,6 +164,24 @@ function OwnerReservationsBoard() {
           <button onClick={() => refresh()} className="p-2 rounded-lg border border-stone-300 hover:bg-stone-100 dark:border-stone-700 dark:hover:bg-stone-800" aria-label="Rafraîchir">
             <RefreshCw className="w-4 h-4" />
           </button>
+          <button
+            onClick={() => { const next = !soundOn; setSoundOn(next); setSoundEnabled(next); if (next) ensureAudio() }}
+            title={soundOn ? 'Son activé — cliquer pour couper' : 'Son coupé — cliquer pour activer'}
+            className={`p-2 rounded-lg border ${soundOn ? 'border-lime-400 text-lime-700 dark:border-lime-500/50 dark:text-lime-300' : 'border-stone-300 text-stone-400 dark:border-stone-700 dark:text-stone-500'} hover:bg-stone-100 dark:hover:bg-stone-800`}
+            aria-label={soundOn ? 'Couper le son' : 'Activer le son'}
+          >
+            {soundOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </button>
+          {typeof Notification !== 'undefined' && Notification.permission === 'default' && (
+            <button
+              onClick={() => void Notification.requestPermission()}
+              title="Activer les notifications navigateur"
+              className="p-2 rounded-lg border border-stone-300 text-stone-500 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-800"
+              aria-label="Activer les notifications"
+            >
+              <BellRing className="w-4 h-4" />
+            </button>
+          )}
           <button
             onClick={() => setShowWalkIn(true)}
             className="flex items-center gap-1 px-3 py-2 rounded-lg bg-stone-950 text-white text-sm font-medium hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white dark:ring-1 dark:ring-stone-700"
@@ -310,6 +365,26 @@ function OwnerReservationsBoard() {
                 )
               })}
             </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ---- Nouvelles réservations : toasts ---- */}
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 w-[calc(100vw-2rem)] max-w-sm">
+        {toasts.map((t) => (
+          <div key={t.id} className="flex items-start gap-3 rounded-xl border border-lime-400 bg-white p-3.5 shadow-lg dark:border-lime-500/50 dark:bg-stone-900">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-lime-100 dark:bg-lime-500/15">
+              <Users className="h-4 w-4 text-lime-700 dark:text-lime-300" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">Nouvelle réservation !</p>
+              <p className="truncate text-xs text-stone-500 dark:text-stone-400">
+                {t.guestName} · {t.partySize} pers. · {t.time}
+              </p>
+            </div>
+            <button onClick={() => setToasts((ts) => ts.filter((x) => x.id !== t.id))} aria-label="Fermer" className="shrink-0 rounded p-1 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200">
+              <X className="h-3.5 w-3.5" />
+            </button>
           </div>
         ))}
       </div>
