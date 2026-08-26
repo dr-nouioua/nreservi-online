@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Briefcase, Building2, Plus, Send, Trash2 } from 'lucide-react'
 import {
@@ -11,6 +11,13 @@ import {
 } from '../../server/admin.functions'
 
 export const Route = createFileRoute('/admin/_authed/emails')({
+
+  beforeLoad: ({ context }) => {
+    const { session } = context as { session: { adminRole: 'super' | 'admin'; permissions: string[] } }
+    if (session.adminRole !== 'super' && !(session.permissions ?? []).includes('emails')) {
+      throw redirect({ to: '/admin' })
+    }
+  },
   loader: () => Promise.all([listSubscriptions(), listMailContacts()]),
   component: EmailsPage,
 })

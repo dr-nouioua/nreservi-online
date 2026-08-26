@@ -71,7 +71,14 @@ export const loginAdmin = createServerFn({ method: "POST" })
     if (!admin || !verifyPassword(data.password, admin.passwordHash)) {
       return { error: "E-mail ou mot de passe incorrect" };
     }
-    const token = signSession({ role: "admin", id: admin.id, email: admin.email, name: admin.name });
+    const token = signSession({
+      role: "admin",
+      id: admin.id,
+      email: admin.email,
+      name: admin.name,
+      adminRole: (admin.role as "super" | "admin") ?? "admin",
+      permissions: (admin.permissions as string[]) ?? [],
+    });
     setCookie(COOKIE, token, { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 * 24 * 7 });
     return { success: true };
   });
@@ -169,7 +176,7 @@ export const updateAccountEmail = createServerFn({ method: "POST" })
     // Re-sign the session so the new email shows up everywhere right away.
     const payload =
       session.role === "admin"
-        ? { role: "admin" as const, id: session.id, email: newEmail, name: session.name }
+        ? { role: "admin" as const, id: session.id, email: newEmail, name: session.name, adminRole: session.adminRole, permissions: session.permissions }
         : session.role === "staff"
           ? { role: "staff" as const, id: session.id, email: newEmail, name: session.name, restaurantId: session.restaurantId, staffRole: session.staffRole }
           : { role: "owner" as const, id: session.id, email: newEmail, name: session.name, restaurantId: session.restaurantId };

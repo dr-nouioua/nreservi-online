@@ -15,6 +15,17 @@ async function requireAdmin() {
   return session;
 }
 
+/** Any admin may call, but module-scoped features require the privilege (super bypasses). */
+async function requireAdminWithModule(module: string) {
+  const session = await requireAdmin();
+  if (session.adminRole !== "super" && !(session.permissions ?? []).includes(module)) {
+    const err = new Error("FORBIDDEN_MODULE");
+    (err as Error & { code?: string }).code = "FORBIDDEN_MODULE";
+    throw err;
+  }
+  return session;
+}
+
 export const listAllRestaurants = createServerFn({ method: "GET" }).handler(async () => {
   await requireAdmin();
   return db.select().from(restaurants).orderBy(restaurants.id);
@@ -70,7 +81,7 @@ export const deleteRestaurant = createServerFn({ method: "POST" })
 export const setSubscriptionTier = createServerFn({ method: "POST" })
   .inputValidator((data: { id: number; tier: string }) => data)
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requireAdminWithModule('subscriptions');
     if (!["basic", "premium"].includes(data.tier)) return { error: "Formule invalide." };
     const [row] = await db.select().from(restaurants).where(eq(restaurants.id, data.id));
     if (!row) return { error: "Restaurant introuvable." };
@@ -100,7 +111,7 @@ export const onboardRestaurant = createServerFn({ method: "POST" })
     }) => data,
   )
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requireAdminWithModule('onboard');
     const defaultHours = {
       mon: [{ open: "12:00", close: "22:00" }],
       tue: [{ open: "12:00", close: "22:00" }],
@@ -177,19 +188,30 @@ export const impersonateRestaurant = createServerFn({ method: "POST" })
 // ---------- Admin accounts (multiple admins supported) ----------
 
 export const listAdmins = createServerFn({ method: "GET" }).handler(async () => {
-  await requireAdmin();
-  return db
-    .select({ id: adminUsers.id, name: adminUsers.name, email: adminUsers.email, createdAt: adminUsers.createdAt })
+  const session = await requireAdmin();
+  const rows = await db
+    .select({
+      id: adminUsers.id,
+      name: adminUsers.name,
+      email: adminUsers.email,
+      adminRole: adminUsers.role,
+      permissions: adminUsers.permissions,
+      createdAt: adminUsers.createdAt,
+    })
     .from(adminUsers)
     .orderBy(adminUsers.id);
+  // Only the super admin manages other admins.
+  return { admins: rows, viewerIsSuper: session.adminRole === "super" };
 });
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const createAdmin = createServerFn({ method: "POST" })
-  .inputValidator((data: { name: string; email: string; password: string }) => data)
+  .inputValidator((data: { name: string; email: string; password: string; adminRole: "admin" | "super"; permissions: string[] }) => data)
   .handler(async ({ data }) => {
-    await requireAdmin();
+    const session = await requireAdmin();
+    if (session.adminRole !== "super") return { error: "Seul le super administrateur peut créer des comptes." };
+    if (data.adminRole === "super") return { error: "Créez un compte administrateur standard, puis ajustez ses privilèges." };
     const name = data.name.trim();
     const email = data.email.trim().toLowerCase();
     if (!name) return { error: "Le nom est requis." };
@@ -199,17 +221,33 @@ export const createAdmin = createServerFn({ method: "POST" })
     const [dup] = await db.select({ id: adminUsers.id }).from(adminUsers).where(eq(adminUsers.email, email));
     if (dup) return { error: "Cet e-mail est déjà utilisé par un administrateur." };
 
+    const validModules = new Set(["onboard", "subscriptions", "emails", "ads", "mail"]);
+    const permissions = (data.permissions ?? []).filter((p) => validModules.has(p));
+
     const [admin] = await db
       .insert(adminUsers)
-      .values({ name, email, passwordHash: hashPassword(data.password) })
+      .values({ name, email, passwordHash: hashPassword(data.password), role: "admin", permissions })
       .returning({ id: adminUsers.id, name: adminUsers.name, email: adminUsers.email, createdAt: adminUsers.createdAt });
     return { admin };
+  });
+
+export const updateAdminAccess = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: number; permissions: string[] }) => data)
+  .handler(async ({ data }) => {
+    const session = await requireAdmin();
+    if (session.adminRole !== "super") return { error: "Seul le super administrateur peut modifier les privilèges." };
+    if (data.id === session.id) return { error: "Vous ne pouvez pas modifier vos propres privilèges." };
+    const validModules = new Set(["onboard", "subscriptions", "emails", "ads", "mail"]);
+    const permissions = (data.permissions ?? []).filter((p) => validModules.has(p));
+    await db.update(adminUsers).set({ permissions }).where(eq(adminUsers.id, data.id));
+    return { success: true as const };
   });
 
 export const deleteAdmin = createServerFn({ method: "POST" })
   .inputValidator((data: { id: number }) => data)
   .handler(async ({ data }) => {
     const session = await requireAdmin();
+    if (session.adminRole !== "super") return { error: "Seul le super administrateur peut supprimer des comptes." };
     if (data.id === session.id) {
       return { error: "Vous ne pouvez pas supprimer votre propre compte." };
     }
@@ -226,7 +264,7 @@ export const deleteAdmin = createServerFn({ method: "POST" })
 // ---------- Inline ads management ----------
 
 export const listAds = createServerFn({ method: "GET" }).handler(async () => {
-  await requireAdmin();
+  await requireAdminWithModule('ads');
   return db.select().from(ads).orderBy(ads.sortOrder, ads.id);
 });
 
@@ -248,7 +286,7 @@ export const createAd = createServerFn({ method: "POST" })
     (data: { title: string; body: string; imageUrl: string; linkUrl: string; ctaLabel: string; sortOrder: number; durationSeconds: number; restaurantId: number | null }) => data,
   )
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requireAdminWithModule('ads');
     const values = normalizeAdInput(data);
     if (!values.title) return { error: "Le titre est requis." };
     if (values.linkUrl && !/^https?:\/\//.test(values.linkUrl)) {
@@ -263,7 +301,7 @@ export const updateAd = createServerFn({ method: "POST" })
     (data: { id: number; title: string; body: string; imageUrl: string; linkUrl: string; ctaLabel: string; sortOrder: number; durationSeconds: number; restaurantId: number | null }) => data,
   )
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requireAdminWithModule('ads');
     const values = normalizeAdInput(data);
     if (!values.title) return { error: "Le titre est requis." };
     if (values.linkUrl && !/^https?:\/\//.test(values.linkUrl)) {
@@ -277,7 +315,7 @@ export const updateAd = createServerFn({ method: "POST" })
 export const setAdActive = createServerFn({ method: "POST" })
   .inputValidator((data: { id: number; active: boolean }) => data)
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requireAdminWithModule('ads');
     await db.update(ads).set({ active: data.active }).where(eq(ads.id, data.id));
     return { success: true as const };
   });
@@ -285,7 +323,7 @@ export const setAdActive = createServerFn({ method: "POST" })
 export const deleteAd = createServerFn({ method: "POST" })
   .inputValidator((data: { id: number }) => data)
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requireAdminWithModule('ads');
     await db.delete(ads).where(eq(ads.id, data.id));
     return { success: true as const };
   });
@@ -298,12 +336,12 @@ function todayISO(): string {
 
 /** Flips every active-but-expired restaurant to suspended. Cheap; run on admin dashboard load and via cron. */
 export const syncExpiredSubscriptions = createServerFn({ method: "POST" }).handler(async () => {
-  await requireAdmin();
+  await requireAdminWithModule('subscriptions');
   return { suspended: await syncExpiredSubscriptionsInternal() };
 });
 
 export const listSubscriptions = createServerFn({ method: "GET" }).handler(async () => {
-  await requireAdmin();
+  await requireAdminWithModule('subscriptions');
   await syncExpiredSubscriptionsInternal();
   const rows = await db.select().from(restaurants).orderBy(restaurants.name);
   return rows.map((r) => {
@@ -329,7 +367,7 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 export const updateSubscriptionDates = createServerFn({ method: "POST" })
   .inputValidator((data: { id: number; start: string | null; end: string | null }) => data)
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requireAdminWithModule('subscriptions');
     for (const d of [data.start, data.end]) {
       if (d && !DATE_RE.test(d)) return { error: "Date invalide (format attendu AAAA-MM-JJ)." };
     }
@@ -362,7 +400,7 @@ export const updateSubscriptionDates = createServerFn({ method: "POST" })
 export const renewSubscription = createServerFn({ method: "POST" })
   .inputValidator((data: { id: number; months: number; amountDA?: string | null; discountPercent?: number | null }) => data)
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requireAdminWithModule('subscriptions');
     if (!(data.months >= 1 && data.months <= 36)) return { error: "Durée invalide (1–36 mois)." };
     const [row] = await db.select().from(restaurants).where(eq(restaurants.id, data.id));
     if (!row) return { error: "Restaurant introuvable." };
@@ -472,7 +510,7 @@ export const getVisitStats = createServerFn({ method: "GET" }).handler(async () 
 // ---------- Mail server (SMTP) — configured by the super-admin ----------
 
 export const getMailSettings = createServerFn({ method: "GET" }).handler(async () => {
-  await requireAdmin();
+  await requireAdminWithModule('mail');
   const [cfg] = await db.select().from(mailSettings).where(eq(mailSettings.id, 1));
   if (!cfg) {
     return {
@@ -499,7 +537,7 @@ export const saveMailSettings = createServerFn({ method: "POST" })
     smtpUser: string; smtpPass?: string; fromName: string; fromEmail: string;
   }) => data)
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requireAdminWithModule('mail');
     if (!data.smtpHost.trim()) return { error: "L'hôte SMTP est requis." };
     if (!data.fromEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.fromEmail.trim())) {
       return { error: "L'e-mail expéditeur est requis et doit être valide." };
@@ -532,7 +570,7 @@ export const saveMailSettings = createServerFn({ method: "POST" })
 export const sendTestEmail = createServerFn({ method: "POST" })
   .inputValidator((data: { to: string }) => data)
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requireAdminWithModule('mail');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.to.trim())) return { error: "Adresse e-mail invalide." };
     const { sendMail, brandedEmail } = await import("./mail.server.js");
     const result = await sendMail({
@@ -551,7 +589,7 @@ export const sendTestEmail = createServerFn({ method: "POST" })
 export const emailRestaurant = createServerFn({ method: "POST" })
   .inputValidator((data: { restaurantId: number; subject: string; body: string }) => data)
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requireAdminWithModule('mail');
     const subject = data.subject.trim();
     const body = data.body.trim().replace(/\n/g, "<br/>");
     if (!subject) return { error: "L'objet est requis." };
@@ -580,7 +618,7 @@ export const emailRestaurant = createServerFn({ method: "POST" })
   });
 
 export const listMailLog = createServerFn({ method: "GET" }).handler(async () => {
-  await requireAdmin();
+  await requireAdminWithModule('mail');
   const { mailLog } = await import("../../db/schema.js");
   return db.select().from(mailLog).orderBy(sql`created_at desc`).limit(30);
 });
@@ -589,7 +627,7 @@ export const listMailLog = createServerFn({ method: "GET" }).handler(async () =>
 export const emailRestaurants = createServerFn({ method: "POST" })
   .inputValidator((data: { ids: number[]; subject: string; body: string }) => data)
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requireAdminWithModule('emails');
     if (data.ids.length === 0) return { error: "Sélectionnez au moins un restaurant." };
     const subject = data.subject.trim();
     const body = data.body.trim();
@@ -629,7 +667,7 @@ export const emailRestaurants = createServerFn({ method: "POST" })
 // ---------- Mail contacts (companies / advertisers) ----------
 
 export const listMailContacts = createServerFn({ method: "GET" }).handler(async () => {
-  await requireAdmin();
+  await requireAdminWithModule('emails');
   const { mailContacts } = await import("../../db/schema.js");
   return db.select().from(mailContacts).orderBy(mailContacts.company, mailContacts.name);
 });
@@ -637,7 +675,7 @@ export const listMailContacts = createServerFn({ method: "GET" }).handler(async 
 export const addMailContact = createServerFn({ method: "POST" })
   .inputValidator((data: { name: string; company: string; email: string; note?: string }) => data)
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requireAdminWithModule('emails');
     const name = data.name.trim();
     const email = data.email.trim().toLowerCase();
     if (!name) return { error: "Le nom du contact est requis." };
@@ -653,7 +691,7 @@ export const addMailContact = createServerFn({ method: "POST" })
 export const deleteMailContact = createServerFn({ method: "POST" })
   .inputValidator((data: { id: number }) => data)
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requireAdminWithModule('emails');
     const { mailContacts } = await import("../../db/schema.js");
     await db.delete(mailContacts).where(eq(mailContacts.id, data.id));
     return { success: true };
@@ -663,7 +701,7 @@ export const deleteMailContact = createServerFn({ method: "POST" })
 export const emailContacts = createServerFn({ method: "POST" })
   .inputValidator((data: { ids: number[]; subject: string; body: string; amountDA?: string | null }) => data)
   .handler(async ({ data }) => {
-    await requireAdmin();
+    await requireAdminWithModule('emails');
     if (data.ids.length === 0) return { error: "Sélectionnez au moins un contact." };
     const subject = data.subject.trim();
     const body = data.body.trim();

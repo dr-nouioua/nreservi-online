@@ -9,12 +9,13 @@ import {
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
-  Send,
   Plus,
+  Send,
   ShieldCheck,
   X,
 } from 'lucide-react'
 import { getSession, logout } from '../../server/auth.functions'
+import { adminHasModule } from '../../server/admin.permissions'
 import { ThemeToggle } from '../../components/ThemeToggle'
 import { BrandLogo } from '../../components/BrandLogo'
 
@@ -29,18 +30,21 @@ export const Route = createFileRoute('/admin/_authed')({
   component: AdminLayout,
 })
 
-const nav = [
+const nav: { to: string; label: string; icon: typeof Building2; module?: string }[] = [
   { to: '/admin', label: 'Dashboard', icon: Building2 },
-  { to: '/admin/onboard', label: 'Créer un restaurant', icon: Plus },
-  { to: '/admin/subscriptions', label: 'Abonnements', icon: CreditCard },
-  { to: '/admin/emails', label: 'E-mails', icon: Send },
-  { to: '/admin/ads', label: 'Publicités', icon: Megaphone },
+  { to: '/admin/onboard', label: 'Créer un restaurant', icon: Plus, module: 'onboard' },
+  { to: '/admin/subscriptions', label: 'Abonnements', icon: CreditCard, module: 'subscriptions' },
+  { to: '/admin/emails', label: 'E-mails', icon: Send, module: 'emails' },
+  { to: '/admin/ads', label: 'Publicités', icon: Megaphone, module: 'ads' },
+  { to: '/admin/mail', label: 'Serveur e-mail', icon: Mail, module: 'mail' },
   { to: '/admin/account', label: 'Compte', icon: ShieldCheck },
-  { to: '/admin/mail', label: 'Serveur e-mail', icon: Mail },
-] as const
+]
 
 function AdminLayout() {
-  const { session } = Route.useRouteContext() as { session: { name: string; email: string } }
+  const { session } = Route.useRouteContext() as {
+    session: { name: string; email: string; adminRole: 'super' | 'admin'; permissions: string[] }
+  }
+  const visibleNav = nav.filter((item) => !item.module || adminHasModule(session, item.module))
 
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(
@@ -61,7 +65,7 @@ function AdminLayout() {
     })
   }
 
-  const sidebarWidth = collapsed ? 'lg:w-[68px]' : 'lg:w-60'
+  const sidebarWidth = collapsed ? 'lg:w-[68px]' : 'lg:w-64'
 
   return (
     <div className="min-h-screen lg:flex">
@@ -98,7 +102,7 @@ function AdminLayout() {
         <p className={`text-xs text-stone-400 px-2 mb-4 truncate ${collapsed ? 'lg:hidden' : ''}`}>{session.name}</p>
 
         <nav className="space-y-1 flex-1 overflow-y-auto">
-          {nav.map((item) => (
+          {visibleNav.map((item) => (
             <Link
               key={item.to}
               to={item.to}

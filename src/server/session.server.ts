@@ -14,7 +14,7 @@ function getSecret(): string {
 }
 
 export type SessionPayload =
-  | { role: "admin"; id: number; email: string; name: string }
+  | { role: "admin"; id: number; email: string; name: string; adminRole: "super" | "admin"; permissions: string[] }
   | { role: "owner"; id: number; email: string; name: string; restaurantId: number }
   | { role: "staff"; id: number; email: string; name: string; restaurantId: number; staffRole: string };
 

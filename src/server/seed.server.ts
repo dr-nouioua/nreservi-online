@@ -29,6 +29,8 @@ export async function ensureSeeded() {
   }
 
   await db.insert(adminUsers).values({
+        role: "super",
+        permissions: ["onboard", "subscriptions", "emails", "ads", "mail"],
     email: "admin@platform.dev",
     passwordHash: hashPassword("admin123"),
     name: "Platform Admin",

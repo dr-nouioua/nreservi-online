@@ -1,8 +1,15 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
 import { onboardRestaurant } from '../../server/admin.functions'
 
 export const Route = createFileRoute('/admin/_authed/onboard')({
+
+  beforeLoad: ({ context }) => {
+    const { session } = context as { session: { adminRole: 'super' | 'admin'; permissions: string[] } }
+    if (session.adminRole !== 'super' && !(session.permissions ?? []).includes('onboard')) {
+      throw redirect({ to: '/admin' })
+    }
+  },
   component: OnboardPage,
 })
 

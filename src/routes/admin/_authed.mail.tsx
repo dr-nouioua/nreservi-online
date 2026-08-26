@@ -1,9 +1,16 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Mail, Save, Send } from 'lucide-react'
 import { getMailSettings, saveMailSettings, sendTestEmail, listMailLog } from '../../server/admin.functions'
 
 export const Route = createFileRoute('/admin/_authed/mail')({
+
+  beforeLoad: ({ context }) => {
+    const { session } = context as { session: { adminRole: 'super' | 'admin'; permissions: string[] } }
+    if (session.adminRole !== 'super' && !(session.permissions ?? []).includes('mail')) {
+      throw redirect({ to: '/admin' })
+    }
+  },
   loader: () => Promise.all([getMailSettings(), listMailLog()]),
   component: MailServerPage,
 })

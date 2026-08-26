@@ -20,6 +20,8 @@ export const adminUsers = pgTable("admin_users", {
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   name: text("name").notNull(),
+  role: text("role").notNull().default("admin"), // super | admin
+  permissions: jsonb("permissions").notNull().default([]), // module keys for non-super admins
   createdAt: timestamp("created_at").defaultNow(),
 });
 
