@@ -625,3 +625,90 @@ export const emailRestaurants = createServerFn({ method: "POST" })
     if (sent === 0 && failed > 0) return { error: lastError ?? "Échec de l'envoi." };
     return { success: true as const, sent, failed };
   });
+
+// ---------- Mail contacts (companies / advertisers) ----------
+
+export const listMailContacts = createServerFn({ method: "GET" }).handler(async () => {
+  await requireAdmin();
+  const { mailContacts } = await import("../../db/schema.js");
+  return db.select().from(mailContacts).orderBy(mailContacts.company, mailContacts.name);
+});
+
+export const addMailContact = createServerFn({ method: "POST" })
+  .inputValidator((data: { name: string; company: string; email: string; note?: string }) => data)
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    const name = data.name.trim();
+    const email = data.email.trim().toLowerCase();
+    if (!name) return { error: "Le nom du contact est requis." };
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Adresse e-mail invalide." };
+    const { mailContacts } = await import("../../db/schema.js");
+    const [contact] = await db
+      .insert(mailContacts)
+      .values({ name, company: data.company.trim(), email, note: data.note?.trim() ?? "" })
+      .returning();
+    return { contact };
+  });
+
+export const deleteMailContact = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: number }) => data)
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    const { mailContacts } = await import("../../db/schema.js");
+    await db.delete(mailContacts).where(eq(mailContacts.id, data.id));
+    return { success: true };
+  });
+
+/** Sends a composed email to selected companies (e.g. advertisers) — optional PDF invoice attached. */
+export const emailContacts = createServerFn({ method: "POST" })
+  .inputValidator((data: { ids: number[]; subject: string; body: string; amountDA?: string | null }) => data)
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    if (data.ids.length === 0) return { error: "Sélectionnez au moins un contact." };
+    const subject = data.subject.trim();
+    const body = data.body.trim();
+    if (!subject) return { error: "L'objet est requis." };
+    if (!body) return { error: "Le message est requis." };
+
+    const { mailContacts } = await import("../../db/schema.js");
+    const { sendMail, brandedEmail } = await import("./mail.server.js");
+
+    const amount = data.amountDA?.trim() || null;
+    let pdf: Buffer | null = null;
+    const number = `FACT-${Date.now().toString(36).toUpperCase()}`;
+    if (amount) {
+      const { generateReceiptPdf } = await import("./receipt.server.js");
+      pdf = await generateReceiptPdf({
+        number,
+        restaurantName: "Partenaire publicitaire",
+        tier: "publicité",
+        start: todayISO(),
+        end: todayISO(),
+        amountDA: amount,
+        issuedAt: new Date(),
+      });
+    }
+
+    let sent = 0;
+    let failed = 0;
+    let lastError: string | null = null;
+    for (const id of data.ids) {
+      const [contact] = await db.select().from(mailContacts).where(eq(mailContacts.id, id));
+      if (!contact) continue;
+      const personalized = body
+        .replace(/\{\{contact_name\}\}/g, contact.name)
+        .replace(/\{\{company\}\}/g, contact.company || contact.name)
+        .replace(/\n/g, "<br/>");
+      const result = await sendMail({
+        to: contact.email,
+        subject,
+        kind: amount ? "invoice" : "custom",
+        html: brandedEmail(subject, [personalized]),
+        attachments: pdf ? [{ filename: `${number}.pdf`, content: pdf }] : undefined,
+      });
+      if (result.ok) sent++;
+      else { failed++; lastError = result.error; }
+    }
+    if (sent === 0 && failed > 0) return { error: lastError ?? "Échec de l'envoi." };
+    return { success: true as const, sent, failed };
+  });

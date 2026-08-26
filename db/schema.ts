@@ -215,6 +215,17 @@ export const campaignLogs = pgTable("campaign_logs", {
   index("campaign_logs_restaurant_idx").on(table.restaurantId),
 ]);
 
+// ---------- Mail contacts (companies / advertisers, managed by the super-admin) ----------
+
+export const mailContacts = pgTable("mail_contacts", {
+  id: serial().primaryKey(),
+  name: text("name").notNull(), // contact person
+  company: text("company").notNull().default(""),
+  email: text("email").notNull(),
+  note: text("note").default(""),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // ---------- Visitor analytics (daily counters, "" slug = global) ----------
 
 export const visitCounts = pgTable("visit_counts", {

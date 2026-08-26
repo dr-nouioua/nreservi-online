@@ -1,12 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { CalendarClock, History, Mail, RefreshCw, Save } from 'lucide-react'
+import { CalendarClock, History, RefreshCw, Save } from 'lucide-react'
 import {
   listSubscriptions,
   updateSubscriptionDates,
   renewSubscription,
   setSubscriptionTier,
-  emailRestaurants,
 } from '../../server/admin.functions'
 
 export const Route = createFileRoute('/admin/_authed/subscriptions')({
@@ -45,10 +44,6 @@ function SubscriptionsPage() {
   const [editEnd, setEditEnd] = useState('')
   const [renewMonths, setRenewMonths] = useState<Record<number, number>>({})
   const [renewAmounts, setRenewAmounts] = useState<Record<number, string>>({})
-  const [groupOpen, setGroupOpen] = useState(false)
-  const [group, setGroup] = useState({ subject: '', body: '' })
-  const [selected, setSelected] = useState<Set<number>>(new Set())
-  const [groupMessage, setGroupMessage] = useState<string | null>(null)
 
   async function refresh() {
     setSubs(await listSubscriptions())
@@ -94,103 +89,6 @@ function SubscriptionsPage() {
           Un abonnement expiré suspend automatiquement l'accès professionnel du restaurant — sans supprimer ses données.
           Un restaurant redevient actif dès qu'une nouvelle période valide lui est attribuée.
         </p>
-      </div>
-
-      <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm">
-        <button
-          onClick={() => setGroupOpen(!groupOpen)}
-          className="w-full flex items-center justify-between gap-3 p-4 sm:p-5 text-left"
-        >
-          <span className="flex items-center gap-2 font-semibold text-stone-900 dark:text-stone-100">
-            <Mail className="h-4 w-4" /> E-mail groupé aux restaurants
-          </span>
-          <span className="text-xs text-stone-400">{groupOpen ? 'Masquer' : 'Ouvrir'}</span>
-        </button>
-        {groupOpen && (
-          <div className="border-t border-stone-100 p-4 sm:p-5 space-y-3 dark:border-stone-800">
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                onClick={() => setSelected(subs.length === selected.size ? new Set() : new Set(subs.map((s2) => s2.id)))}
-                className="rounded-full border border-stone-300 px-3 py-1 text-xs text-stone-600 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
-              >
-                {subs.length === selected.size ? 'Tout désélectionner' : 'Tout sélectionner'}
-              </button>
-              <span className="text-xs text-stone-400">{selected.size} sélectionné(s)</span>
-            </div>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {subs.map((s2) => (
-                <label key={s2.id} className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm dark:border-stone-800">
-                  <input
-                    type="checkbox"
-                    checked={selected.has(s2.id)}
-                    onChange={(e) => {
-                      const next = new Set(selected)
-                      if (e.target.checked) next.add(s2.id)
-                      else next.delete(s2.id)
-                      setSelected(next)
-                    }}
-                    className="accent-lime-500"
-                  />
-                  <span className="truncate text-stone-700 dark:text-stone-300">{s2.name}</span>
-                </label>
-              ))}
-            </div>
-            <input
-              value={group.subject}
-              onChange={(e) => setGroup({ ...group, subject: e.target.value })}
-              placeholder="Objet"
-              className="w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm dark:border-stone-700"
-            />
-            <textarea
-              rows={4}
-              value={group.body}
-              onChange={(e) => setGroup({ ...group, body: e.target.value })}
-              placeholder={"Bonjour {{owner_name}},\n\nDécouvrez la nouvelle offre pour {{restaurant_name}}…"}
-              className="w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm dark:border-stone-700"
-            />
-            <div className="flex flex-wrap gap-1.5">
-              <button
-                type="button"
-                onClick={() => {
-                  setGroup({
-                    subject: "Nouvelle solution nreservi.online — le module POS arrive",
-                    body: "Bonjour {{owner_name}},\n\nGrande nouvelle : nreservi.online lance prochainement son module de caisse (POS), entièrement connecté à vos réservations.\n\nEn tant que partenaire, vous bénéficierez d'un accès prioritaire et de conditions préférentielles.\n\nRépondez à cet e-mail pour être recontacté.\n\nL'équipe nreservi.online",
-                  })
-                }}
-                className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800 hover:bg-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:hover:bg-amber-500/25"
-              >
-                Modèle : nouvelle solution POS
-              </button>
-              {['{{restaurant_name}}', '{{owner_name}}'].map((v) => (
-                <button
-                  key={v}
-                  type="button"
-                  onClick={() => setGroup({ ...group, body: group.body + (group.body.endsWith(' ') || group.body === '' ? '' : ' ') + v + ' ' })}
-                  className="rounded-full border border-stone-200 px-2.5 py-1 text-xs font-mono text-stone-600 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-800"
-                >
-                  {v}
-                </button>
-              ))}
-            </div>
-            {groupMessage && (
-              <p className={`text-sm ${groupMessage.startsWith('Envoyé') ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>{groupMessage}</p>
-            )}
-            <button
-              onClick={async () => {
-                const result = await emailRestaurants({ data: { ids: [...selected], subject: group.subject, body: group.body } })
-                if ('error' in result && result.error) {
-                  setGroupMessage(result.error)
-                  return
-                }
-                setGroupMessage(`Envoyé à ${result.sent} propriétaire(s)${result.failed ? ` — ${result.failed} échec(s)` : ''}.`)
-              }}
-              disabled={selected.size === 0}
-              className="inline-flex items-center gap-2 rounded-lg bg-stone-950 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:opacity-40 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white"
-            >
-              <Mail className="h-4 w-4" /> Envoyer
-            </button>
-          </div>
-        )}
       </div>
 
       {message && (
