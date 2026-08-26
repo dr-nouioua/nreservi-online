@@ -18,13 +18,13 @@ export type SessionPayload =
   | { role: "owner"; id: number; email: string; name: string; restaurantId: number }
   | { role: "staff"; id: number; email: string; name: string; restaurantId: number; staffRole: string };
 
-const SESSION_TTL_MS = 60 * 60 * 24 * 7; // must match cookie maxAge
+const SESSION_TTL_MS = 2 * 60 * 60 * 1000; // 2h — sliding, renewed on each authenticated request
 
-type SignedPayload = SessionPayload & { exp: number };
+type SignedPayload = SessionPayload & { iat: number; exp: number };
 
 export function signSession(payload: SessionPayload): string {
   const body = Buffer.from(
-    JSON.stringify({ ...payload, exp: Date.now() + SESSION_TTL_MS } satisfies SignedPayload),
+    JSON.stringify({ ...payload, iat: Date.now(), exp: Date.now() + SESSION_TTL_MS } satisfies SignedPayload),
   ).toString("base64url");
   const sig = createHmac("sha256", getSecret()).update(body).digest("base64url");
   return `${body}.${sig}`;
@@ -46,7 +46,9 @@ export function verifySession(token: string | undefined | null): SessionPayload 
     const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as SignedPayload;
     // Tokens issued before exp existed have no exp — treat them as expired so
     // everyone rotates onto bounded-lifetime sessions.
-    if (typeof payload.exp !== "number" || payload.exp < Date.now()) return null;
+    // Tokens issued before the sliding-2h model have no iat — force re-login once.
+    if (typeof payload.iat !== "number" || typeof payload.exp !== "number") return null;
+    if (payload.exp < Date.now()) return null;
     return payload;
   } catch {
     return null;

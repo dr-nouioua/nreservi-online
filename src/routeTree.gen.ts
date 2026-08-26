@@ -29,6 +29,7 @@ import { Route as OwnerAuthedAnalyticsRouteImport } from './routes/owner/_authed
 import { Route as AdminAuthedSubscriptionsRouteImport } from './routes/admin/_authed.subscriptions'
 import { Route as AdminAuthedOnboardRouteImport } from './routes/admin/_authed.onboard'
 import { Route as AdminAuthedMailRouteImport } from './routes/admin/_authed.mail'
+import { Route as AdminAuthedLogsRouteImport } from './routes/admin/_authed.logs'
 import { Route as AdminAuthedEmailsRouteImport } from './routes/admin/_authed.emails'
 import { Route as AdminAuthedAdsRouteImport } from './routes/admin/_authed.ads'
 import { Route as AdminAuthedAccountRouteImport } from './routes/admin/_authed.account'
@@ -139,6 +140,11 @@ const AdminAuthedMailRoute = AdminAuthedMailRouteImport.update({
   path: '/mail',
   getParentRoute: () => AdminAuthedRoute,
 } as any)
+const AdminAuthedLogsRoute = AdminAuthedLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => AdminAuthedRoute,
+} as any)
 const AdminAuthedEmailsRoute = AdminAuthedEmailsRouteImport.update({
   id: '/emails',
   path: '/emails',
@@ -175,6 +181,7 @@ export interface FileRoutesByFullPath {
   '/admin/account': typeof AdminAuthedAccountRoute
   '/admin/ads': typeof AdminAuthedAdsRoute
   '/admin/emails': typeof AdminAuthedEmailsRoute
+  '/admin/logs': typeof AdminAuthedLogsRoute
   '/admin/mail': typeof AdminAuthedMailRoute
   '/admin/onboard': typeof AdminAuthedOnboardRoute
   '/admin/subscriptions': typeof AdminAuthedSubscriptionsRoute
@@ -199,6 +206,7 @@ export interface FileRoutesByTo {
   '/admin/account': typeof AdminAuthedAccountRoute
   '/admin/ads': typeof AdminAuthedAdsRoute
   '/admin/emails': typeof AdminAuthedEmailsRoute
+  '/admin/logs': typeof AdminAuthedLogsRoute
   '/admin/mail': typeof AdminAuthedMailRoute
   '/admin/onboard': typeof AdminAuthedOnboardRoute
   '/admin/subscriptions': typeof AdminAuthedSubscriptionsRoute
@@ -226,6 +234,7 @@ export interface FileRoutesById {
   '/admin/_authed/account': typeof AdminAuthedAccountRoute
   '/admin/_authed/ads': typeof AdminAuthedAdsRoute
   '/admin/_authed/emails': typeof AdminAuthedEmailsRoute
+  '/admin/_authed/logs': typeof AdminAuthedLogsRoute
   '/admin/_authed/mail': typeof AdminAuthedMailRoute
   '/admin/_authed/onboard': typeof AdminAuthedOnboardRoute
   '/admin/_authed/subscriptions': typeof AdminAuthedSubscriptionsRoute
@@ -254,6 +263,7 @@ export interface FileRouteTypes {
     | '/admin/account'
     | '/admin/ads'
     | '/admin/emails'
+    | '/admin/logs'
     | '/admin/mail'
     | '/admin/onboard'
     | '/admin/subscriptions'
@@ -278,6 +288,7 @@ export interface FileRouteTypes {
     | '/admin/account'
     | '/admin/ads'
     | '/admin/emails'
+    | '/admin/logs'
     | '/admin/mail'
     | '/admin/onboard'
     | '/admin/subscriptions'
@@ -304,6 +315,7 @@ export interface FileRouteTypes {
     | '/admin/_authed/account'
     | '/admin/_authed/ads'
     | '/admin/_authed/emails'
+    | '/admin/_authed/logs'
     | '/admin/_authed/mail'
     | '/admin/_authed/onboard'
     | '/admin/_authed/subscriptions'
@@ -472,6 +484,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuthedMailRouteImport
       parentRoute: typeof AdminAuthedRoute
     }
+    '/admin/_authed/logs': {
+      id: '/admin/_authed/logs'
+      path: '/logs'
+      fullPath: '/admin/logs'
+      preLoaderRoute: typeof AdminAuthedLogsRouteImport
+      parentRoute: typeof AdminAuthedRoute
+    }
     '/admin/_authed/emails': {
       id: '/admin/_authed/emails'
       path: '/emails'
@@ -507,6 +526,7 @@ interface AdminAuthedRouteChildren {
   AdminAuthedAccountRoute: typeof AdminAuthedAccountRoute
   AdminAuthedAdsRoute: typeof AdminAuthedAdsRoute
   AdminAuthedEmailsRoute: typeof AdminAuthedEmailsRoute
+  AdminAuthedLogsRoute: typeof AdminAuthedLogsRoute
   AdminAuthedMailRoute: typeof AdminAuthedMailRoute
   AdminAuthedOnboardRoute: typeof AdminAuthedOnboardRoute
   AdminAuthedSubscriptionsRoute: typeof AdminAuthedSubscriptionsRoute
@@ -517,6 +537,7 @@ const AdminAuthedRouteChildren: AdminAuthedRouteChildren = {
   AdminAuthedAccountRoute: AdminAuthedAccountRoute,
   AdminAuthedAdsRoute: AdminAuthedAdsRoute,
   AdminAuthedEmailsRoute: AdminAuthedEmailsRoute,
+  AdminAuthedLogsRoute: AdminAuthedLogsRoute,
   AdminAuthedMailRoute: AdminAuthedMailRoute,
   AdminAuthedOnboardRoute: AdminAuthedOnboardRoute,
   AdminAuthedSubscriptionsRoute: AdminAuthedSubscriptionsRoute,

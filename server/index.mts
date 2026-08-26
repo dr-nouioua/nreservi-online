@@ -51,6 +51,37 @@ async function cronGuard(c: { req: { header: (k: string) => string | undefined }
 // ---- Static client assets (Vite emits them under dist/client) ----
 app.use("*", serveStatic({ root: "./dist/client" }));
 
+// ---- Admin portal: /admin/* is hidden unless unlocked via the secret slug ----
+// Super admin bookmarks https://nreservi.online/{ADMIN_PORTAL_KEY} (e.g. /3991)
+// — it unlocks the portal for 12h, then /admin and /admin/login respond 404.
+const ADMIN_PORTAL_KEY = process.env.ADMIN_PORTAL_KEY ?? "3991";
+
+app.get("/:portalKey", async (c, next) => {
+  if (c.req.param("portalKey") === ADMIN_PORTAL_KEY) {
+    c.header("Set-Cookie", "admin_portal=1; Path=/; HttpOnly; SameSite=Lax; Max-Age=43200");
+    return c.redirect("/admin");
+  }
+  await next();
+});
+
+app.use("/admin/*", async (c, next) => {
+  const cookieHeader = c.req.header("cookie") ?? "";
+  const hasPortal = /(?:^|;\s*)admin_portal=1(?:;|$)/.test(cookieHeader);
+  let hasAdminSession = false;
+  const m = /(?:^|;\s*)rsv_session=([^;]+)/.exec(cookieHeader);
+  if (m) {
+    try {
+      const { verifySession } = await import("../src/server/session.server.js");
+      const session = verifySession(decodeURIComponent(m[1]));
+      hasAdminSession = session?.role === "admin";
+    } catch { /* treat as no session */ }
+  }
+  if (!hasPortal && !hasAdminSession) {
+    return c.text("Not Found", 404);
+  }
+  await next();
+});
+
 // ---- Visitor counting (GET pages only; "" slug = whole platform) ----
 app.all("*", async (c, next) => {
   await next();

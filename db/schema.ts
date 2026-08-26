@@ -237,6 +237,17 @@ export const visitCounts = pgTable("visit_counts", {
   count: integer("count").notNull().default(0),
 }, (t) => [unique("visit_counts_day_slug_key").on(t.day, t.slug)]);
 
+// ---------- Admin activity log ----------
+
+export const adminLogs = pgTable("admin_logs", {
+  id: serial().primaryKey(),
+  adminId: integer("admin_id").notNull(),
+  adminEmail: text("admin_email").notNull(),
+  action: text("action").notNull(),
+  details: text("details"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // ---------- Password resets (e-mail tokens, single use, 1h) ----------
 
 export const passwordResets = pgTable("password_resets", {

@@ -15,6 +15,16 @@ async function requireAdmin() {
   return session;
 }
 
+/** Activity journal — fire-and-forget, never blocks the operation. */
+async function logAdmin(action: string, details?: string) {
+  try {
+    const s = await requireSession();
+    if (!s || s.role !== "admin") return;
+    const { adminLogs } = await import("../../db/schema.js");
+    await db.insert(adminLogs).values({ adminId: s.id, adminEmail: s.email, action, details: details ?? null });
+  } catch { /* journaling must never break an operation */ }
+}
+
 /** Any admin may call, but module-scoped features require the privilege (super bypasses). */
 async function requireAdminWithModule(module: string) {
   const session = await requireAdmin();
@@ -56,6 +66,7 @@ export const approveRestaurant = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     await requireAdmin();
     await db.update(restaurants).set({ status: "active" }).where(eq(restaurants.id, data.id));
+    await logAdmin("restaurant.approve", `restaurant #${data.id}`);
     return { success: true };
   });
 
@@ -64,6 +75,7 @@ export const suspendRestaurant = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     await requireAdmin();
     await db.update(restaurants).set({ status: "suspended" }).where(eq(restaurants.id, data.id));
+    await logAdmin("restaurant.suspend", `restaurant #${data.id}`);
     return { success: true };
   });
 
@@ -75,6 +87,7 @@ export const deleteRestaurant = createServerFn({ method: "POST" })
     await db.delete(reservations).where(eq(reservations.restaurantId, data.id));
     await db.delete(areas).where(eq(areas.restaurantId, data.id));
     await db.delete(restaurants).where(eq(restaurants.id, data.id));
+    await logAdmin("restaurant.delete", `restaurant #${data.id}`);
     return { success: true };
   });
 
@@ -91,6 +104,7 @@ export const setSubscriptionTier = createServerFn({ method: "POST" })
       end: row.subscriptionEnd,
       tier: data.tier,
     });
+    await logAdmin("subscription.tier", `${data.tier} — restaurant #${data.id}`);
     return { success: true };
   });
 
@@ -164,6 +178,7 @@ export const onboardRestaurant = createServerFn({ method: "POST" })
       });
     } catch { /* l'e-mail ne doit jamais bloquer la création */ }
 
+    await logAdmin("restaurant.onboard", `${restaurant.name} (${restaurant.slug})`);
     return restaurant;
   });
 
@@ -182,6 +197,7 @@ export const impersonateRestaurant = createServerFn({ method: "POST" })
       restaurantId: owner.restaurantId,
     });
     setCookie("rsv_session", token, { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 });
+    await logAdmin("restaurant.impersonate", String(data.restaurantId));
     return { success: true };
   });
 
@@ -228,6 +244,7 @@ export const createAdmin = createServerFn({ method: "POST" })
       .insert(adminUsers)
       .values({ name, email, passwordHash: hashPassword(data.password), role: "admin", permissions })
       .returning({ id: adminUsers.id, name: adminUsers.name, email: adminUsers.email, createdAt: adminUsers.createdAt });
+    await logAdmin("admin.create", email);
     return { admin };
   });
 
@@ -240,6 +257,7 @@ export const updateAdminAccess = createServerFn({ method: "POST" })
     const validModules = new Set(["onboard", "subscriptions", "emails", "ads", "mail"]);
     const permissions = (data.permissions ?? []).filter((p) => validModules.has(p));
     await db.update(adminUsers).set({ permissions }).where(eq(adminUsers.id, data.id));
+    await logAdmin("admin.permissions", `admin #${data.id} : [${permissions.join(", ")}]`);
     return { success: true as const };
   });
 
@@ -258,6 +276,7 @@ export const deleteAdmin = createServerFn({ method: "POST" })
     const [target] = await db.select({ id: adminUsers.id }).from(adminUsers).where(eq(adminUsers.id, data.id));
     if (!target) return { error: "Administrateur introuvable." };
     await db.delete(adminUsers).where(eq(adminUsers.id, data.id));
+    await logAdmin("admin.delete", String(data.id));
     return { success: true };
   });
 
@@ -293,6 +312,7 @@ export const createAd = createServerFn({ method: "POST" })
       return { error: "Le lien doit commencer par http:// ou https://" };
     }
     await db.insert(ads).values(values);
+    await logAdmin("ad.create", data.title);
     return { success: true as const };
   });
 
@@ -308,6 +328,7 @@ export const updateAd = createServerFn({ method: "POST" })
       return { error: "Le lien doit commencer par http:// ou https://" };
     }
     await db.update(ads).set(values).where(eq(ads.id, data.id));
+    await logAdmin("ad.update", data.title);
     return { success: true as const };
   });
 
@@ -317,6 +338,7 @@ export const setAdActive = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     await requireAdminWithModule('ads');
     await db.update(ads).set({ active: data.active }).where(eq(ads.id, data.id));
+    await logAdmin("ad.toggle", `annonce #${data.id} → ${data.active ? "visible" : "masquée"}`);
     return { success: true as const };
   });
 
@@ -325,6 +347,7 @@ export const deleteAd = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     await requireAdminWithModule('ads');
     await db.delete(ads).where(eq(ads.id, data.id));
+    await logAdmin("ad.delete", String(data.id));
     return { success: true as const };
   });
 
@@ -393,6 +416,7 @@ export const updateSubscriptionDates = createServerFn({ method: "POST" })
       end: data.end,
       tier: row.subscriptionTier,
     });
+    await logAdmin("subscription.dates", `restaurant #${data.id} : ${data.start ?? '?'} → ${data.end ?? '?'}`);
     return { success: true as const };
   });
 
@@ -471,6 +495,7 @@ export const renewSubscription = createServerFn({ method: "POST" })
     } catch {
       // l'envoi ne doit jamais bloquer le renouvellement
     }
+    await logAdmin("subscription.renew", `restaurant #${data.id} : +${data.months} mois${amount ? ` (${amount} DA)` : ""}`);
     return { success: true as const, newEnd: endISO };
   });
 
@@ -564,6 +589,7 @@ export const saveMailSettings = createServerFn({ method: "POST" })
       .insert(mailSettings)
       .values({ id: 1, ...values })
       .onConflictDoUpdate({ target: mailSettings.id, set: values });
+    await logAdmin("mail.config", data.smtpHost);
     return { success: true as const };
   });
 
@@ -750,3 +776,11 @@ export const emailContacts = createServerFn({ method: "POST" })
     if (sent === 0 && failed > 0) return { error: lastError ?? "Échec de l'envoi." };
     return { success: true as const, sent, failed };
   });
+
+
+export const listAdminLogs = createServerFn({ method: "GET" }).handler(async () => {
+  const session = await requireAdmin();
+  if (session.adminRole !== "super") return [];
+  const { adminLogs } = await import("../../db/schema.js");
+  return db.select().from(adminLogs).orderBy(sql`created_at desc`).limit(100);
+});

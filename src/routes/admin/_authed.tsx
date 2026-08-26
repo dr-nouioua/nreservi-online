@@ -9,6 +9,7 @@ import {
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
+  History,
   Plus,
   Send,
   ShieldCheck,

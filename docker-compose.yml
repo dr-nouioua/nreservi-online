@@ -25,6 +25,7 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER:-nreservi}:${POSTGRES_PASSWORD:-nreservi}@db:5432/${POSTGRES_DB:-nreservi}
       SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env}
       CRON_SECRET: ${CRON_SECRET:-}
+      ADMIN_PORTAL_KEY: ${ADMIN_PORTAL_KEY:-}
       WHATSAPP_APP_SECRET: ${WHATSAPP_APP_SECRET:-}
     depends_on:
       db:
