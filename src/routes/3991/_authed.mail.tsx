@@ -3,12 +3,12 @@ import { useState } from 'react'
 import { Mail, Save, Send } from 'lucide-react'
 import { getMailSettings, saveMailSettings, sendTestEmail, listMailLog } from '../../server/admin.functions'
 
-export const Route = createFileRoute('/admin/_authed/mail')({
+export const Route = createFileRoute('/3991/_authed/mail')({
 
   beforeLoad: ({ context }) => {
     const { session } = context as { session: { adminRole: 'super' | 'admin'; permissions: string[] } }
     if (session.adminRole !== 'super' && !(session.permissions ?? []).includes('mail')) {
-      throw redirect({ to: '/admin' })
+      throw redirect({ to: '/3991' })
     }
   },
   loader: () => Promise.all([getMailSettings(), listMailLog()]),

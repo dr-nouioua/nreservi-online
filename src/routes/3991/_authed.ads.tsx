@@ -10,12 +10,12 @@ import {
   deleteAd,
 } from '../../server/admin.functions'
 
-export const Route = createFileRoute('/admin/_authed/ads')({
+export const Route = createFileRoute('/3991/_authed/ads')({
 
   beforeLoad: ({ context }) => {
     const { session } = context as { session: { adminRole: 'super' | 'admin'; permissions: string[] } }
     if (session.adminRole !== 'super' && !(session.permissions ?? []).includes('ads')) {
-      throw redirect({ to: '/admin' })
+      throw redirect({ to: '/3991' })
     }
   },
   loader: () => Promise.all([listAds(), listAllRestaurants()]),

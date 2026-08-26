@@ -21,11 +21,11 @@ import { adminHasModule } from '../../server/admin.permissions'
 import { ThemeToggle } from '../../components/ThemeToggle'
 import { BrandLogo } from '../../components/BrandLogo'
 
-export const Route = createFileRoute('/admin/_authed')({
+export const Route = createFileRoute('/3991/_authed')({
   beforeLoad: async () => {
     const session = await getSession()
     if (!session || session.role !== 'admin') {
-      throw redirect({ to: '/admin/login' })
+      throw redirect({ to: '/3991/login' })
     }
     return { session }
   },
@@ -33,15 +33,15 @@ export const Route = createFileRoute('/admin/_authed')({
 })
 
 const nav: { to: string; label: string; icon: typeof Building2; module?: string }[] = [
-  { to: '/admin', label: 'Dashboard', icon: Building2 },
-  { to: '/admin/onboard', label: 'Créer un restaurant', icon: Plus, module: 'onboard' },
-  { to: '/admin/subscriptions', label: 'Abonnements', icon: CreditCard, module: 'subscriptions' },
-  { to: '/admin/emails', label: 'E-mails', icon: Send, module: 'emails' },
-  { to: '/admin/ads', label: 'Publicités', icon: Megaphone, module: 'ads' },
-  { to: '/admin/mail', label: 'Serveur e-mail', icon: Mail, module: 'mail' },
-  { to: '/admin/logs', label: 'Journal', icon: History, module: undefined },
-  { to: '/admin/landing', label: 'Présentation', icon: Globe, module: 'landing' },
-  { to: '/admin/account', label: 'Compte', icon: ShieldCheck },
+  { to: '/3991', label: 'Dashboard', icon: Building2 },
+  { to: '/3991/onboard', label: 'Créer un restaurant', icon: Plus, module: 'onboard' },
+  { to: '/3991/subscriptions', label: 'Abonnements', icon: CreditCard, module: 'subscriptions' },
+  { to: '/3991/emails', label: 'E-mails', icon: Send, module: 'emails' },
+  { to: '/3991/ads', label: 'Publicités', icon: Megaphone, module: 'ads' },
+  { to: '/3991/mail', label: 'Serveur e-mail', icon: Mail, module: 'mail' },
+  { to: '/3991/logs', label: 'Journal', icon: History, module: undefined },
+  { to: '/3991/landing', label: 'Présentation', icon: Globe, module: 'landing' },
+  { to: '/3991/account', label: 'Compte', icon: ShieldCheck },
 ]
 
 function AdminLayout() {
@@ -111,7 +111,7 @@ function AdminLayout() {
               key={item.to}
               to={item.to}
               onClick={() => setDrawerOpen(false)}
-              activeOptions={{ exact: item.to === '/admin' }}
+              activeOptions={{ exact: item.to === '/3991' }}
               className={`flex items-center gap-2 px-2 py-2 rounded-lg text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800 ${collapsed ? 'lg:justify-center' : ''}`}
               activeProps={{
                 className: `flex items-center gap-2 px-2 py-2 rounded-lg text-sm bg-lime-50 text-lime-800 font-medium dark:bg-lime-500/10 dark:text-lime-300 ${collapsed ? 'lg:justify-center' : ''}`,
@@ -166,7 +166,7 @@ function LogoutButton({ full = false }: { full?: boolean }) {
       type="button"
       onClick={async () => {
         await logout()
-        window.location.href = '/admin/login'
+        window.location.href = '/3991/login'
       }}
       title="Déconnexion"
       className={`inline-flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800 ${full ? 'mt-6 w-full justify-center border border-stone-200 dark:border-stone-700' : ''}`}

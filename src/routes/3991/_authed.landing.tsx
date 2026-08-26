@@ -3,10 +3,10 @@ import { useState } from 'react'
 import { Plus, Save, Trash2 } from 'lucide-react'
 import { getSiteContent, saveSiteContent } from '../../server/admin.functions'
 
-export const Route = createFileRoute('/admin/_authed/landing')({
+export const Route = createFileRoute('/3991/_authed/landing')({
   beforeLoad: ({ context }) => {
     const { session } = context as { session: { adminRole: 'super' | 'admin' } }
-    if (session.adminRole !== 'super') throw redirect({ to: '/admin' })
+    if (session.adminRole !== 'super') throw redirect({ to: '/3991' })
   },
   loader: () => getSiteContent(),
   component: LandingEditorPage,

@@ -10,7 +10,7 @@ const seedForLogin = createServerFn({ method: 'GET' }).handler(async () => {
   return null
 })
 
-export const Route = createFileRoute('/admin/login')({
+export const Route = createFileRoute('/3991/login')({
   loader: async () => {
     await seedForLogin()
     return null
@@ -34,7 +34,7 @@ function AdminLogin() {
       if ('error' in result && result.error) {
         setError(result.error)
       } else {
-        navigate({ to: '/admin' })
+        navigate({ to: '/3991' })
       }
     } finally {
       setLoading(false)

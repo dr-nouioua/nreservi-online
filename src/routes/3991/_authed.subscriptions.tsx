@@ -8,12 +8,12 @@ import {
   setSubscriptionTier,
 } from '../../server/admin.functions'
 
-export const Route = createFileRoute('/admin/_authed/subscriptions')({
+export const Route = createFileRoute('/3991/_authed/subscriptions')({
 
   beforeLoad: ({ context }) => {
     const { session } = context as { session: { adminRole: 'super' | 'admin'; permissions: string[] } }
     if (session.adminRole !== 'super' && !(session.permissions ?? []).includes('subscriptions')) {
-      throw redirect({ to: '/admin' })
+      throw redirect({ to: '/3991' })
     }
   },
   loader: () => listSubscriptions(),

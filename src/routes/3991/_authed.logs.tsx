@@ -1,10 +1,10 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { listAdminLogs } from '../../server/admin.functions'
 
-export const Route = createFileRoute('/admin/_authed/logs')({
+export const Route = createFileRoute('/3991/_authed/logs')({
   beforeLoad: ({ context }) => {
     const { session } = context as { session: { adminRole: 'super' | 'admin' } }
-    if (session.adminRole !== 'super') throw redirect({ to: '/admin' })
+    if (session.adminRole !== 'super') throw redirect({ to: '/3991' })
   },
   loader: () => listAdminLogs(),
   component: LogsPage,

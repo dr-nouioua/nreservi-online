@@ -18,23 +18,23 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as RestaurantsSlugRouteImport } from './routes/restaurants.$slug'
 import { Route as OwnerLoginRouteImport } from './routes/owner/login'
 import { Route as OwnerAuthedRouteImport } from './routes/owner/_authed'
-import { Route as AdminLoginRouteImport } from './routes/admin/login'
-import { Route as AdminAuthedRouteImport } from './routes/admin/_authed'
+import { Route as R3991LoginRouteImport } from './routes/3991/login'
+import { Route as R3991AuthedRouteImport } from './routes/3991/_authed'
 import { Route as OwnerAuthedIndexRouteImport } from './routes/owner/_authed.index'
-import { Route as AdminAuthedIndexRouteImport } from './routes/admin/_authed.index'
+import { Route as R3991AuthedIndexRouteImport } from './routes/3991/_authed.index'
 import { Route as OwnerAuthedSettingsRouteImport } from './routes/owner/_authed.settings'
 import { Route as OwnerAuthedMenuRouteImport } from './routes/owner/_authed.menu'
 import { Route as OwnerAuthedMarketingRouteImport } from './routes/owner/_authed.marketing'
 import { Route as OwnerAuthedBillingRouteImport } from './routes/owner/_authed.billing'
 import { Route as OwnerAuthedAnalyticsRouteImport } from './routes/owner/_authed.analytics'
-import { Route as AdminAuthedSubscriptionsRouteImport } from './routes/admin/_authed.subscriptions'
-import { Route as AdminAuthedOnboardRouteImport } from './routes/admin/_authed.onboard'
-import { Route as AdminAuthedMailRouteImport } from './routes/admin/_authed.mail'
-import { Route as AdminAuthedLogsRouteImport } from './routes/admin/_authed.logs'
-import { Route as AdminAuthedLandingRouteImport } from './routes/admin/_authed.landing'
-import { Route as AdminAuthedEmailsRouteImport } from './routes/admin/_authed.emails'
-import { Route as AdminAuthedAdsRouteImport } from './routes/admin/_authed.ads'
-import { Route as AdminAuthedAccountRouteImport } from './routes/admin/_authed.account'
+import { Route as R3991AuthedSubscriptionsRouteImport } from './routes/3991/_authed.subscriptions'
+import { Route as R3991AuthedOnboardRouteImport } from './routes/3991/_authed.onboard'
+import { Route as R3991AuthedMailRouteImport } from './routes/3991/_authed.mail'
+import { Route as R3991AuthedLogsRouteImport } from './routes/3991/_authed.logs'
+import { Route as R3991AuthedLandingRouteImport } from './routes/3991/_authed.landing'
+import { Route as R3991AuthedEmailsRouteImport } from './routes/3991/_authed.emails'
+import { Route as R3991AuthedAdsRouteImport } from './routes/3991/_authed.ads'
+import { Route as R3991AuthedAccountRouteImport } from './routes/3991/_authed.account'
 import { Route as OwnerAuthedSettingsWhatsappRouteImport } from './routes/owner/_authed.settings_.whatsapp'
 
 const TermsRoute = TermsRouteImport.update({
@@ -82,14 +82,14 @@ const OwnerAuthedRoute = OwnerAuthedRouteImport.update({
   path: '/owner',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminLoginRoute = AdminLoginRouteImport.update({
-  id: '/admin/login',
-  path: '/admin/login',
+const R3991LoginRoute = R3991LoginRouteImport.update({
+  id: '/3991/login',
+  path: '/3991/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminAuthedRoute = AdminAuthedRouteImport.update({
-  id: '/admin/_authed',
-  path: '/admin',
+const R3991AuthedRoute = R3991AuthedRouteImport.update({
+  id: '/3991/_authed',
+  path: '/3991',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OwnerAuthedIndexRoute = OwnerAuthedIndexRouteImport.update({
@@ -97,12 +97,12 @@ const OwnerAuthedIndexRoute = OwnerAuthedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => OwnerAuthedRoute,
 } as any)
-const AdminAuthedIndexRoute = AdminAuthedIndexRouteImport.update({
+const R3991AuthedIndexRoute = R3991AuthedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AdminAuthedRoute,
+  getParentRoute: () => R3991AuthedRoute,
 } as any).lazy(() =>
-  import('./routes/admin/_authed.index.lazy').then((d) => d.Route),
+  import('./routes/3991/_authed.index.lazy').then((d) => d.Route),
 )
 const OwnerAuthedSettingsRoute = OwnerAuthedSettingsRouteImport.update({
   id: '/settings',
@@ -131,46 +131,46 @@ const OwnerAuthedAnalyticsRoute = OwnerAuthedAnalyticsRouteImport.update({
 } as any).lazy(() =>
   import('./routes/owner/_authed.analytics.lazy').then((d) => d.Route),
 )
-const AdminAuthedSubscriptionsRoute =
-  AdminAuthedSubscriptionsRouteImport.update({
+const R3991AuthedSubscriptionsRoute =
+  R3991AuthedSubscriptionsRouteImport.update({
     id: '/subscriptions',
     path: '/subscriptions',
-    getParentRoute: () => AdminAuthedRoute,
+    getParentRoute: () => R3991AuthedRoute,
   } as any)
-const AdminAuthedOnboardRoute = AdminAuthedOnboardRouteImport.update({
+const R3991AuthedOnboardRoute = R3991AuthedOnboardRouteImport.update({
   id: '/onboard',
   path: '/onboard',
-  getParentRoute: () => AdminAuthedRoute,
+  getParentRoute: () => R3991AuthedRoute,
 } as any)
-const AdminAuthedMailRoute = AdminAuthedMailRouteImport.update({
+const R3991AuthedMailRoute = R3991AuthedMailRouteImport.update({
   id: '/mail',
   path: '/mail',
-  getParentRoute: () => AdminAuthedRoute,
+  getParentRoute: () => R3991AuthedRoute,
 } as any)
-const AdminAuthedLogsRoute = AdminAuthedLogsRouteImport.update({
+const R3991AuthedLogsRoute = R3991AuthedLogsRouteImport.update({
   id: '/logs',
   path: '/logs',
-  getParentRoute: () => AdminAuthedRoute,
+  getParentRoute: () => R3991AuthedRoute,
 } as any)
-const AdminAuthedLandingRoute = AdminAuthedLandingRouteImport.update({
+const R3991AuthedLandingRoute = R3991AuthedLandingRouteImport.update({
   id: '/landing',
   path: '/landing',
-  getParentRoute: () => AdminAuthedRoute,
+  getParentRoute: () => R3991AuthedRoute,
 } as any)
-const AdminAuthedEmailsRoute = AdminAuthedEmailsRouteImport.update({
+const R3991AuthedEmailsRoute = R3991AuthedEmailsRouteImport.update({
   id: '/emails',
   path: '/emails',
-  getParentRoute: () => AdminAuthedRoute,
+  getParentRoute: () => R3991AuthedRoute,
 } as any)
-const AdminAuthedAdsRoute = AdminAuthedAdsRouteImport.update({
+const R3991AuthedAdsRoute = R3991AuthedAdsRouteImport.update({
   id: '/ads',
   path: '/ads',
-  getParentRoute: () => AdminAuthedRoute,
+  getParentRoute: () => R3991AuthedRoute,
 } as any)
-const AdminAuthedAccountRoute = AdminAuthedAccountRouteImport.update({
+const R3991AuthedAccountRoute = R3991AuthedAccountRouteImport.update({
   id: '/account',
   path: '/account',
-  getParentRoute: () => AdminAuthedRoute,
+  getParentRoute: () => R3991AuthedRoute,
 } as any)
 const OwnerAuthedSettingsWhatsappRoute =
   OwnerAuthedSettingsWhatsappRouteImport.update({
@@ -186,25 +186,25 @@ export interface FileRoutesByFullPath {
   '/my-reservations': typeof MyReservationsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
-  '/admin': typeof AdminAuthedRouteWithChildren
-  '/admin/login': typeof AdminLoginRoute
+  '/3991': typeof R3991AuthedRouteWithChildren
+  '/3991/login': typeof R3991LoginRoute
   '/owner': typeof OwnerAuthedRouteWithChildren
   '/owner/login': typeof OwnerLoginRoute
   '/restaurants/$slug': typeof RestaurantsSlugRoute
-  '/admin/account': typeof AdminAuthedAccountRoute
-  '/admin/ads': typeof AdminAuthedAdsRoute
-  '/admin/emails': typeof AdminAuthedEmailsRoute
-  '/admin/landing': typeof AdminAuthedLandingRoute
-  '/admin/logs': typeof AdminAuthedLogsRoute
-  '/admin/mail': typeof AdminAuthedMailRoute
-  '/admin/onboard': typeof AdminAuthedOnboardRoute
-  '/admin/subscriptions': typeof AdminAuthedSubscriptionsRoute
+  '/3991/account': typeof R3991AuthedAccountRoute
+  '/3991/ads': typeof R3991AuthedAdsRoute
+  '/3991/emails': typeof R3991AuthedEmailsRoute
+  '/3991/landing': typeof R3991AuthedLandingRoute
+  '/3991/logs': typeof R3991AuthedLogsRoute
+  '/3991/mail': typeof R3991AuthedMailRoute
+  '/3991/onboard': typeof R3991AuthedOnboardRoute
+  '/3991/subscriptions': typeof R3991AuthedSubscriptionsRoute
   '/owner/analytics': typeof OwnerAuthedAnalyticsRoute
   '/owner/billing': typeof OwnerAuthedBillingRoute
   '/owner/marketing': typeof OwnerAuthedMarketingRoute
   '/owner/menu': typeof OwnerAuthedMenuRoute
   '/owner/settings': typeof OwnerAuthedSettingsRoute
-  '/admin/': typeof AdminAuthedIndexRoute
+  '/3991/': typeof R3991AuthedIndexRoute
   '/owner/': typeof OwnerAuthedIndexRoute
   '/owner/settings/whatsapp': typeof OwnerAuthedSettingsWhatsappRoute
 }
@@ -215,23 +215,23 @@ export interface FileRoutesByTo {
   '/my-reservations': typeof MyReservationsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
-  '/admin/login': typeof AdminLoginRoute
+  '/3991/login': typeof R3991LoginRoute
   '/owner/login': typeof OwnerLoginRoute
   '/restaurants/$slug': typeof RestaurantsSlugRoute
-  '/admin/account': typeof AdminAuthedAccountRoute
-  '/admin/ads': typeof AdminAuthedAdsRoute
-  '/admin/emails': typeof AdminAuthedEmailsRoute
-  '/admin/landing': typeof AdminAuthedLandingRoute
-  '/admin/logs': typeof AdminAuthedLogsRoute
-  '/admin/mail': typeof AdminAuthedMailRoute
-  '/admin/onboard': typeof AdminAuthedOnboardRoute
-  '/admin/subscriptions': typeof AdminAuthedSubscriptionsRoute
+  '/3991/account': typeof R3991AuthedAccountRoute
+  '/3991/ads': typeof R3991AuthedAdsRoute
+  '/3991/emails': typeof R3991AuthedEmailsRoute
+  '/3991/landing': typeof R3991AuthedLandingRoute
+  '/3991/logs': typeof R3991AuthedLogsRoute
+  '/3991/mail': typeof R3991AuthedMailRoute
+  '/3991/onboard': typeof R3991AuthedOnboardRoute
+  '/3991/subscriptions': typeof R3991AuthedSubscriptionsRoute
   '/owner/analytics': typeof OwnerAuthedAnalyticsRoute
   '/owner/billing': typeof OwnerAuthedBillingRoute
   '/owner/marketing': typeof OwnerAuthedMarketingRoute
   '/owner/menu': typeof OwnerAuthedMenuRoute
   '/owner/settings': typeof OwnerAuthedSettingsRoute
-  '/admin': typeof AdminAuthedIndexRoute
+  '/3991': typeof R3991AuthedIndexRoute
   '/owner': typeof OwnerAuthedIndexRoute
   '/owner/settings/whatsapp': typeof OwnerAuthedSettingsWhatsappRoute
 }
@@ -243,25 +243,25 @@ export interface FileRoutesById {
   '/my-reservations': typeof MyReservationsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
-  '/admin/_authed': typeof AdminAuthedRouteWithChildren
-  '/admin/login': typeof AdminLoginRoute
+  '/3991/_authed': typeof R3991AuthedRouteWithChildren
+  '/3991/login': typeof R3991LoginRoute
   '/owner/_authed': typeof OwnerAuthedRouteWithChildren
   '/owner/login': typeof OwnerLoginRoute
   '/restaurants/$slug': typeof RestaurantsSlugRoute
-  '/admin/_authed/account': typeof AdminAuthedAccountRoute
-  '/admin/_authed/ads': typeof AdminAuthedAdsRoute
-  '/admin/_authed/emails': typeof AdminAuthedEmailsRoute
-  '/admin/_authed/landing': typeof AdminAuthedLandingRoute
-  '/admin/_authed/logs': typeof AdminAuthedLogsRoute
-  '/admin/_authed/mail': typeof AdminAuthedMailRoute
-  '/admin/_authed/onboard': typeof AdminAuthedOnboardRoute
-  '/admin/_authed/subscriptions': typeof AdminAuthedSubscriptionsRoute
+  '/3991/_authed/account': typeof R3991AuthedAccountRoute
+  '/3991/_authed/ads': typeof R3991AuthedAdsRoute
+  '/3991/_authed/emails': typeof R3991AuthedEmailsRoute
+  '/3991/_authed/landing': typeof R3991AuthedLandingRoute
+  '/3991/_authed/logs': typeof R3991AuthedLogsRoute
+  '/3991/_authed/mail': typeof R3991AuthedMailRoute
+  '/3991/_authed/onboard': typeof R3991AuthedOnboardRoute
+  '/3991/_authed/subscriptions': typeof R3991AuthedSubscriptionsRoute
   '/owner/_authed/analytics': typeof OwnerAuthedAnalyticsRoute
   '/owner/_authed/billing': typeof OwnerAuthedBillingRoute
   '/owner/_authed/marketing': typeof OwnerAuthedMarketingRoute
   '/owner/_authed/menu': typeof OwnerAuthedMenuRoute
   '/owner/_authed/settings': typeof OwnerAuthedSettingsRoute
-  '/admin/_authed/': typeof AdminAuthedIndexRoute
+  '/3991/_authed/': typeof R3991AuthedIndexRoute
   '/owner/_authed/': typeof OwnerAuthedIndexRoute
   '/owner/_authed/settings_/whatsapp': typeof OwnerAuthedSettingsWhatsappRoute
 }
@@ -274,25 +274,25 @@ export interface FileRouteTypes {
     | '/my-reservations'
     | '/reset-password'
     | '/terms'
-    | '/admin'
-    | '/admin/login'
+    | '/3991'
+    | '/3991/login'
     | '/owner'
     | '/owner/login'
     | '/restaurants/$slug'
-    | '/admin/account'
-    | '/admin/ads'
-    | '/admin/emails'
-    | '/admin/landing'
-    | '/admin/logs'
-    | '/admin/mail'
-    | '/admin/onboard'
-    | '/admin/subscriptions'
+    | '/3991/account'
+    | '/3991/ads'
+    | '/3991/emails'
+    | '/3991/landing'
+    | '/3991/logs'
+    | '/3991/mail'
+    | '/3991/onboard'
+    | '/3991/subscriptions'
     | '/owner/analytics'
     | '/owner/billing'
     | '/owner/marketing'
     | '/owner/menu'
     | '/owner/settings'
-    | '/admin/'
+    | '/3991/'
     | '/owner/'
     | '/owner/settings/whatsapp'
   fileRoutesByTo: FileRoutesByTo
@@ -303,23 +303,23 @@ export interface FileRouteTypes {
     | '/my-reservations'
     | '/reset-password'
     | '/terms'
-    | '/admin/login'
+    | '/3991/login'
     | '/owner/login'
     | '/restaurants/$slug'
-    | '/admin/account'
-    | '/admin/ads'
-    | '/admin/emails'
-    | '/admin/landing'
-    | '/admin/logs'
-    | '/admin/mail'
-    | '/admin/onboard'
-    | '/admin/subscriptions'
+    | '/3991/account'
+    | '/3991/ads'
+    | '/3991/emails'
+    | '/3991/landing'
+    | '/3991/logs'
+    | '/3991/mail'
+    | '/3991/onboard'
+    | '/3991/subscriptions'
     | '/owner/analytics'
     | '/owner/billing'
     | '/owner/marketing'
     | '/owner/menu'
     | '/owner/settings'
-    | '/admin'
+    | '/3991'
     | '/owner'
     | '/owner/settings/whatsapp'
   id:
@@ -330,25 +330,25 @@ export interface FileRouteTypes {
     | '/my-reservations'
     | '/reset-password'
     | '/terms'
-    | '/admin/_authed'
-    | '/admin/login'
+    | '/3991/_authed'
+    | '/3991/login'
     | '/owner/_authed'
     | '/owner/login'
     | '/restaurants/$slug'
-    | '/admin/_authed/account'
-    | '/admin/_authed/ads'
-    | '/admin/_authed/emails'
-    | '/admin/_authed/landing'
-    | '/admin/_authed/logs'
-    | '/admin/_authed/mail'
-    | '/admin/_authed/onboard'
-    | '/admin/_authed/subscriptions'
+    | '/3991/_authed/account'
+    | '/3991/_authed/ads'
+    | '/3991/_authed/emails'
+    | '/3991/_authed/landing'
+    | '/3991/_authed/logs'
+    | '/3991/_authed/mail'
+    | '/3991/_authed/onboard'
+    | '/3991/_authed/subscriptions'
     | '/owner/_authed/analytics'
     | '/owner/_authed/billing'
     | '/owner/_authed/marketing'
     | '/owner/_authed/menu'
     | '/owner/_authed/settings'
-    | '/admin/_authed/'
+    | '/3991/_authed/'
     | '/owner/_authed/'
     | '/owner/_authed/settings_/whatsapp'
   fileRoutesById: FileRoutesById
@@ -360,8 +360,8 @@ export interface RootRouteChildren {
   MyReservationsRoute: typeof MyReservationsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
-  AdminAuthedRoute: typeof AdminAuthedRouteWithChildren
-  AdminLoginRoute: typeof AdminLoginRoute
+  R3991AuthedRoute: typeof R3991AuthedRouteWithChildren
+  R3991LoginRoute: typeof R3991LoginRoute
   OwnerAuthedRoute: typeof OwnerAuthedRouteWithChildren
   OwnerLoginRoute: typeof OwnerLoginRoute
   RestaurantsSlugRoute: typeof RestaurantsSlugRoute
@@ -432,18 +432,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OwnerAuthedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/login': {
-      id: '/admin/login'
-      path: '/admin/login'
-      fullPath: '/admin/login'
-      preLoaderRoute: typeof AdminLoginRouteImport
+    '/3991/login': {
+      id: '/3991/login'
+      path: '/3991/login'
+      fullPath: '/3991/login'
+      preLoaderRoute: typeof R3991LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/_authed': {
-      id: '/admin/_authed'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminAuthedRouteImport
+    '/3991/_authed': {
+      id: '/3991/_authed'
+      path: '/3991'
+      fullPath: '/3991'
+      preLoaderRoute: typeof R3991AuthedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/owner/_authed/': {
@@ -453,12 +453,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OwnerAuthedIndexRouteImport
       parentRoute: typeof OwnerAuthedRoute
     }
-    '/admin/_authed/': {
-      id: '/admin/_authed/'
+    '/3991/_authed/': {
+      id: '/3991/_authed/'
       path: '/'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AdminAuthedIndexRouteImport
-      parentRoute: typeof AdminAuthedRoute
+      fullPath: '/3991/'
+      preLoaderRoute: typeof R3991AuthedIndexRouteImport
+      parentRoute: typeof R3991AuthedRoute
     }
     '/owner/_authed/settings': {
       id: '/owner/_authed/settings'
@@ -495,61 +495,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OwnerAuthedAnalyticsRouteImport
       parentRoute: typeof OwnerAuthedRoute
     }
-    '/admin/_authed/subscriptions': {
-      id: '/admin/_authed/subscriptions'
+    '/3991/_authed/subscriptions': {
+      id: '/3991/_authed/subscriptions'
       path: '/subscriptions'
-      fullPath: '/admin/subscriptions'
-      preLoaderRoute: typeof AdminAuthedSubscriptionsRouteImport
-      parentRoute: typeof AdminAuthedRoute
+      fullPath: '/3991/subscriptions'
+      preLoaderRoute: typeof R3991AuthedSubscriptionsRouteImport
+      parentRoute: typeof R3991AuthedRoute
     }
-    '/admin/_authed/onboard': {
-      id: '/admin/_authed/onboard'
+    '/3991/_authed/onboard': {
+      id: '/3991/_authed/onboard'
       path: '/onboard'
-      fullPath: '/admin/onboard'
-      preLoaderRoute: typeof AdminAuthedOnboardRouteImport
-      parentRoute: typeof AdminAuthedRoute
+      fullPath: '/3991/onboard'
+      preLoaderRoute: typeof R3991AuthedOnboardRouteImport
+      parentRoute: typeof R3991AuthedRoute
     }
-    '/admin/_authed/mail': {
-      id: '/admin/_authed/mail'
+    '/3991/_authed/mail': {
+      id: '/3991/_authed/mail'
       path: '/mail'
-      fullPath: '/admin/mail'
-      preLoaderRoute: typeof AdminAuthedMailRouteImport
-      parentRoute: typeof AdminAuthedRoute
+      fullPath: '/3991/mail'
+      preLoaderRoute: typeof R3991AuthedMailRouteImport
+      parentRoute: typeof R3991AuthedRoute
     }
-    '/admin/_authed/logs': {
-      id: '/admin/_authed/logs'
+    '/3991/_authed/logs': {
+      id: '/3991/_authed/logs'
       path: '/logs'
-      fullPath: '/admin/logs'
-      preLoaderRoute: typeof AdminAuthedLogsRouteImport
-      parentRoute: typeof AdminAuthedRoute
+      fullPath: '/3991/logs'
+      preLoaderRoute: typeof R3991AuthedLogsRouteImport
+      parentRoute: typeof R3991AuthedRoute
     }
-    '/admin/_authed/landing': {
-      id: '/admin/_authed/landing'
+    '/3991/_authed/landing': {
+      id: '/3991/_authed/landing'
       path: '/landing'
-      fullPath: '/admin/landing'
-      preLoaderRoute: typeof AdminAuthedLandingRouteImport
-      parentRoute: typeof AdminAuthedRoute
+      fullPath: '/3991/landing'
+      preLoaderRoute: typeof R3991AuthedLandingRouteImport
+      parentRoute: typeof R3991AuthedRoute
     }
-    '/admin/_authed/emails': {
-      id: '/admin/_authed/emails'
+    '/3991/_authed/emails': {
+      id: '/3991/_authed/emails'
       path: '/emails'
-      fullPath: '/admin/emails'
-      preLoaderRoute: typeof AdminAuthedEmailsRouteImport
-      parentRoute: typeof AdminAuthedRoute
+      fullPath: '/3991/emails'
+      preLoaderRoute: typeof R3991AuthedEmailsRouteImport
+      parentRoute: typeof R3991AuthedRoute
     }
-    '/admin/_authed/ads': {
-      id: '/admin/_authed/ads'
+    '/3991/_authed/ads': {
+      id: '/3991/_authed/ads'
       path: '/ads'
-      fullPath: '/admin/ads'
-      preLoaderRoute: typeof AdminAuthedAdsRouteImport
-      parentRoute: typeof AdminAuthedRoute
+      fullPath: '/3991/ads'
+      preLoaderRoute: typeof R3991AuthedAdsRouteImport
+      parentRoute: typeof R3991AuthedRoute
     }
-    '/admin/_authed/account': {
-      id: '/admin/_authed/account'
+    '/3991/_authed/account': {
+      id: '/3991/_authed/account'
       path: '/account'
-      fullPath: '/admin/account'
-      preLoaderRoute: typeof AdminAuthedAccountRouteImport
-      parentRoute: typeof AdminAuthedRoute
+      fullPath: '/3991/account'
+      preLoaderRoute: typeof R3991AuthedAccountRouteImport
+      parentRoute: typeof R3991AuthedRoute
     }
     '/owner/_authed/settings_/whatsapp': {
       id: '/owner/_authed/settings_/whatsapp'
@@ -561,32 +561,32 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AdminAuthedRouteChildren {
-  AdminAuthedAccountRoute: typeof AdminAuthedAccountRoute
-  AdminAuthedAdsRoute: typeof AdminAuthedAdsRoute
-  AdminAuthedEmailsRoute: typeof AdminAuthedEmailsRoute
-  AdminAuthedLandingRoute: typeof AdminAuthedLandingRoute
-  AdminAuthedLogsRoute: typeof AdminAuthedLogsRoute
-  AdminAuthedMailRoute: typeof AdminAuthedMailRoute
-  AdminAuthedOnboardRoute: typeof AdminAuthedOnboardRoute
-  AdminAuthedSubscriptionsRoute: typeof AdminAuthedSubscriptionsRoute
-  AdminAuthedIndexRoute: typeof AdminAuthedIndexRoute
+interface R3991AuthedRouteChildren {
+  R3991AuthedAccountRoute: typeof R3991AuthedAccountRoute
+  R3991AuthedAdsRoute: typeof R3991AuthedAdsRoute
+  R3991AuthedEmailsRoute: typeof R3991AuthedEmailsRoute
+  R3991AuthedLandingRoute: typeof R3991AuthedLandingRoute
+  R3991AuthedLogsRoute: typeof R3991AuthedLogsRoute
+  R3991AuthedMailRoute: typeof R3991AuthedMailRoute
+  R3991AuthedOnboardRoute: typeof R3991AuthedOnboardRoute
+  R3991AuthedSubscriptionsRoute: typeof R3991AuthedSubscriptionsRoute
+  R3991AuthedIndexRoute: typeof R3991AuthedIndexRoute
 }
 
-const AdminAuthedRouteChildren: AdminAuthedRouteChildren = {
-  AdminAuthedAccountRoute: AdminAuthedAccountRoute,
-  AdminAuthedAdsRoute: AdminAuthedAdsRoute,
-  AdminAuthedEmailsRoute: AdminAuthedEmailsRoute,
-  AdminAuthedLandingRoute: AdminAuthedLandingRoute,
-  AdminAuthedLogsRoute: AdminAuthedLogsRoute,
-  AdminAuthedMailRoute: AdminAuthedMailRoute,
-  AdminAuthedOnboardRoute: AdminAuthedOnboardRoute,
-  AdminAuthedSubscriptionsRoute: AdminAuthedSubscriptionsRoute,
-  AdminAuthedIndexRoute: AdminAuthedIndexRoute,
+const R3991AuthedRouteChildren: R3991AuthedRouteChildren = {
+  R3991AuthedAccountRoute: R3991AuthedAccountRoute,
+  R3991AuthedAdsRoute: R3991AuthedAdsRoute,
+  R3991AuthedEmailsRoute: R3991AuthedEmailsRoute,
+  R3991AuthedLandingRoute: R3991AuthedLandingRoute,
+  R3991AuthedLogsRoute: R3991AuthedLogsRoute,
+  R3991AuthedMailRoute: R3991AuthedMailRoute,
+  R3991AuthedOnboardRoute: R3991AuthedOnboardRoute,
+  R3991AuthedSubscriptionsRoute: R3991AuthedSubscriptionsRoute,
+  R3991AuthedIndexRoute: R3991AuthedIndexRoute,
 }
 
-const AdminAuthedRouteWithChildren = AdminAuthedRoute._addFileChildren(
-  AdminAuthedRouteChildren,
+const R3991AuthedRouteWithChildren = R3991AuthedRoute._addFileChildren(
+  R3991AuthedRouteChildren,
 )
 
 interface OwnerAuthedRouteChildren {
@@ -620,8 +620,8 @@ const rootRouteChildren: RootRouteChildren = {
   MyReservationsRoute: MyReservationsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
-  AdminAuthedRoute: AdminAuthedRouteWithChildren,
-  AdminLoginRoute: AdminLoginRoute,
+  R3991AuthedRoute: R3991AuthedRouteWithChildren,
+  R3991LoginRoute: R3991LoginRoute,
   OwnerAuthedRoute: OwnerAuthedRouteWithChildren,
   OwnerLoginRoute: OwnerLoginRoute,
   RestaurantsSlugRoute: RestaurantsSlugRoute,

@@ -20,7 +20,7 @@ import {
   impersonateRestaurant,
 } from '../../server/admin.functions'
 
-export const Route = createLazyFileRoute('/admin/_authed/')({
+export const Route = createLazyFileRoute('/3991/_authed/')({
   component: AdminIndex,
 })
 

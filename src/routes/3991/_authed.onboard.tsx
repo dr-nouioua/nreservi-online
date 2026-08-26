@@ -2,12 +2,12 @@ import { createFileRoute, useNavigate, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
 import { onboardRestaurant } from '../../server/admin.functions'
 
-export const Route = createFileRoute('/admin/_authed/onboard')({
+export const Route = createFileRoute('/3991/_authed/onboard')({
 
   beforeLoad: ({ context }) => {
     const { session } = context as { session: { adminRole: 'super' | 'admin'; permissions: string[] } }
     if (session.adminRole !== 'super' && !(session.permissions ?? []).includes('onboard')) {
-      throw redirect({ to: '/admin' })
+      throw redirect({ to: '/3991' })
     }
   },
   component: OnboardPage,
@@ -43,7 +43,7 @@ function OnboardPage() {
     setSubmitting(true)
     try {
       await onboardRestaurant({ data: form })
-      navigate({ to: '/admin' })
+      navigate({ to: '/3991' })
     } finally {
       setSubmitting(false)
     }

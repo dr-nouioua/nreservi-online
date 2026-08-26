@@ -5,7 +5,7 @@ import { listAdmins, createAdmin, deleteAdmin, updateAdminAccess } from '../../s
 import { ADMIN_MODULES } from '../../server/admin.permissions'
 import { changePassword, updateAccountEmail } from '../../server/auth.functions'
 
-export const Route = createFileRoute('/admin/_authed/account')({
+export const Route = createFileRoute('/3991/_authed/account')({
   loader: () => listAdmins(),
   component: AdminAccountPage,
 })
