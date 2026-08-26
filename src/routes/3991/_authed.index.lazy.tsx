@@ -266,12 +266,22 @@ function AdminIndex() {
                     </button>
                     <button
                       onClick={async () => {
-                        if (confirm(`Supprimer ${r.name} ? Toutes ses données seront supprimées.`)) {
-                          await deleteRestaurant({ data: { id: r.id } })
-                          refresh()
+                        // Double confirmation for an irreversible action.
+                        if (!confirm(`Supprimer ${r.name} ? Toutes ses données seront définitivement supprimées.`)) return
+                        const typed = prompt(`ATTENTION — action irréversible.\nTapez le nom du restaurant pour confirmer :\n\n${r.name}`)
+                        if (typed === null) return
+                        if (typed.trim().toLowerCase() !== r.name.toLowerCase()) {
+                          alert('Le nom saisi ne correspond pas — suppression annulée.')
+                          return
                         }
+                        const result = await deleteRestaurant({ data: { id: r.id, confirmName: typed } })
+                        if ('error' in result && result.error) {
+                          alert(result.error)
+                          return
+                        }
+                        refresh()
                       }}
-                      title="Supprimer"
+                      title="Supprimer définitivement"
                       className="rounded-md p-1.5 text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
                     >
                       <Trash2 className="h-4 w-4" />

@@ -26,7 +26,6 @@ function LandingEditorPage() {
   const [about, setAbout] = useState(initial.about)
   const [contactEmail, setContactEmail] = useState(initial.contactEmail)
   const [contactPhone, setContactPhone] = useState(initial.contactPhone)
-  const [heroImage, setHeroImage] = useState(initial.homeHeroImageUrl ?? '')
   const [packages, setPackages] = useState<PackageRow[]>(
     (initial.packages as PackageRow[]).map((p) => ({ ...p, features: p.features ?? [] })),
   )
@@ -41,7 +40,7 @@ function LandingEditorPage() {
     e.preventDefault()
     setSaving(true)
     const result = await saveSiteContent({
-      data: { about, contactEmail, contactPhone, homeHeroImageUrl: heroImage || null, packages },
+      data: { about, contactEmail, contactPhone, packages },
     })
     setSaving(false)
     if ('error' in result && result.error) {
@@ -84,43 +83,6 @@ function LandingEditorPage() {
         </div>
 
         {/* Image accueil */}
-        <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-4 sm:p-6 space-y-3 shadow-sm">
-          <p className="font-semibold text-stone-900 dark:text-stone-100">Image de la page d'accueil client</p>
-          <input
-            value={heroImage}
-            onChange={(e) => setHeroImage(e.target.value)}
-            placeholder="https://… (image sous la carte de recherche)"
-            className="w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm dark:border-stone-700"
-          />
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-600 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">
-            🖼️ Importer une image
-            <input
-              type="file"
-              accept="image/*"
-              className="sr-only"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (!file) return
-                const reader = new FileReader()
-                reader.onload = () => {
-                  const img = new Image()
-                  img.onload = () => {
-                    const canvas = document.createElement('canvas')
-                    const scale = Math.min(1, 1600 / img.width)
-                    canvas.width = Math.round(img.width * scale)
-                    canvas.height = Math.round(img.height * scale)
-                    canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height)
-                    setHeroImage(canvas.toDataURL('image/jpeg', 0.82))
-                  }
-                  img.src = String(reader.result)
-                }
-                reader.readAsDataURL(file)
-              }}
-            />
-          </label>
-          {heroImage && <img src={heroImage} alt="" className="h-32 rounded-lg object-cover" />}
-        </div>
-
         {/* Formules */}
         <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-4 sm:p-6 space-y-4 shadow-sm">
           <p className="font-semibold text-stone-900 dark:text-stone-100">Formules & publicité</p>

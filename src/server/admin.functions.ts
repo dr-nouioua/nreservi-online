@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { eq, sql } from "drizzle-orm";
 import { db } from "../../db/index.js";
-import { adminUsers, ads, mailSettings, restaurants, restaurantOwners, reservations, areas } from "../../db/schema.js";
+import { adminUsers, ads, mailSettings, marketingCampaigns, marketingRules, marketingSegments, marketingTemplates, menuCategories, menuItems, restaurants, restaurantOwners, reservations, areas, staffUsers, whatsappMessages, campaignLogs } from "../../db/schema.js";
 import { requireSession } from "./auth.functions.js";
 import { appendSubscriptionHistory, syncExpiredSubscriptionsInternal } from "./subscription.server.js";
 import { computeSubscriptionStatus, daysUntil, SUBSCRIPTION_WARNING_DAYS } from "./subscriptions.shared.js";
@@ -90,14 +90,34 @@ export const suspendRestaurant = createServerFn({ method: "POST" })
   });
 
 export const deleteRestaurant = createServerFn({ method: "POST" })
-  .inputValidator((data: { id: number }) => data)
+  .inputValidator((data: { id: number; confirmName: string }) => data)
   .handler(async ({ data }) => {
-    await requireAdmin();
-    await db.delete(restaurantOwners).where(eq(restaurantOwners.restaurantId, data.id));
+    const session = await requireAdmin();
+    const [row] = await db.select().from(restaurants).where(eq(restaurants.id, data.id));
+    if (!row) return { error: "Restaurant introuvable." };
+    // Second confirmation, enforced server-side: the typed name must match.
+    if (data.confirmName.trim().toLowerCase() !== row.name.trim().toLowerCase()) {
+      return { error: "Le nom saisi ne correspond pas — suppression annulée." };
+    }
+
+    // Permanent deletion: every child row, in FK-safe order.
+    await db.delete(campaignLogs).where(eq(campaignLogs.restaurantId, data.id));
+    await db.delete(marketingCampaigns).where(eq(marketingCampaigns.restaurantId, data.id));
+    await db.delete(marketingRules).where(eq(marketingRules.restaurantId, data.id));
+    await db.delete(marketingTemplates).where(eq(marketingTemplates.restaurantId, data.id));
+    await db.delete(marketingSegments).where(eq(marketingSegments.restaurantId, data.id));
+    await db.delete(whatsappMessages).where(eq(whatsappMessages.restaurantId, data.id));
+    await db.delete(ads).where(eq(ads.restaurantId, data.id));
+    await db.delete(staffUsers).where(eq(staffUsers.restaurantId, data.id));
+    await db.delete(menuItems).where(eq(menuItems.restaurantId, data.id));
+    await db.delete(menuCategories).where(eq(menuCategories.restaurantId, data.id));
+    await db.delete(tables).where(eq(tables.restaurantId, data.id));
     await db.delete(reservations).where(eq(reservations.restaurantId, data.id));
+    await db.delete(restaurantOwners).where(eq(restaurantOwners.restaurantId, data.id));
     await db.delete(areas).where(eq(areas.restaurantId, data.id));
     await db.delete(restaurants).where(eq(restaurants.id, data.id));
-    await logAdmin("restaurant.delete", `restaurant #${data.id}`);
+
+    await logAdmin("restaurant.delete", `${row.name} (supprimé définitivement)`);
     return { success: true };
   });
 
