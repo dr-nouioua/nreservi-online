@@ -2,15 +2,12 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import {
   ArrowRight,
-  Baby,
-  BarChart3,
-  Car,
   Check,
-  Clock,
   Mail,
   Menu,
   MessageCircle,
   Phone,
+  Users,
   UtensilsCrossed,
   X,
 } from 'lucide-react'
