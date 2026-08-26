@@ -20,8 +20,17 @@ import { sql } from "drizzle-orm";
 
 let seeded = false;
 
+/**
+ * Demo seeding is OFF by default. Set SEED_DEMO=true in the environment to
+ * populate demo restaurants and accounts (development/demo only — never in
+ * production with real customers).
+ */
 export async function ensureSeeded() {
   if (seeded) return;
+  if (process.env.SEED_DEMO !== "true") {
+    seeded = true;
+    return;
+  }
   const [{ count }] = await db.select({ count: sql<number>`count(*)` }).from(restaurants);
   if (Number(count) > 0) {
     seeded = true;

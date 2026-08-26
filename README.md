@@ -28,7 +28,8 @@ pnpm db:migrate               # apply migrations in ./drizzle
 pnpm dev                      # http://localhost:3000
 ```
 
-The database seeds itself automatically on first request with two active demo restaurants and one pending
+Demo data is **off by default**. To try the platform with the demo restaurants, set `SEED_DEMO=true` in the
+environment — the database then seeds itself on first request with two active demo restaurants and one pending
 onboarding applicant. Demo logins:
 
 | Role | URL | Email | Password |
