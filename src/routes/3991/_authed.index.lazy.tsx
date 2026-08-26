@@ -18,7 +18,9 @@ import {
   suspendRestaurant,
   deleteRestaurant,
   impersonateRestaurant,
+  setEventTheme as setEventThemeFlag,
 } from '../../server/admin.functions'
+import { EVENT_THEMES, eventThemeLabel } from '../../services/event-themes'
 
 export const Route = createLazyFileRoute('/3991/_authed/')({
   component: AdminIndex,
@@ -41,11 +43,39 @@ function AdminIndex() {
   const [restaurants, setRestaurants] = useState(initial.restaurants)
   const [analytics, setAnalytics] = useState(initial.analytics)
   const [visits] = useState(initial.visits)
+  const [eventTheme, setEventTheme] = useState('')
+  const [eventScope, setEventScope] = useState<'all' | 'pick'>('all')
+  const [eventPicked, setEventPicked] = useState<Set<number>>(new Set())
+  const [eventMessage, setEventMessage] = useState<string | null>(null)
 
   async function refresh() {
     const [r, a] = await Promise.all([listAllRestaurants(), getPlatformAnalytics()])
     setRestaurants(r)
     setAnalytics(a)
+  }
+
+  async function applyEventTheme() {
+    const ids = eventScope === 'all' ? null : [...eventPicked]
+    if (ids !== null && ids.length === 0) {
+      setEventMessage('Sélectionnez au moins un restaurant.')
+      return
+    }
+    const result = await setEventThemeFlag({ data: { theme: eventTheme, ids } })
+    if ('error' in result && result.error) {
+      setEventMessage(result.error)
+      return
+    }
+    setEventMessage(`Thème appliqué à ${result.updated} restaurant(s).`)
+  }
+
+  async function removeEventTheme() {
+    const ids = eventScope === 'all' ? null : [...eventPicked]
+    const result = await setEventThemeFlag({ data: { theme: '', ids } })
+    if ('error' in result && result.error) {
+      setEventMessage(result.error)
+      return
+    }
+    setEventMessage('Thème retiré.')
   }
 
   async function impersonate(id: number) {
@@ -122,6 +152,79 @@ function AdminIndex() {
         {visits.perRestaurant.length === 0 && (
           <p className="mt-3 text-xs text-stone-400">Aucune visite de page restaurant enregistrée sur la période.</p>
         )}
+      </div>
+
+      <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100 mt-8 mb-3">Thème d'événement</h2>
+      <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-5 shadow-sm space-y-4">
+        <div className="grid gap-3 sm:grid-cols-[1fr_1fr]">
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-stone-400">Thème</label>
+            <select
+              value={eventTheme}
+              onChange={(e) => setEventTheme(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm dark:border-stone-700"
+            >
+              <option value="">Aucun thème</option>
+              {Object.entries(EVENT_THEMES).map(([key, t]) => (
+                <option key={key} value={key}>{t.emoji} {t.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-stone-400">Portée</label>
+            <select
+              value={eventScope}
+              onChange={(e) => setEventScope(e.target.value as 'all' | 'pick')}
+              className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm dark:border-stone-700"
+            >
+              <option value="all">Tous les restaurants</option>
+              <option value="pick">Restaurants spécifiques…</option>
+            </select>
+          </div>
+        </div>
+
+        {eventScope === 'pick' && (
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {restaurants.map((r) => (
+              <label key={r.id} className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm dark:border-stone-800">
+                <input
+                  type="checkbox"
+                  checked={eventPicked.has(r.id)}
+                  onChange={(e) => {
+                    const n = new Set(eventPicked)
+                    if (e.target.checked) n.add(r.id)
+                    else n.delete(r.id)
+                    setEventPicked(n)
+                  }}
+                  className="accent-lime-500"
+                />
+                <span className="truncate text-stone-700 dark:text-stone-300">{r.name}</span>
+                {r.eventTheme && <span className="text-[10px] text-amber-600 dark:text-amber-400">({eventThemeLabel(r.eventTheme)})</span>}
+              </label>
+            ))}
+          </div>
+        )}
+
+        {eventMessage && <p className="text-sm text-lime-700 dark:text-lime-300">{eventMessage}</p>}
+
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={applyEventTheme}
+            disabled={eventScope === 'pick' && eventPicked.size === 0}
+            className="rounded-lg bg-stone-950 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:opacity-40 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white"
+          >
+            Appliquer le thème
+          </button>
+          <button
+            onClick={removeEventTheme}
+            className="rounded-lg border border-stone-300 px-4 py-2 text-sm text-stone-600 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
+          >
+            Retirer le thème
+          </button>
+        </div>
+        <p className="text-xs text-stone-400">
+          Le thème ajoute un bandeau festif et des accents colorés sur la page publique des restaurants concernés.
+        </p>
       </div>
 
       <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100 mt-8 mb-3">Restaurants</h2>

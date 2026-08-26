@@ -5,7 +5,6 @@ import {
   Check,
   Mail,
   Menu,
-  MessageCircle,
   Phone,
   Users,
   UtensilsCrossed,

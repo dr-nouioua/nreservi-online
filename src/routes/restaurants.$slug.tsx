@@ -37,6 +37,7 @@ function RestaurantPage() {
       showMenuImages: boolean
       menuFixed: boolean
       babySeatAvailable: boolean
+      eventTheme: string
       hasParking: boolean
       subscriptionTier: string
       facebookUrl: string | null
@@ -139,7 +140,15 @@ function RestaurantPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className={`min-h-screen flex flex-col ${restaurant.eventTheme ? `event-${restaurant.eventTheme}` : ""}`}>
+      {restaurant.eventTheme && EVENT_THEMES[restaurant.eventTheme as keyof typeof EVENT_THEMES] && (
+        <div
+          className="px-4 py-2.5 text-center text-sm font-medium text-white"
+          style={{ background: EVENT_THEMES[restaurant.eventTheme as keyof typeof EVENT_THEMES].gradient }}
+        >
+          {EVENT_THEMES[restaurant.eventTheme as keyof typeof EVENT_THEMES].banner}
+        </div>
+      )}
       <SiteHeader />
       <div className="relative h-[360px] bg-stone-900">
         {restaurant.coverImageUrl ? (
@@ -336,7 +345,7 @@ function RestaurantPage() {
               <button
                 onClick={checkAvailability}
                 disabled={loadingSlots}
-                className="w-full py-2.5 rounded-lg bg-stone-900 text-white dark:ring-1 dark:ring-stone-700 text-sm font-medium hover:bg-stone-800 disabled:opacity-50"
+                className="event-cta w-full py-2.5 rounded-lg bg-stone-900 text-white dark:ring-1 dark:ring-stone-700 text-sm font-medium hover:bg-stone-800 disabled:opacity-50"
               >
                 {loadingSlots ? 'Recherche...' : 'Voir les disponibilités'}
               </button>
@@ -350,7 +359,7 @@ function RestaurantPage() {
                       onClick={() => setSelectedTime(s.time)}
                     className={`py-2 rounded-lg text-sm border transition ${
                         selectedTime === s.time
-                          ? 'bg-lime-300 text-stone-950 dark:text-stone-50 border-lime-400 font-medium'
+                          ? 'event-slot bg-lime-300 text-stone-950 dark:text-stone-50 border-lime-400 font-medium'
                           : s.available
                           ? 'border-stone-300 dark:border-stone-700 hover:border-lime-500 hover:bg-lime-50 dark:hover:bg-lime-500/10 text-stone-700 dark:text-stone-300'
                           : 'border-stone-100 dark:border-stone-800 text-stone-300 cursor-not-allowed'
@@ -397,7 +406,7 @@ function RestaurantPage() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full py-2.5 rounded-lg bg-stone-950 text-white dark:ring-1 dark:ring-stone-700 text-sm font-medium hover:bg-stone-800 disabled:opacity-50"
+                    className="event-cta w-full py-2.5 rounded-lg bg-stone-950 text-white dark:ring-1 dark:ring-stone-700 text-sm font-medium hover:bg-stone-800 disabled:opacity-50"
                   >
                     {submitting ? 'Réservation...' : `Confirmer pour le ${date} à ${selectedTime}`}
                   </button>

@@ -50,6 +50,7 @@ export const restaurants = pgTable("restaurants", {
    subscriptionHistory: jsonb("subscription_history").notNull().default([]),
    menuFixed: boolean("menu_fixed").notNull().default(false), // false = collapsible menu, true = always open
    babySeatAvailable: boolean("baby_seat_available").notNull().default(false), // show baby-seat option in the booking form
+   eventTheme: text("event_theme").notNull().default(""), // "" | revolution | newyear | xmas | valentine
    expiryWarningSentFor: date("expiry_warning_sent_for"), // end-date the 14-day warning was last sent for
    hasParking: boolean("has_parking").notNull().default(false), // parking badge on the public page
    facebookUrl: text("facebook_url"),

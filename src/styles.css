@@ -22,3 +22,45 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+/* ---- Event themes: accent overrides on restaurant pages ---- */
+.event-revolution .event-cta { background-color: #0e7a4e !important; }
+.event-revolution .event-cta:hover { background-color: #0a5f3c !important; }
+.event-revolution .event-slot { background-color: #0e7a4e !important; color: #fff !important; }
+.event-revolution .event-pill { background-color: rgba(14, 122, 78, 0.85) !important; }
+
+.event-newyear .event-cta { background-color: #b45309 !important; }
+.event-newyear .event-cta:hover { background-color: #92400e !important; }
+.event-newyear .event-slot { background-color: #b45309 !important; color: #fff !important; }
+.event-newyear .event-pill { background-color: rgba(180, 83, 9, 0.85) !important; }
+
+.event-xmas .event-cta { background-color: #b91c1c !important; }
+.event-xmas .event-cta:hover { background-color: #991b1b !important; }
+.event-xmas .event-slot { background-color: #b91c1c !important; color: #fff !important; }
+.event-xmas .event-pill { background-color: rgba(185, 28, 28, 0.85) !important; }
+
+.event-valentine .event-cta { background-color: #e11d48 !important; }
+.event-valentine .event-cta:hover { background-color: #be123c !important; }
+.event-valentine .event-slot { background-color: #e11d48 !important; color: #fff !important; }
+.event-valentine .event-pill { background-color: rgba(225, 29, 72, 0.85) !important; }
+
+/* ---- Event themes: accent overrides on restaurant pages ---- */
+.event-revolution .event-cta { background-color: #0e7a4e !important; }
+.event-revolution .event-cta:hover { background-color: #0a5f3c !important; }
+.event-revolution .event-slot { background-color: #0e7a4e !important; color: #fff !important; }
+.event-revolution .event-pill { background-color: rgba(14, 122, 78, 0.85) !important; }
+
+.event-newyear .event-cta { background-color: #b45309 !important; }
+.event-newyear .event-cta:hover { background-color: #92400e !important; }
+.event-newyear .event-slot { background-color: #b45309 !important; color: #fff !important; }
+.event-newyear .event-pill { background-color: rgba(180, 83, 9, 0.85) !important; }
+
+.event-xmas .event-cta { background-color: #b91c1c !important; }
+.event-xmas .event-cta:hover { background-color: #991b1b !important; }
+.event-xmas .event-slot { background-color: #b91c1c !important; color: #fff !important; }
+.event-xmas .event-pill { background-color: rgba(185, 28, 28, 0.85) !important; }
+
+.event-valentine .event-cta { background-color: #e11d48 !important; }
+.event-valentine .event-cta:hover { background-color: #be123c !important; }
+.event-valentine .event-slot { background-color: #e11d48 !important; color: #fff !important; }
+.event-valentine .event-pill { background-color: rgba(225, 29, 72, 0.85) !important; }

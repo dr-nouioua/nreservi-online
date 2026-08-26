@@ -874,3 +874,31 @@ export const saveSiteContent = createServerFn({ method: "POST" })
     await logAdmin("landing.update", "Page de présentation mise à jour");
     return { success: true as const };
   });
+
+// ---------- Event themes (per restaurant or all) ----------
+
+export const setEventTheme = createServerFn({ method: "POST" })
+  .inputValidator((data: { theme: string; ids: number[] | null }) => data)
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    const { EVENT_THEME_KEYS } = await import("../services/event-themes.js");
+    const theme = (EVENT_THEME_KEYS as string[]).includes(data.theme) ? data.theme : "";
+
+    if (data.ids === null) {
+      const updated = await db.update(restaurants).set({ eventTheme: theme }).returning({ id: restaurants.id });
+      await logAdmin("event.theme", `Thème « ${theme || "aucun"} » appliqué à TOUS les restaurants (${updated.length})`);
+      return { success: true as const, updated: updated.length };
+    }
+    for (const id of data.ids) {
+      await db.update(restaurants).set({ eventTheme: theme }).where(eq(restaurants.id, id));
+    }
+    await logAdmin("event.theme", `Thème « ${theme || "aucun"} » appliqué à ${data.ids.length} restaurant(s)`);
+    return { success: true as const, updated: data.ids.length };
+  });
+
+export const listEventThemes = createServerFn({ method: "GET" }).handler(async () => {
+  await requireAdmin();
+  const { EVENT_THEMES } = await import("../services/event-themes.js");
+  const rows = await db.select({ id: restaurants.id, name: restaurants.name, eventTheme: restaurants.eventTheme }).from(restaurants).orderBy(restaurants.name);
+  return { themes: EVENT_THEMES, restaurants: rows };
+});

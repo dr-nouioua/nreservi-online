@@ -1,0 +1,1 @@
+ALTER TABLE "restaurants" ADD COLUMN "event_theme" text DEFAULT '' NOT NULL;
