@@ -50,7 +50,7 @@ export const Route = createRootRoute({
 })
 
 // Applied before first paint so the page never flashes light when dark mode is on.
-const themeInitScript = `(function(){try{if(localStorage.getItem("nreservi-theme")==="dark"){document.documentElement.classList.add("dark");}}catch(e){}})()`
+const themeInitScript = `(function(){try{const t=localStorage.getItem("nreservi-theme");if(t!=="light"){document.documentElement.classList.add("dark");}}catch(e){})()`
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
