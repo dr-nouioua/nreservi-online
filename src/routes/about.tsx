@@ -12,7 +12,6 @@ import {
 } from 'lucide-react'
 import { getSiteContent } from '../server/admin.functions'
 import { BrandLogo } from '../components/BrandLogo'
-import { ThemeToggle } from '../components/ThemeToggle'
 
 export const Route = createFileRoute('/about')({
   loader: () => getSiteContent(),
@@ -58,16 +57,13 @@ function LandingPage() {
       <header className="sticky top-0 z-30 border-b border-stone-200 bg-white/90 backdrop-blur dark:border-stone-800 dark:bg-stone-900/90">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <BrandLogo className="h-6 w-auto" />
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Menu"
-              className="inline-flex items-center gap-2 rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-700 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
-            >
-              {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />} Menu
-            </button>
-          </div>
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Menu"
+            className="inline-flex items-center gap-2 rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-700 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+          >
+            {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />} Menu
+          </button>
         </div>
         {menuOpen && (
           <nav className="border-t border-stone-200 bg-white px-4 py-3 dark:border-stone-800 dark:bg-stone-900">

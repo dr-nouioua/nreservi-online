@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router'
-import { ThemeToggle } from './ThemeToggle'
 import { BrandLogo } from './BrandLogo'
 
 export function SiteHeader() {
@@ -9,9 +8,7 @@ export function SiteHeader() {
         <Link to="/" className="flex min-w-0 items-center" aria-label="nreservi.online — accueil">
           <BrandLogo className="h-6 w-auto max-w-full object-contain object-left sm:h-8" />
         </Link>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <ThemeToggle />
-          <nav aria-label="Navigation client">
+        <nav aria-label="Navigation client">
             <Link
               to="/my-reservations"
               className="rounded-full border px-2.5 py-1.5 text-xs sm:px-4 sm:py-1.5 sm:text-sm font-medium whitespace-nowrap transition dark:border-stone-700 dark:text-stone-200 dark:hover:border-lime-500 dark:hover:bg-lime-50 dark:hover:bg-lime-500/100/10"

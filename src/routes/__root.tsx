@@ -54,7 +54,7 @@ const themeInitScript = `(function(){try{const t=localStorage.getItem("nreservi-
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
+    <html lang="fr" className="dark">
       <head>
         <HeadContent />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />

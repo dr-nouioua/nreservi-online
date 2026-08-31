@@ -17,7 +17,6 @@ import {
 } from 'lucide-react'
 import { getSession, logout } from '../../server/auth.functions'
 import { getOwnSubscription } from '../../server/owner.functions'
-import { ThemeToggle } from '../../components/ThemeToggle'
 import { BrandLogo } from '../../components/BrandLogo'
 
 export const Route = createFileRoute('/owner/_authed')({
@@ -168,7 +167,6 @@ function OwnerLayout() {
 
         <div className={`flex items-center gap-1 border-t border-stone-100 pt-3 dark:border-stone-800 ${collapsed ? 'flex-col lg:items-center' : 'justify-between'}`}>
           <LogoutButton />
-          <ThemeToggle />
           {/* desktop collapse toggle */}
           <button
             type="button"
@@ -195,7 +193,6 @@ function OwnerLayout() {
             <Menu className="h-6 w-6" />
           </button>
           <BrandLogo className="h-5 w-auto max-w-[55%] object-contain" />
-          <ThemeToggle />
         </header>
 
         <main className="min-h-screen flex-1 overflow-y-auto bg-stone-50 dark:bg-stone-950 lg:min-h-0">
