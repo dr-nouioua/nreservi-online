@@ -122,43 +122,44 @@ function EmailsPage() {
       <form onSubmit={send} className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-4 sm:p-6 space-y-4 shadow-sm">
         <p className="font-semibold text-stone-900 dark:text-stone-100">Nouvel envoi</p>
 
-<div>
-            <div className="flex items-center gap-2 mb-3">
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-stone-200 px-2.5 py-1.5 text-xs dark:border-stone-800">
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-stone-200 px-2.5 py-1.5 text-xs dark:border-stone-800">
+              <input
+                type="checkbox"
+                checked={selectedRestaurants.size === subs.length && subs.length > 0}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setSelectedRestaurants(new Set(subs.map((s) => s.id)))
+                  } else {
+                    setSelectedRestaurants(new Set())
+                  }
+                }}
+                className="accent-lime-500"
+              />
+              <span className="text-xs font-medium text-stone-600 dark:text-stone-300">Tout sélectionner / Tout désélectionner</span>
+            </label>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {subs.map((s) => (
+              <label key={s.id} className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm dark:border-stone-800">
                 <input
                   type="checkbox"
-                  checked={selectedRestaurants.size === subs.length && subs.length > 0}
+                  checked={selectedRestaurants.has(s.id)}
                   onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedRestaurants(new Set(subs.map((s) => s.id)))
-                    } else {
-                      setSelectedRestaurants(new Set())
-                    }
+                    const n = new Set(selectedRestaurants)
+                    if (e.target.checked) n.add(s.id)
+                    else n.delete(s.id)
+                    setSelectedRestaurants(n)
                   }}
                   className="accent-lime-500"
                 />
-                <span className="text-xs font-medium text-stone-600 dark:text-stone-300">Tout sélectionner / Tout désélectionner</span>
+                <Building2 className="h-3.5 w-3.5 text-stone-400 shrink-0" />
+                <span className="truncate text-stone-700 dark:text-stone-300">{s.name}</span>
               </label>
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {subs.map((s) => (
-                  <label key={s.id} className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm dark:border-stone-800">
-                    <input
-                      type="checkbox"
-                      checked={selectedRestaurants.has(s.id)}
-                      onChange={(e) => {
-                        const n = new Set(selectedRestaurants)
-                        if (e.target.checked) n.add(s.id)
-                        else n.delete(s.id)
-                        setSelectedRestaurants(n)
-                      }}
-                    className="accent-lime-500"
-                  >
-                    <Building2 className="h-3.5 w-3.5 text-stone-400 shrink-0" />
-                    <span className="truncate text-stone-700 dark:text-stone-300">{s.name}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
+            ))}
+          </div>
+        </div>
 
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-stone-400 mb-2">Contacts entreprises</p>

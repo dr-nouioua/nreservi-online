@@ -9,19 +9,18 @@ export function SiteHeader() {
           <BrandLogo className="h-6 w-auto max-w-full object-contain object-left sm:h-8" />
         </Link>
         <nav aria-label="Navigation client">
-            <Link
-              to="/my-reservations"
-              className="rounded-full border px-2.5 py-1.5 text-xs sm:px-4 sm:py-1.5 sm:text-sm font-medium whitespace-nowrap transition dark:border-stone-700 dark:text-stone-200 dark:hover:border-lime-500 dark:hover:bg-lime-50 dark:hover:bg-lime-500/100/10"
-              activeProps={{ className: 'border-lime-400 bg-lime-50 text-stone-900 dark:border-lime-500/60 dark:bg-lime-500/15 dark:text-lime-300' }}
-              inactiveProps={{
-                className:
-                  'border-stone-200 text-stone-700 hover:border-lime-400 hover:bg-lime-50 dark:hover:bg-lime-500/10 hover:text-stone-900',
-              }}
-            >
-              Mes réservations
-            </Link>
-          </nav>
-        </div>
+          <Link
+            to="/my-reservations"
+            className="rounded-full border px-2.5 py-1.5 text-xs sm:px-4 sm:py-1.5 sm:text-sm font-medium whitespace-nowrap transition dark:border-stone-700 dark:text-stone-200 dark:hover:border-lime-500 dark:hover:bg-lime-50 dark:hover:bg-lime-500/100/10"
+            activeProps={{ className: 'border-lime-400 bg-lime-50 text-stone-900 dark:border-lime-500/60 dark:bg-lime-500/15 dark:text-lime-300' }}
+            inactiveProps={{
+              className:
+                'border-stone-200 text-stone-700 hover:border-lime-400 hover:bg-lime-50 dark:hover:bg-lime-500/10 hover:text-stone-900',
+            }}
+          >
+            Mes réservations
+          </Link>
+        </nav>
       </div>
     </header>
   )
