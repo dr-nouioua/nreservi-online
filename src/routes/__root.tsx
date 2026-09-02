@@ -30,16 +30,16 @@ export const Route = createRootRoute({
   errorComponent: ({ error }) => {
     console.error("[app error]", error);
     return (
-      <div className="min-h-screen bg-stone-50 dark:bg-stone-950 flex items-center justify-center p-4">
-        <div className="max-w-md rounded-xl border border-stone-200 bg-white p-8 text-center dark:border-stone-800 dark:bg-stone-900">
+      <div className="min-h-screen bg-stone-950 flex items-center justify-center p-4">
+        <div className="max-w-md rounded-xl border border-stone-800 bg-stone-900 p-8 text-center">
           <p className="text-4xl">😔</p>
-          <h1 className="mt-4 text-xl font-bold text-stone-900 dark:text-stone-100">Une erreur est survenue</h1>
-          <p className="mt-3 text-sm text-stone-600 dark:text-stone-400">
+          <h1 className="mt-4 text-xl font-bold text-stone-100">Une erreur est survenue</h1>
+          <p className="mt-3 text-sm text-stone-400">
             Une erreur inattendue s'est produite. Rechargez la page ou réessayez dans un instant.
           </p>
           <a
             href="/"
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-stone-950 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white"
+            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-stone-100 px-4 py-2 text-sm font-medium text-stone-900 hover:bg-white"
           >
             Retour à l'accueil
           </a>
@@ -49,17 +49,13 @@ export const Route = createRootRoute({
   },
 })
 
-// Applied before first paint so the page never flashes light when dark mode is on.
-const themeInitScript = `document.documentElement.classList.add("dark")`
-
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className="dark">
+    <html lang="fr" className="dark" style={{ colorScheme: 'dark' }}>
       <head>
         <HeadContent />
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className="bg-stone-50 text-stone-900 antialiased dark:bg-stone-950 dark:text-stone-100">
+      <body className="bg-stone-950 text-stone-100 antialiased">
         {children}
         <Scripts />
       </body>
