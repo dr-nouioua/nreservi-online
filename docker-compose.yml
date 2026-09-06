@@ -26,6 +26,7 @@ services:
       SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env}
       CRON_SECRET: ${CRON_SECRET:-}
       WHATSAPP_APP_SECRET: ${WHATSAPP_APP_SECRET:-}
+      SEED_DEMO: ${SEED_DEMO:-}
     depends_on:
       db:
         condition: service_healthy
