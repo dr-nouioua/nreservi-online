@@ -1,6 +1,6 @@
 // Event UI themes — pure data, safe for client and server.
 
-export type EventThemeKey = "" | "revolution" | "newyear" | "xmas" | "valentine"
+export type EventThemeKey = "" | "revolution" | "newyear" | "xmas" | "valentine" | "fete_nationale"
 
 export const EVENT_THEMES: Record<
   Exclude<EventThemeKey, "">,
@@ -41,6 +41,15 @@ export const EVENT_THEMES: Record<
     cta: "#e11d48",
     ctaHover: "#be123c",
     pill: "#e11d48",
+  },
+  fete_nationale: {
+    label: "Fête Nationale — 5 Juillet",
+    banner: "🇩🇿 Joyeux 5 Juillet — Fête Nationale algérienne 🎆",
+    emoji: "🇩🇿",
+    gradient: "linear-gradient(90deg, #006233, #ffffff, #D21034)",
+    cta: "#006233",
+    ctaHover: "#004d26",
+    pill: "#006233",
   },
 }
 
