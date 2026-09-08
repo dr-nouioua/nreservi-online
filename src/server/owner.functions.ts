@@ -93,6 +93,23 @@ export const listReservationsForDate = createServerFn({ method: "GET" })
     return rows;
   });
 
+export const listReservationsForDateRange = createServerFn({ method: "GET" })
+  .inputValidator((data: { startDate: string; endDate: string }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    const rows = await db
+      .select()
+      .from(reservations)
+      .where(
+        and(
+          eq(reservations.restaurantId, restaurantId),
+          sql`${reservations.date} >= ${data.startDate} AND ${reservations.date} <= ${data.endDate}`,
+        ),
+      )
+      .orderBy(reservations.date, reservations.time);
+    return rows;
+  });
+
 export const updateReservationStatus = createServerFn({ method: "POST" })
   .inputValidator((data: { id: number; status: string }) => data)
   .handler(async ({ data }) => {

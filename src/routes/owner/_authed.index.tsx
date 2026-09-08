@@ -1,25 +1,26 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
-import { Baby, BellRing, MessageCircle, Plus, RefreshCw, Users, Volume2, VolumeX, X } from 'lucide-react'
+import { Baby, BellRing, CalendarDays, MessageCircle, Plus, RefreshCw, Users, Volume2, VolumeX, X } from 'lucide-react'
 import {
   getOwnerOverview,
-  listReservationsForDate,
+  listReservationsForDateRange,
   updateReservationStatus,
   updateReservationNotes,
   createWalkIn,
 } from '../../server/owner.functions'
 import { getWhatsappSettings } from '../../server/whatsapp.functions'
 import { WhatsappComposer, type ComposerReservation } from '../../components/WhatsappComposer'
-import { ensureAudio, playReservationChime, setSoundEnabled, soundEnabled } from '../../services/notification-sound'
+import { ensureAudio, playReservationChime, playCancellationChime, setSoundEnabled, soundEnabled } from '../../services/notification-sound'
 
 export const Route = createFileRoute('/owner/_authed/')({
   loader: async () => {
+    const today = new Date().toISOString().slice(0, 10)
+    const end = new Date(Date.now() + 3 * 86_400_000).toISOString().slice(0, 10)
     const [overview, reservations, whatsapp] = await Promise.all([
       getOwnerOverview(),
-      listReservationsForDate({ data: { date: new Date().toISOString().slice(0, 10) } }),
+      listReservationsForDateRange({ data: { startDate: today, endDate: end } }),
       getWhatsappSettings(),
     ])
-    const today = new Date().toISOString().slice(0, 10)
     return { overview, reservations, today, whatsapp }
   },
   component: OwnerReservationsBoard,
@@ -36,59 +37,133 @@ const STATUS_COLORS: Record<string, string> = {
 
 const STATUS_OPTIONS = ['confirmed', 'seated', 'completed', 'no_show', 'cancelled']
 
-/** French labels shown everywhere on the board (filters, cards, table). */
 const STATUS_LABELS_FR: Record<string, string> = {
   confirmed: 'Confirmée',
   seated: 'Installée',
   completed: 'Terminée',
   no_show: 'No-show',
   cancelled: 'Annulée',
-  pending: 'En attente', // legacy rows only
+  pending: 'En attente',
+}
+
+function formatDayLabel(dateStr: string, today: string): string {
+  const d = new Date(dateStr + 'T12:00:00')
+  const diff = Math.round((Date.parse(dateStr) - Date.parse(today)) / 86_400_000)
+  const weekday = d.toLocaleDateString('fr-FR', { weekday: 'long' })
+  const dayMonth = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
+  if (diff === 0) return `Aujourd'hui — ${dayMonth}`
+  if (diff === 1) return `Demain — ${dayMonth}`
+  return `${weekday.charAt(0).toUpperCase() + weekday.slice(1)} ${dayMonth}`
+}
+
+type ToastKind = 'new' | 'cancelled' | 'status_changed'
+
+interface Toast {
+  id: string
+  kind: ToastKind
+  guestName: string
+  time: string
+  partySize: number
+  detail: string
+}
+
+function toastIcon(kind: ToastKind) {
+  if (kind === 'new') return <Users className="h-4 w-4 text-lime-700 dark:text-lime-300" />
+  if (kind === 'cancelled') return <X className="h-4 w-4 text-red-700 dark:text-red-300" />
+  return <CalendarDays className="h-4 w-4 text-amber-700 dark:text-amber-300" />
+}
+
+function toastBorder(kind: ToastKind) {
+  if (kind === 'new') return 'border-lime-400 dark:border-lime-500/50'
+  if (kind === 'cancelled') return 'border-red-400 dark:border-red-500/50'
+  return 'border-amber-400 dark:border-amber-500/50'
+}
+
+function toastBg(kind: ToastKind) {
+  if (kind === 'new') return 'bg-lime-100 dark:bg-lime-500/15'
+  if (kind === 'cancelled') return 'bg-red-100 dark:bg-red-500/15'
+  return 'bg-amber-100 dark:bg-amber-500/15'
+}
+
+const TOAST_TITLES: Record<ToastKind, string> = {
+  new: 'Nouvelle réservation !',
+  cancelled: 'Réservation annulée',
+  status_changed: 'Statut modifié',
 }
 
 function OwnerReservationsBoard() {
   const { overview, today, whatsapp } = Route.useLoaderData()
-  const [date, setDate] = useState(today)
-  const [reservations, setReservations] = useState<any[]>(Route.useLoaderData().reservations)
+  const initial = Route.useLoaderData().reservations as any[]
+  const [reservations, setReservations] = useState<any[]>(initial)
   const [areaFilter, setAreaFilter] = useState<number | 'all'>('all')
   const [statusFilter, setStatusFilter] = useState<string | 'all'>('all')
   const [showWalkIn, setShowWalkIn] = useState(false)
   const [composing, setComposing] = useState<ComposerReservation | null>(null)
-  const [toasts, setToasts] = useState<{ id: number; guestName: string; time: string; partySize: number }[]>([])
+  const [toasts, setToasts] = useState<Toast[]>([])
   const [soundOn, setSoundOn] = useState(true)
   const knownIdsRef = useRef<Set<number> | null>(null)
-  const lastDateRef = useRef<string>(today)
+  const statusMapRef = useRef<Map<number, string> | null>(null)
   const [expandedId, setExpandedId] = useState<number | null>(null)
   const whatsappReady = Boolean(whatsapp.whatsappNumber)
 
-  async function refresh(d = date) {
-    const rows = await listReservationsForDate({ data: { date: d } })
+  const dayChips = Array.from({ length: 4 }, (_, i) => {
+    const d = new Date(Date.now() + i * 86_400_000)
+    return d.toISOString().slice(0, 10)
+  })
+
+  async function refresh() {
+    const startDate = dayChips[0]
+    const endDate = dayChips[dayChips.length - 1]
+    const rows = await listReservationsForDateRange({ data: { startDate, endDate } })
     setReservations(rows)
 
-    // New-reservation detection (poll-based): chime + toast + browser notification.
-    const ids = new Set(rows.map((r) => r.id))
-    const sameDate = lastDateRef.current === d
-    if (knownIdsRef.current && sameDate) {
-      const fresh = rows.filter((r) => !knownIdsRef.current!.has(r.id))
-      if (fresh.length > 0) {
-        playReservationChime()
-        for (const r of fresh) {
-          const toastId = r.id
-          setToasts((ts) => [...ts, { id: toastId, guestName: r.guestName, time: r.time.slice(0, 5), partySize: r.partySize }])
+    const ids = new Set(rows.map((r: any) => r.id))
+    const statusMap = new Map(rows.map((r: any) => [r.id, r.status]))
+
+    if (knownIdsRef.current && statusMapRef.current) {
+      const prevIds = knownIdsRef.current
+      const prevStatus = statusMapRef.current
+      const restaurantName = overview.restaurant?.name ?? ''
+
+      for (const r of rows) {
+        if (!prevIds.has(r.id)) {
+          playReservationChime()
+          const toastId = `new-${r.id}-${Date.now()}`
+          setToasts((ts) => [...ts, { id: toastId, kind: 'new', guestName: r.guestName, time: r.time.slice(0, 5), partySize: r.partySize, detail: `${r.partySize} pers. à ${r.time.slice(0, 5)}` }])
           window.setTimeout(() => setToasts((ts) => ts.filter((t) => t.id !== toastId)), 9000)
           try {
             if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-              new Notification('Nouvelle réservation — ' + (overview.restaurant?.name ?? ''), {
+              new Notification('Nouvelle réservation — ' + restaurantName, {
                 body: `${r.guestName} — ${r.partySize} personne(s) à ${r.time.slice(0, 5)}`,
                 icon: '/brand/nreservi-mark.png',
               })
             }
           } catch {}
+        } else {
+          const oldStatus = prevStatus.get(r.id)
+          if (oldStatus && oldStatus !== r.status) {
+            playCancellationChime()
+            const isCancel = r.status === 'cancelled' || r.status === 'no_show'
+            const kind: ToastKind = isCancel ? 'cancelled' : 'status_changed'
+            const toastId = `${kind}-${r.id}-${Date.now()}`
+            const detail = `${STATUS_LABELS_FR[oldStatus] ?? oldStatus} → ${STATUS_LABELS_FR[r.status] ?? r.status}`
+            setToasts((ts) => [...ts, { id: toastId, kind, guestName: r.guestName, time: r.time.slice(0, 5), partySize: r.partySize, detail }])
+            window.setTimeout(() => setToasts((ts) => ts.filter((t) => t.id !== toastId)), 9000)
+            try {
+              if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                new Notification(TOAST_TITLES[kind] + ' — ' + restaurantName, {
+                  body: `${r.guestName} — ${detail}`,
+                  icon: '/brand/nreservi-mark.png',
+                })
+              }
+            } catch {}
+          }
         }
       }
     }
+
     knownIdsRef.current = ids
-    lastDateRef.current = d
+    statusMapRef.current = statusMap
   }
 
   useEffect(() => {
@@ -101,8 +176,7 @@ function OwnerReservationsBoard() {
   useEffect(() => {
     const interval = setInterval(() => refresh(), 15000)
     return () => clearInterval(interval)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date])
+  }, [])
 
   async function setStatus(id: number, status: string) {
     await updateReservationStatus({ data: { id, status } })
@@ -114,11 +188,19 @@ function OwnerReservationsBoard() {
   }
 
   const tablesById = new Map(overview.tables.map((t: any) => [t.id, t]))
+
   const filtered = reservations.filter((r) => {
     if (areaFilter !== 'all' && r.areaId !== areaFilter) return false
     if (statusFilter !== 'all' && r.status !== statusFilter) return false
     return true
   })
+
+  const byDate = new Map<string, any[]>()
+  for (const r of filtered) {
+    const arr = byDate.get(r.date) || []
+    arr.push(r)
+    byDate.set(r.date, arr)
+  }
 
   const statusSelect = (r: any) => (
     <select
@@ -144,6 +226,10 @@ function OwnerReservationsBoard() {
       </button>
     )
 
+  function scrollToDay(dateStr: string) {
+    document.getElementById(`day-${dateStr}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
       <div className="flex items-center justify-between flex-wrap gap-4">
@@ -152,15 +238,6 @@ function OwnerReservationsBoard() {
           <p className="text-stone-500 dark:text-stone-400 text-sm">Plateau des réservations</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => {
-              setDate(e.target.value)
-              refresh(e.target.value)
-            }}
-            className="px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm"
-          />
           <button onClick={() => refresh()} className="p-2 rounded-lg border border-stone-300 hover:bg-stone-100 dark:border-stone-700 dark:hover:bg-stone-800" aria-label="Rafraîchir">
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -191,7 +268,26 @@ function OwnerReservationsBoard() {
         </div>
       </div>
 
-      <div className="flex gap-2 mt-4 sm:mt-6 flex-wrap">
+      {/* Day chips — quick jump */}
+      <div className="flex gap-2 mt-4 sm:mt-6 overflow-x-auto pb-1">
+        {dayChips.map((d) => {
+          const count = reservations.filter((r) => r.date === d && r.status !== 'cancelled').length
+          return (
+            <button
+              key={d}
+              onClick={() => scrollToDay(d)}
+              className="flex items-center gap-2 shrink-0 px-3.5 py-2 rounded-xl border border-stone-200 bg-white text-sm font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800 transition"
+            >
+              <span>{formatDayLabel(d, today)}</span>
+              <span className={`inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-semibold ${count > 0 ? 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900' : 'bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-500'}`}>
+                {count}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="flex gap-2 mt-3 flex-wrap">
         <select value={areaFilter} onChange={(e) => setAreaFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))} className="px-3 py-1.5 rounded-lg border border-stone-300 dark:border-stone-700 text-sm">
           <option value="all">Tous les espaces</option>
           {overview.areas.map((a: any) => (
@@ -214,122 +310,140 @@ function OwnerReservationsBoard() {
         </div>
       )}
 
-      {/* ================= Mobile / tablet: reservation cards ================= */}
-      <div className="mt-5 grid gap-3 md:hidden">
-        {filtered.map((r) => (
-          <article key={r.id} className="rounded-xl border border-stone-200 bg-white p-3.5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <p className="truncate font-semibold text-stone-900 dark:text-stone-100">{r.guestName}</p>
-                <p className="text-xs text-stone-400">{r.guestPhone}</p>
+      {/* ========== Multi-day scrollable list ========== */}
+      <div className="mt-6 space-y-8">
+        {dayChips.map((d) => {
+          const dayRes = byDate.get(d) || []
+          return (
+            <section key={d} id={`day-${d}`}>
+              <div className="sticky top-0 z-10 bg-stone-950/90 backdrop-blur-sm border-b border-stone-800 py-2 mb-3">
+                <h2 className="text-sm font-semibold text-stone-200 dark:text-stone-100">
+                  {formatDayLabel(d, today)}
+                  <span className="ml-2 text-xs font-normal text-stone-400">({dayRes.length})</span>
+                </h2>
               </div>
-              {statusSelect(r)}
-            </div>
 
-            <dl className="mt-2.5 grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="rounded-lg bg-stone-50 py-1.5 dark:bg-stone-800/60">
-                <dt className="text-stone-400">Heure</dt>
-                <dd className="font-semibold text-stone-800 dark:text-stone-200">{r.time.slice(0, 5)}</dd>
-              </div>
-              <div className="rounded-lg bg-stone-50 py-1.5 dark:bg-stone-800/60">
-                <dt className="text-stone-400">Personnes</dt>
-                <dd className="font-semibold inline-flex items-center gap-1 text-stone-800 dark:text-stone-200">
-                  {r.partySize}<Users className="h-3 w-3 text-stone-400" />
-                  {r.babySeats > 0 && <span className="inline-flex items-center gap-0.5 text-amber-600 dark:text-amber-400" title={`${r.babySeats} chaise(s) bébé`}><Baby className="h-3 w-3" />{r.babySeats}</span>}
-                </dd>
-              </div>
-              <div className="rounded-lg bg-stone-50 py-1.5 dark:bg-stone-800/60">
-                <dt className="text-stone-400">Table</dt>
-                <dd className="font-semibold text-stone-800 dark:text-stone-200">{tablesById.get(r.tableId)?.label ?? '—'}</dd>
-              </div>
-            </dl>
+              {/* Mobile / tablet cards */}
+              <div className="grid gap-3 md:hidden">
+                {dayRes.map((r) => (
+                  <article key={r.id} className="rounded-xl border border-stone-200 bg-white p-3.5 shadow-sm dark:border-stone-800 dark:bg-stone-900">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-stone-900 dark:text-stone-100">{r.guestName}</p>
+                        <p className="text-xs text-stone-400">{r.guestPhone}</p>
+                      </div>
+                      {statusSelect(r)}
+                    </div>
 
-            {r.specialRequests && <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">📝 {r.specialRequests}</p>}
+                    <dl className="mt-2.5 grid grid-cols-3 gap-2 text-center text-xs">
+                      <div className="rounded-lg bg-stone-50 py-1.5 dark:bg-stone-800/60">
+                        <dt className="text-stone-400">Heure</dt>
+                        <dd className="font-semibold text-stone-800 dark:text-stone-200">{r.time.slice(0, 5)}</dd>
+                      </div>
+                      <div className="rounded-lg bg-stone-50 py-1.5 dark:bg-stone-800/60">
+                        <dt className="text-stone-400">Personnes</dt>
+                        <dd className="font-semibold inline-flex items-center gap-1 text-stone-800 dark:text-stone-200">
+                          {r.partySize}<Users className="h-3 w-3 text-stone-400" />
+                          {r.babySeats > 0 && <span className="inline-flex items-center gap-0.5 text-amber-600 dark:text-amber-400" title={`${r.babySeats} chaise(s) bébé`}><Baby className="h-3 w-3" />{r.babySeats}</span>}
+                        </dd>
+                      </div>
+                      <div className="rounded-lg bg-stone-50 py-1.5 dark:bg-stone-800/60">
+                        <dt className="text-stone-400">Table</dt>
+                        <dd className="font-semibold text-stone-800 dark:text-stone-200">{tablesById.get(r.tableId)?.label ?? '—'}</dd>
+                      </div>
+                    </dl>
 
-            <div className="mt-3 flex items-center justify-between gap-2">
-              {whatsappButton(r)}
-              <button
-                onClick={() => setExpandedId(expandedId === r.id ? null : r.id)}
-                className="text-xs font-medium text-stone-500 underline underline-offset-2 dark:text-stone-400"
-              >
-                {expandedId === r.id ? 'Masquer les détails' : 'Voir les détails'}
-              </button>
-            </div>
+                    {r.specialRequests && <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">📝 {r.specialRequests}</p>}
 
-            {expandedId === r.id && (
-              <div className="mt-3 space-y-2 border-t border-stone-100 pt-3 dark:border-stone-800">
-                <label className="block text-xs font-medium text-stone-500 dark:text-stone-400">Notes internes</label>
-                <input
-                  defaultValue={r.notes}
-                  onBlur={(e) => setNotes(r.id, e.target.value)}
-                  placeholder="VIP, allergies..."
-                  className="w-full px-2.5 py-1.5 rounded border border-stone-200 text-xs dark:border-stone-800 dark:bg-stone-900 dark:text-stone-100"
-                />
-                <p className="text-[11px] text-stone-400">Enregistré automatiquement en quittant le champ.</p>
-              </div>
-            )}
-          </article>
-        ))}
-        {filtered.length === 0 && (
-          <p className="py-8 text-center text-sm text-stone-400">Aucune réservation pour cette date.</p>
-        )}
-      </div>
+                    <div className="mt-3 flex items-center justify-between gap-2">
+                      {whatsappButton(r)}
+                      <button
+                        onClick={() => setExpandedId(expandedId === r.id ? null : r.id)}
+                        className="text-xs font-medium text-stone-500 underline underline-offset-2 dark:text-stone-400"
+                      >
+                        {expandedId === r.id ? 'Masquer les détails' : 'Voir les détails'}
+                      </button>
+                    </div>
 
-      {/* ================= Desktop: table ================= */}
-      <div className="mt-6 hidden md:block bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-stone-50 dark:bg-stone-950 text-stone-500 dark:text-stone-400 text-left">
-            <tr>
-              <th className="px-4 py-3">Heure</th>
-              <th className="px-4 py-3">Client</th>
-              <th className="px-4 py-3">Pers.</th>
-              <th className="px-4 py-3">Table</th>
-              <th className="px-4 py-3">Statut</th>
-              <th className="px-4 py-3">Notes</th>
-              {whatsappReady && <th className="px-4 py-3">Contact</th>}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
-            {filtered.map((r) => (
-              <tr key={r.id}>
-                <td className="px-4 py-3 font-medium">{r.time.slice(0, 5)}</td>
-                <td className="px-4 py-3">
-                  {r.guestName}
-                  <div className="text-xs text-stone-400">{r.guestPhone}</div>
-                  {r.specialRequests && <div className="text-xs text-amber-600 dark:text-amber-400">{r.specialRequests}</div>}
-                </td>
-                <td className="px-4 py-3">
-                  {r.partySize}
-                  {r.babySeats > 0 && (
-                    <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-400" title={`${r.babySeats} chaise(s) bébé`}>
-                      <Baby className="h-3 w-3" /> {r.babySeats}
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-3">{tablesById.get(r.tableId)?.label ?? '—'}</td>
-                <td className="px-4 py-3">{statusSelect(r)}</td>
-                <td className="px-4 py-3">
-                  <input
-                    defaultValue={r.notes}
-                    onBlur={(e) => setNotes(r.id, e.target.value)}
-                    placeholder="VIP, allergies..."
-                    className="w-full px-2 py-1 rounded border border-stone-200 dark:border-stone-800 text-xs"
-                  />
-                </td>
-                {whatsappReady && (
-                  <td className="px-4 py-3">{whatsappButton(r)}</td>
+                    {expandedId === r.id && (
+                      <div className="mt-3 space-y-2 border-t border-stone-100 pt-3 dark:border-stone-800">
+                        <label className="block text-xs font-medium text-stone-500 dark:text-stone-400">Notes internes</label>
+                        <input
+                          defaultValue={r.notes}
+                          onBlur={(e) => setNotes(r.id, e.target.value)}
+                          placeholder="VIP, allergies..."
+                          className="w-full px-2.5 py-1.5 rounded border border-stone-200 text-xs dark:border-stone-800 dark:bg-stone-900 dark:text-stone-100"
+                        />
+                        <p className="text-[11px] text-stone-400">Enregistré automatiquement en quittant le champ.</p>
+                      </div>
+                    )}
+                  </article>
+                ))}
+                {dayRes.length === 0 && (
+                  <p className="py-6 text-center text-sm text-stone-500">Aucune réservation pour cette date.</p>
                 )}
-              </tr>
-            ))}
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={whatsappReady ? 7 : 6} className="px-4 py-8 text-center text-stone-400">Aucune réservation pour cette date.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden md:block bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-stone-50 dark:bg-stone-950 text-stone-500 dark:text-stone-400 text-left">
+                    <tr>
+                      <th className="px-4 py-3">Heure</th>
+                      <th className="px-4 py-3">Client</th>
+                      <th className="px-4 py-3">Pers.</th>
+                      <th className="px-4 py-3">Table</th>
+                      <th className="px-4 py-3">Statut</th>
+                      <th className="px-4 py-3">Notes</th>
+                      {whatsappReady && <th className="px-4 py-3">Contact</th>}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
+                    {dayRes.map((r) => (
+                      <tr key={r.id}>
+                        <td className="px-4 py-3 font-medium">{r.time.slice(0, 5)}</td>
+                        <td className="px-4 py-3">
+                          {r.guestName}
+                          <div className="text-xs text-stone-400">{r.guestPhone}</div>
+                          {r.specialRequests && <div className="text-xs text-amber-600 dark:text-amber-400">{r.specialRequests}</div>}
+                        </td>
+                        <td className="px-4 py-3">
+                          {r.partySize}
+                          {r.babySeats > 0 && (
+                            <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-400" title={`${r.babySeats} chaise(s) bébé`}>
+                              <Baby className="h-3 w-3" /> {r.babySeats}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">{tablesById.get(r.tableId)?.label ?? '—'}</td>
+                        <td className="px-4 py-3">{statusSelect(r)}</td>
+                        <td className="px-4 py-3">
+                          <input
+                            defaultValue={r.notes}
+                            onBlur={(e) => setNotes(r.id, e.target.value)}
+                            placeholder="VIP, allergies..."
+                            className="w-full px-2 py-1 rounded border border-stone-200 dark:border-stone-800 text-xs"
+                          />
+                        </td>
+                        {whatsappReady && (
+                          <td className="px-4 py-3">{whatsappButton(r)}</td>
+                        )}
+                      </tr>
+                    ))}
+                    {dayRes.length === 0 && (
+                      <tr>
+                        <td colSpan={whatsappReady ? 7 : 6} className="px-4 py-8 text-center text-stone-400">Aucune réservation pour cette date.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )
+        })}
       </div>
 
+      {/* ========== Floor plan (today only) ========== */}
       <h2 className="text-base sm:text-lg font-semibold text-stone-900 dark:text-stone-100 mt-10 mb-2">Plan de salle</h2>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-4">
         {[['confirmed', 'bg-blue-500'], ['seated', 'bg-emerald-500'], ['completed', 'bg-stone-400'], ['no_show', 'bg-red-500']].map(([st, color]) => (
@@ -347,7 +461,7 @@ function OwnerReservationsBoard() {
             <p className="text-sm font-medium text-stone-700 dark:text-stone-300 mb-3 truncate">{area.name}</p>
             <div className="grid grid-cols-3 gap-2">
               {overview.tables.filter((t: any) => t.areaId === area.id).map((t: any) => {
-                const res = reservations.find((r) => r.tableId === t.id && ['seated', 'confirmed'].includes(r.status))
+                const res = reservations.find((r) => r.tableId === t.id && r.date === today && ['seated', 'confirmed'].includes(r.status))
                 const planColor: Record<string, string> = {
                   confirmed: 'bg-blue-500',
                   seated: 'bg-emerald-500',
@@ -369,17 +483,17 @@ function OwnerReservationsBoard() {
         ))}
       </div>
 
-      {/* ---- Nouvelles réservations : toasts ---- */}
+      {/* ---- Toasts ---- */}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 w-[calc(100vw-2rem)] max-w-sm">
         {toasts.map((t) => (
-          <div key={t.id} className="flex items-start gap-3 rounded-xl border border-lime-400 bg-white p-3.5 shadow-lg dark:border-lime-500/50 dark:bg-stone-900">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-lime-100 dark:bg-lime-500/15">
-              <Users className="h-4 w-4 text-lime-700 dark:text-lime-300" />
+          <div key={t.id} className={`flex items-start gap-3 rounded-xl border ${toastBorder(t.kind)} bg-white p-3.5 shadow-lg dark:bg-stone-900`}>
+            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${toastBg(t.kind)}`}>
+              {toastIcon(t.kind)}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">Nouvelle réservation !</p>
+              <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">{TOAST_TITLES[t.kind]}</p>
               <p className="truncate text-xs text-stone-500 dark:text-stone-400">
-                {t.guestName} · {t.partySize} pers. · {t.time}
+                {t.guestName} · {t.detail}
               </p>
             </div>
             <button onClick={() => setToasts((ts) => ts.filter((x) => x.id !== t.id))} aria-label="Fermer" className="shrink-0 rounded p-1 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200">
@@ -393,7 +507,7 @@ function OwnerReservationsBoard() {
         <WalkInModal
           tables={overview.tables}
           reservations={reservations}
-          date={date}
+          date={today}
           onClose={() => setShowWalkIn(false)}
           onCreated={() => {
             setShowWalkIn(false)
@@ -423,7 +537,6 @@ function WalkInModal({ tables, reservations, date, onClose, onCreated }: { table
   const [time, setTime] = useState(new Date().toISOString().slice(11, 16))
   const [error, setError] = useState<string | null>(null)
 
-  // Tables already taken at the selected date/time — greyed out in the list.
   const occupiedIds = new Set(
     reservations
       .filter((r) => r.date === date && r.time.slice(0, 5) === time && ['confirmed', 'seated'].includes(r.status))

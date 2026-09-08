@@ -50,3 +50,26 @@ export function playReservationChime(): void {
     });
   } catch {}
 }
+
+/** Lower two-tone chime for cancellations / status changes. */
+export function playCancellationChime(): void {
+  if (!soundEnabled()) return;
+  try {
+    ensureAudio();
+    if (!ctx || ctx.state === "suspended") return;
+    const t = ctx.currentTime;
+    [523.3, 392].forEach((freq, i) => {
+      const osc = ctx!.createOscillator();
+      const gain = ctx!.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      const start = t + i * 0.2;
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.2, start + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.6);
+      osc.connect(gain).connect(ctx!.destination);
+      osc.start(start);
+      osc.stop(start + 0.65);
+    });
+  } catch {}
+}
