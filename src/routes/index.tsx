@@ -14,12 +14,12 @@ export const Route = createFileRoute('/')({
 })
 
 const CATEGORIES = [
-  { key: '', label: 'Tout', icon: null },
-  { key: 'restaurant', label: 'Restaurants', icon: UtensilsCrossed },
-  { key: 'beauty_salon', label: 'Salons de beauté', icon: Scissors },
-  { key: 'spa', label: 'Spa & Bien-être', icon: Sparkles },
-  { key: 'football_pitch', label: 'Terrains de foot', icon: Timer },
-  { key: 'car_rental', label: 'Location de voitures', icon: Car },
+  { key: '', label: 'Tout', icon: SlidersHorizontal, color: 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300', activeColor: 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900', ring: 'ring-stone-300 dark:ring-stone-600' },
+  { key: 'restaurant', label: 'Restaurants', icon: UtensilsCrossed, color: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300', activeColor: 'bg-amber-600 text-white dark:bg-amber-500 dark:text-white', ring: 'ring-amber-300 dark:ring-amber-500/50' },
+  { key: 'beauty_salon', label: 'Salons de beauté', icon: Scissors, color: 'bg-pink-50 text-pink-700 dark:bg-pink-500/10 dark:text-pink-300', activeColor: 'bg-pink-600 text-white dark:bg-pink-500 dark:text-white', ring: 'ring-pink-300 dark:ring-pink-500/50' },
+  { key: 'spa', label: 'Spa & Bien-être', icon: Sparkles, color: 'bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-300', activeColor: 'bg-teal-600 text-white dark:bg-teal-500 dark:text-white', ring: 'ring-teal-300 dark:ring-teal-500/50' },
+  { key: 'football_pitch', label: 'Terrains de foot', icon: Timer, color: 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-300', activeColor: 'bg-green-600 text-white dark:bg-green-500 dark:text-white', ring: 'ring-green-300 dark:ring-green-500/50' },
+  { key: 'car_rental', label: 'Location de voitures', icon: Car, color: 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300', activeColor: 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white', ring: 'ring-blue-300 dark:ring-blue-500/50' },
 ] as const
 
 const CATEGORY_BADGES: Record<string, { label: string; color: string }> = {
@@ -104,25 +104,31 @@ function Home() {
         </div>
       </section>
 
-      {/* Category tabs */}
+      {/* Category cards */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-2">
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide">
           {CATEGORIES.map((cat) => {
             const count = categoryCounts[cat.key as keyof typeof categoryCounts] ?? 0
+            const isActive = category === cat.key
             return (
               <button
                 key={cat.key}
                 onClick={() => { setCategory(cat.key); setCuisine('all') }}
-                className={`flex items-center gap-1.5 shrink-0 px-4 py-2 rounded-full text-sm font-medium transition border ${
-                  category === cat.key
-                    ? 'bg-stone-900 text-white border-stone-900 dark:bg-stone-100 dark:text-stone-900 dark:border-stone-100'
-                    : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50 dark:bg-stone-900 dark:text-stone-400 dark:border-stone-700 dark:hover:bg-stone-800'
+                snap-align="start"
+                className={`flex items-center gap-3 shrink-0 w-[160px] sm:w-auto sm:flex-1 sm:min-w-[140px] rounded-xl px-4 py-3.5 text-left font-medium transition-all duration-200 border-2 ${
+                  isActive
+                    ? `${cat.activeColor} border-transparent shadow-lg scale-[1.03] ring-2 ${cat.ring}`
+                    : `${cat.color} border-transparent hover:scale-[1.02] hover:shadow-md`
                 }`}
               >
-                {cat.icon && <cat.icon className="h-3.5 w-3.5" />}
-                {cat.label}
-                <span className={`ml-0.5 text-xs ${category === cat.key ? 'opacity-70' : 'text-stone-400 dark:text-stone-500'}`}>
-                  {count}
+                <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${isActive ? 'bg-white/20 dark:bg-black/20' : 'bg-black/5 dark:bg-white/10'}`}>
+                  <cat.icon className="h-5 w-5" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm leading-tight truncate">{cat.label}</span>
+                  <span className={`block text-xs mt-0.5 ${isActive ? 'opacity-80' : 'opacity-60'}`}>
+                    {count} {count === 1 ? 'établissement' : 'établissements'}
+                  </span>
                 </span>
               </button>
             )
