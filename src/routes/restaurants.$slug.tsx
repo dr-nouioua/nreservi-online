@@ -58,6 +58,8 @@ function RestaurantPage() {
   }
 
   const isFootball = restaurant.category === 'football_pitch'
+  const isCarRental = restaurant.category === 'car_rental'
+  const isNoPartySize = isFootball || isCarRental
 
   // Whole menu collapsed by default — long catalogs stay light to load & scan.
   const [menuOpen, setMenuOpen] = useState(restaurant.menuFixed)
@@ -228,7 +230,7 @@ function RestaurantPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 pb-16">
           <div className="lg:col-span-2 space-y-6">
-            {(!isFootball || menu.length > 0) && (
+            {((!isFootball && !isCarRental) || menu.length > 0) && (
             <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden">
               <button
                 onClick={() => setMenuOpen((o) => !o)}
@@ -237,15 +239,15 @@ function RestaurantPage() {
               >
                 <span className="flex items-center gap-3.5">
                   <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-lime-100 dark:bg-lime-500/15">
-                    {isFootball ? <Timer className="h-7 w-7 text-lime-700 dark:text-lime-300" /> : <UtensilsCrossed className="h-7 w-7 text-lime-700 dark:text-lime-300" />}
+                    {isFootball ? <Timer className="h-7 w-7 text-lime-700 dark:text-lime-300" /> : isCarRental ? <Car className="h-7 w-7 text-lime-700 dark:text-lime-300" /> : <UtensilsCrossed className="h-7 w-7 text-lime-700 dark:text-lime-300" />}
                   </span>
                   <span>
-                    <span className="block text-lg font-semibold text-stone-900 dark:text-stone-100">{isFootball ? 'Nos terrains' : 'Menu'}</span>
-                    <span className="block text-sm text-stone-500 dark:text-stone-400">{isFootball ? 'Formats disponibles' : 'Découvrez nos plats'}</span>
+                    <span className="block text-lg font-semibold text-stone-900 dark:text-stone-100">{isFootball ? 'Nos terrains' : isCarRental ? 'Nos véhicules' : 'Menu'}</span>
+                    <span className="block text-sm text-stone-500 dark:text-stone-400">{isFootball ? 'Formats disponibles' : isCarRental ? 'Voitures disponibles à la location' : 'Découvrez nos plats'}</span>
                   </span>
                 </span>
                 <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 dark:border-stone-700 dark:text-stone-300">
-                  {restaurant.menuFixed ? (isFootball ? 'Terrains' : 'Menu') : menuOpen ? 'Masquer' : isFootball ? 'Voir les terrains' : 'Voir le menu'}
+                  {restaurant.menuFixed ? (isFootball ? 'Terrains' : isCarRental ? 'Véhicules' : 'Menu') : menuOpen ? 'Masquer' : isFootball ? 'Voir les terrains' : isCarRental ? 'Voir les véhicules' : 'Voir le menu'}
                   <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${menuOpen ? 'rotate-180' : ''}`} />
                 </span>
               </button>
@@ -326,7 +328,7 @@ function RestaurantPage() {
                     ))}
                   </div>
                 </div>
-              ) : (
+              ) : !isCarRental ? (
                 <div>
                   <label className="text-xs text-stone-500 dark:text-stone-400">Nombre de personnes</label>
                   <div className="flex items-center gap-2 mt-1">
@@ -341,9 +343,9 @@ function RestaurantPage() {
                     />
                   </div>
                 </div>
-              )}
+              ) : null}
 
-              {!isFootball && restaurant.babySeatAvailable && (
+              {!isNoPartySize && restaurant.babySeatAvailable && (
                 <div>
                   <label className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400">
                     <Baby className="h-3.5 w-3.5" /> Chaises bébé
@@ -429,7 +431,7 @@ function RestaurantPage() {
                     <textarea
                       value={specialRequests}
                       onChange={(e) => setSpecialRequests(e.target.value)}
-                      placeholder={isFootball ? "Nom de l'équipe, équipement..." : "Anniversaire, allergies, chaise haute..."}
+                      placeholder={isFootball ? "Nom de l'équipe, équipement..." : isCarRental ? "Permis de conduire, besoins spécifiques..." : "Anniversaire, allergies, chaise haute..."}
                       className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                       rows={2}
                     />

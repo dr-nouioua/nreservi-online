@@ -36,6 +36,7 @@ function OnboardPage() {
     { value: 'beauty_salon', label: 'Salon de beauté' },
     { value: 'spa', label: 'Spa & Bien-être' },
     { value: 'football_pitch', label: 'Terrain de foot' },
+    { value: 'car_rental', label: 'Location de voitures' },
     { value: 'barbershop', label: 'Barbier' },
   ]
 
@@ -44,6 +45,7 @@ function OnboardPage() {
     beauty_salon: 'Ex: Coiffure, Manucure, Soins du visage...',
     spa: 'Ex: Massage, Hammam, Gommage...',
     football_pitch: 'Ex: 5v5 Synthétique, 6v6, 7v7 Indoor...',
+    car_rental: 'Ex: Berline, SUV, Utilitaire...',
     barbershop: 'Ex: Coupe homme, Barbe, Soin...',
   }
 

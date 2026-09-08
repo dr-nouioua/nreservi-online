@@ -312,6 +312,18 @@ export async function ensureSeeded() {
     logoUrl: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?auto=format&fit=crop&w=300&q=80",
   });
 
+  await seedRestaurant({
+    slug: "rent-drive",
+    name: "Rent & Drive Algérie",
+    category: "car_rental",
+    city: "Algiers",
+    cuisine: "Berline, SUV, Utilitaire",
+    avgTicket: "40.00",
+    ownerEmail: "owner@rentdrive.dev",
+    coverImageUrl: "https://images.unsplash.com/photo-1449965408869-ebd3fee4656e?auto=format&fit=crop&w=1400&q=80",
+    logoUrl: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=300&q=80",
+  });
+
   // A restaurant awaiting super-admin approval, to demonstrate onboarding workflow
   await db.insert(restaurants).values({
     slug: "casa-verde",
