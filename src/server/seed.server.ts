@@ -300,6 +300,18 @@ export async function ensureSeeded() {
     logoUrl: "https://images.unsplash.com/photo-1540555700478-4be289fbec6d?auto=format&fit=crop&w=300&q=80",
   });
 
+  await seedRestaurant({
+    slug: "terrain-goal",
+    name: "Terrain Goal Arena",
+    category: "football_pitch",
+    city: "Algiers",
+    cuisine: "5v5 Synthétique, 6v6, 7v7 Indoor",
+    avgTicket: "25.00",
+    ownerEmail: "owner@terraingoal.dev",
+    coverImageUrl: "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&w=1400&q=80",
+    logoUrl: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?auto=format&fit=crop&w=300&q=80",
+  });
+
   // A restaurant awaiting super-admin approval, to demonstrate onboarding workflow
   await db.insert(restaurants).values({
     slug: "casa-verde",

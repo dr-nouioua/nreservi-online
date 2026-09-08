@@ -30,6 +30,7 @@ function RestaurantPage() {
       id: number
       slug: string
       name: string
+      category: string
       description: string | null
       coverImageUrl: string | null
       logoUrl: string | null
@@ -56,10 +57,12 @@ function RestaurantPage() {
     ads: Ad[]
   }
 
+  const isFootball = restaurant.category === 'football_pitch'
+
   // Whole menu collapsed by default — long catalogs stay light to load & scan.
   const [menuOpen, setMenuOpen] = useState(restaurant.menuFixed)
   const [date, setDate] = useState(todayISO())
-  const [partySize, setPartySize] = useState(2)
+  const [partySize, setPartySize] = useState(isFootball ? 10 : 2)
   const [babySeats, setBabySeats] = useState(0)
   const [areaId, setAreaId] = useState<number | undefined>(undefined)
   const [slots, setSlots] = useState<{ time: string; available: boolean; tableCount: number }[]>([])
@@ -225,7 +228,8 @@ function RestaurantPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 pb-16">
           <div className="lg:col-span-2 space-y-6">
-<div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden">
+            {(!isFootball || menu.length > 0) && (
+            <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden">
               <button
                 onClick={() => setMenuOpen((o) => !o)}
                 aria-expanded={menuOpen}
@@ -233,15 +237,15 @@ function RestaurantPage() {
               >
                 <span className="flex items-center gap-3.5">
                   <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-lime-100 dark:bg-lime-500/15">
-                    <UtensilsCrossed className="h-7 w-7 text-lime-700 dark:text-lime-300" />
+                    {isFootball ? <Timer className="h-7 w-7 text-lime-700 dark:text-lime-300" /> : <UtensilsCrossed className="h-7 w-7 text-lime-700 dark:text-lime-300" />}
                   </span>
                   <span>
-                    <span className="block text-lg font-semibold text-stone-900 dark:text-stone-100">Menu</span>
-                    <span className="block text-sm text-stone-500 dark:text-stone-400">Découvrez nos plats</span>
+                    <span className="block text-lg font-semibold text-stone-900 dark:text-stone-100">{isFootball ? 'Nos terrains' : 'Menu'}</span>
+                    <span className="block text-sm text-stone-500 dark:text-stone-400">{isFootball ? 'Formats disponibles' : 'Découvrez nos plats'}</span>
                   </span>
                 </span>
                 <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 dark:border-stone-700 dark:text-stone-300">
-                  {restaurant.menuFixed ? 'Menu' : menuOpen ? 'Masquer' : 'Voir le menu'}
+                  {restaurant.menuFixed ? (isFootball ? 'Terrains' : 'Menu') : menuOpen ? 'Masquer' : isFootball ? 'Voir les terrains' : 'Voir le menu'}
                   <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${menuOpen ? 'rotate-180' : ''}`} />
                 </span>
               </button>
@@ -279,14 +283,16 @@ function RestaurantPage() {
                 </div>
               </div>
             </div>
-
+            )}
             
           </div>
 
           {restaurant.subscriptionTier === 'premium' && (
           <>
           <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 p-6 h-fit sticky top-20 shadow-xl">
-            <h2 className="font-semibold text-stone-900 dark:text-stone-100 mb-4 flex items-center gap-2"><CalendarDays className="h-4 w-4" /> Réserver</h2>
+            <h2 className="font-semibold text-stone-900 dark:text-stone-100 mb-4 flex items-center gap-2">
+              <CalendarDays className="h-4 w-4" /> {isFootball ? 'Réserver un terrain' : 'Réserver'}
+            </h2>
             <div className="space-y-3">
               <div>
                 <label className="text-xs text-stone-500 dark:text-stone-400">Date</label>
@@ -298,21 +304,46 @@ function RestaurantPage() {
                   className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                 />
               </div>
-              <div>
-                <label className="text-xs text-stone-500 dark:text-stone-400">Nombre de personnes</label>
-                <div className="flex items-center gap-2 mt-1">
-                  <Users className="w-4 h-4 text-stone-400" />
-                  <input
-                    type="number"
-                    min={1}
-                    max={20}
-                    value={partySize}
-                    onChange={(e) => setPartySize(Number(e.target.value))}
-                    className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
-                  />
+
+              {isFootball ? (
+                <div>
+                  <label className="text-xs text-stone-500 dark:text-stone-400">Nombre de joueurs</label>
+                  <div className="grid grid-cols-3 gap-2 mt-1">
+                    {[10, 12, 14].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setPartySize(n)}
+                        className={`py-2.5 rounded-lg text-sm font-medium border transition ${
+                          partySize === n
+                            ? 'bg-green-600 text-white border-green-600 dark:bg-green-500 dark:border-green-500'
+                            : 'border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-500/10'
+                        }`}
+                      >
+                        {n} joueurs
+                        <span className="block text-xs opacity-70">{n === 10 ? '5v5' : n === 12 ? '6v6' : '7v7'}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              {restaurant.babySeatAvailable && (
+              ) : (
+                <div>
+                  <label className="text-xs text-stone-500 dark:text-stone-400">Nombre de personnes</label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Users className="w-4 h-4 text-stone-400" />
+                    <input
+                      type="number"
+                      min={1}
+                      max={20}
+                      value={partySize}
+                      onChange={(e) => setPartySize(Number(e.target.value))}
+                      className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {!isFootball && restaurant.babySeatAvailable && (
                 <div>
                   <label className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400">
                     <Baby className="h-3.5 w-3.5" /> Chaises bébé
@@ -398,7 +429,7 @@ function RestaurantPage() {
                     <textarea
                       value={specialRequests}
                       onChange={(e) => setSpecialRequests(e.target.value)}
-                      placeholder="Anniversaire, allergies, chaise haute..."
+                      placeholder={isFootball ? "Nom de l'équipe, équipement..." : "Anniversaire, allergies, chaise haute..."}
                       className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                       rows={2}
                     />

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
-import { MapPin, Search, Scissors, SlidersHorizontal, Sparkles, UtensilsCrossed } from 'lucide-react'
+import { MapPin, Search, Scissors, SlidersHorizontal, Sparkles, Timer, UtensilsCrossed } from 'lucide-react'
 import { listRestaurants } from '../server/booking.functions'
 import { SiteHeader } from '../components/SiteHeader'
 import { SiteFooter } from '../components/SiteFooter'
@@ -18,12 +18,14 @@ const CATEGORIES = [
   { key: 'restaurant', label: 'Restaurants', icon: UtensilsCrossed },
   { key: 'beauty_salon', label: 'Salons de beauté', icon: Scissors },
   { key: 'spa', label: 'Spa & Bien-être', icon: Sparkles },
+  { key: 'football_pitch', label: 'Terrains de foot', icon: Timer },
 ] as const
 
 const CATEGORY_BADGES: Record<string, { label: string; color: string }> = {
   restaurant: { label: 'Restaurant', color: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' },
   beauty_salon: { label: 'Salon', color: 'bg-pink-100 text-pink-700 dark:bg-pink-500/15 dark:text-pink-300' },
   spa: { label: 'Spa', color: 'bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300' },
+  football_pitch: { label: 'Terrain', color: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300' },
   barbershop: { label: 'Barbier', color: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300' },
 }
 
@@ -31,6 +33,7 @@ const CATEGORY_ICONS: Record<string, typeof UtensilsCrossed> = {
   restaurant: UtensilsCrossed,
   beauty_salon: Scissors,
   spa: Sparkles,
+  football_pitch: Timer,
   barbershop: Scissors,
 }
 
@@ -60,6 +63,7 @@ function Home() {
     restaurant: restaurants.filter((r) => r.category === 'restaurant').length,
     beauty_salon: restaurants.filter((r) => r.category === 'beauty_salon').length,
     spa: restaurants.filter((r) => r.category === 'spa').length,
+    football_pitch: restaurants.filter((r) => r.category === 'football_pitch').length,
   }
 
   return (
@@ -87,7 +91,7 @@ function Home() {
                   {cities.map((value) => <option key={value} value={value}>{value}</option>)}
                 </select>
                 <select value={cuisine} onChange={(e) => setCuisine(e.target.value)} className="rounded-md border border-stone-200 dark:border-stone-800 px-3 py-2.5 text-sm">
-                  <option value="all">{category === 'beauty_salon' ? 'Toutes les prestations' : category === 'spa' ? 'Toutes les prestations' : 'Toutes les catégories'}</option>
+                  <option value="all">{category === 'beauty_salon' ? 'Toutes les prestations' : category === 'spa' ? 'Toutes les prestations' : category === 'football_pitch' ? 'Tous les formats' : 'Toutes les catégories'}</option>
                   {cuisines.map((value) => <option key={value} value={value}>{value}</option>)}
                 </select>
               </div>
