@@ -143,6 +143,7 @@ export const onboardRestaurant = createServerFn({ method: "POST" })
     (data: {
       name: string;
       slug: string;
+      category: string;
       city: string;
       cuisine: string;
       address: string;
@@ -170,6 +171,7 @@ export const onboardRestaurant = createServerFn({ method: "POST" })
       .values({
         name: data.name,
         slug: data.slug,
+        category: data.category || "restaurant",
         city: data.city,
         cuisine: data.cuisine,
         address: data.address,

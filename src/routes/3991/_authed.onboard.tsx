@@ -18,6 +18,7 @@ function OnboardPage() {
   const [form, setForm] = useState({
     name: '',
     slug: '',
+    category: 'restaurant',
     city: '',
     cuisine: '',
     address: '',
@@ -29,6 +30,20 @@ function OnboardPage() {
     ownerName: '',
   })
   const [submitting, setSubmitting] = useState(false)
+
+  const CATEGORIES = [
+    { value: 'restaurant', label: 'Restaurant' },
+    { value: 'beauty_salon', label: 'Salon de beauté' },
+    { value: 'spa', label: 'Spa & Bien-être' },
+    { value: 'barbershop', label: 'Barbier' },
+  ]
+
+  const CUISINE_HINTS: Record<string, string> = {
+    restaurant: 'Ex: Italienne, Algérienne, Japonaise...',
+    beauty_salon: 'Ex: Coiffure, Manucure, Soins du visage...',
+    spa: 'Ex: Massage, Hammam, Gommage...',
+    barbershop: 'Ex: Coupe homme, Barbe, Soin...',
+  }
 
   function update(key: keyof typeof form, value: string) {
     setForm((f) => ({ ...f, [key]: value, ...(key === 'name' && !f.slug ? { slug: slugify(value) } : {}) }))
@@ -50,10 +65,10 @@ function OnboardPage() {
   }
 
   const fields: [keyof typeof form, string][] = [
-    ['name', "Nom du restaurant"],
+    ['name', "Nom de l'établissement"],
     ['slug', "Identifiant d'URL (slug)"],
     ['city', "Ville"],
-    ['cuisine', "Type de cuisine"],
+    ['cuisine', CUISINE_HINTS[form.category] || 'Type de prestation'],
     ['address', "Adresse"],
     ['contactEmail', "E-mail de contact"],
     ['contactPhone', "Téléphone de contact"],
@@ -65,8 +80,20 @@ function OnboardPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Créer un restaurant</h1>
+      <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Créer un établissement</h1>
       <form onSubmit={submit} className="mt-6 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-4 sm:p-6 space-y-3">
+        <div>
+          <label className="text-xs text-stone-500 dark:text-stone-400">Catégorie</label>
+          <select
+            value={form.category}
+            onChange={(e) => update('category', e.target.value)}
+            className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm"
+          >
+            {CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>{c.label}</option>
+            ))}
+          </select>
+        </div>
         <div className="grid gap-3 sm:grid-cols-2">
         {fields.map(([key, label]) => (
           <div key={key} className="min-w-0">
@@ -82,7 +109,7 @@ function OnboardPage() {
         ))}
         </div>
         <button disabled={submitting} className="w-full py-2.5 rounded-lg bg-stone-900 text-white dark:ring-1 dark:ring-stone-700 text-sm font-medium disabled:opacity-50">
-          {submitting ? 'Creating...' : 'Create restaurant + owner account'}
+          {submitting ? 'Création...' : 'Créer l\'établissement + compte propriétaire'}
         </button>
       </form>
     </div>

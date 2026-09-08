@@ -1,0 +1,1 @@
+ALTER TABLE "restaurants" ADD COLUMN "category" text DEFAULT 'restaurant' NOT NULL;

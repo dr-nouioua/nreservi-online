@@ -58,6 +58,7 @@ export async function ensureSeeded() {
   const seedRestaurant = async (opts: {
     slug: string;
     name: string;
+    category?: string;
     city: string;
     cuisine: string;
     avgTicket: string;
@@ -70,6 +71,7 @@ export async function ensureSeeded() {
       .values({
         slug: opts.slug,
         name: opts.name,
+        category: opts.category || "restaurant",
         city: opts.city,
         cuisine: opts.cuisine,
         address: `12 Market Street, ${opts.city}`,
@@ -272,6 +274,30 @@ export async function ensureSeeded() {
     ownerEmail: "owner@sakurahouse.dev",
     coverImageUrl: "https://images.unsplash.com/photo-1617196034796-73dfa7b1fd56?auto=format&fit=crop&w=1400&q=80",
     logoUrl: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=300&q=80",
+  });
+
+  await seedRestaurant({
+    slug: "beauty-paradise",
+    name: "Beauty Paradise",
+    category: "beauty_salon",
+    city: "Algiers",
+    cuisine: "Coiffure, Manucure, Soins",
+    avgTicket: "35.00",
+    ownerEmail: "owner@beautyparadise.dev",
+    coverImageUrl: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1400&q=80",
+    logoUrl: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=300&q=80",
+  });
+
+  await seedRestaurant({
+    slug: "spa-serenity",
+    name: "Spa Sérénité",
+    category: "spa",
+    city: "Oran",
+    cuisine: "Massage, Hammam, Soins du corps",
+    avgTicket: "60.00",
+    ownerEmail: "owner@spaserenite.dev",
+    coverImageUrl: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1400&q=80",
+    logoUrl: "https://images.unsplash.com/photo-1540555700478-4be289fbec6d?auto=format&fit=crop&w=300&q=80",
   });
 
   // A restaurant awaiting super-admin approval, to demonstrate onboarding workflow

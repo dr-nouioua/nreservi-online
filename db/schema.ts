@@ -31,6 +31,7 @@ export const restaurants = pgTable("restaurants", {
   id: serial().primaryKey(),
   slug: text("slug").notNull().unique(),
   name: text("name").notNull(),
+  category: text("category").notNull().default("restaurant"), // restaurant | beauty_salon | spa | barbershop
   city: text("city").notNull(),
   cuisine: text("cuisine").notNull(),
   address: text("address").notNull(),
@@ -50,7 +51,7 @@ export const restaurants = pgTable("restaurants", {
    subscriptionHistory: jsonb("subscription_history").notNull().default([]),
    menuFixed: boolean("menu_fixed").notNull().default(false), // false = collapsible menu, true = always open
    babySeatAvailable: boolean("baby_seat_available").notNull().default(false), // show baby-seat option in the booking form
-   eventTheme: text("event_theme").notNull().default(""), // "" | revolution | newyear | xmas | valentine
+   eventTheme: text("event_theme").notNull().default(""), // "" | revolution | newyear | xmas | valentine | fete_nationale | halloween
    expiryWarningSentFor: date("expiry_warning_sent_for"), // end-date the 14-day warning was last sent for
    hasParking: boolean("has_parking").notNull().default(false), // parking badge on the public page
    facebookUrl: text("facebook_url"),

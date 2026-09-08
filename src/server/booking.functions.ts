@@ -18,7 +18,7 @@ import { isSubscriptionValid } from "./subscriptions.shared.js";
 import { rateLimit } from "./rate-limit.server.js";
 
 export const listRestaurants = createServerFn({ method: "GET" })
-  .inputValidator((data: { q?: string; city?: string; cuisine?: string } | undefined) => data)
+  .inputValidator((data: { q?: string; city?: string; cuisine?: string; category?: string } | undefined) => data)
   .handler(async ({ data }) => {
     await ensureSeeded();
     // SQL-level filtering + minimal columns: scales to hundreds of restaurants.
@@ -37,12 +37,14 @@ export const listRestaurants = createServerFn({ method: "GET" })
     }
     if (data?.city) conds.push(eq(restaurants.city, data.city));
     if (data?.cuisine) conds.push(eq(restaurants.cuisine, data.cuisine));
+    if (data?.category) conds.push(eq(restaurants.category, data.category));
 
     return db
       .select({
         id: restaurants.id,
         slug: restaurants.slug,
         name: restaurants.name,
+        category: restaurants.category,
         city: restaurants.city,
         cuisine: restaurants.cuisine,
         coverImageUrl: restaurants.coverImageUrl,
