@@ -51,13 +51,21 @@ async function cronGuard(c: { req: { header: (k: string) => string | undefined }
 // ---- Static client assets (Vite emits them under dist/client) ----
 app.use("*", serveStatic({ root: "./dist/client" }));
 
-// ---- Security headers on every response ----
+// ---- Security + cache-control headers on every response ----
 app.use("*", async (c, next) => {
   await next();
   c.res.headers.set("X-Frame-Options", "DENY");
   c.res.headers.set("X-Content-Type-Options", "nosniff");
   c.res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   c.res.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  // Prevent browser back-button from showing cached auth pages
+  const path = c.req.path;
+  if (path.startsWith("/3991") || path.startsWith("/owner")) {
+    c.res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    c.res.headers.set("Pragma", "no-cache");
+    c.res.headers.set("Expires", "0");
+    c.res.headers.set("Surrogate-Control", "no-store");
+  }
 });
 
 // ---- Visitor counting (GET pages only; "" slug = whole platform) ----

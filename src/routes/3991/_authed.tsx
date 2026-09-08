@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, redirect, useRouterState } from '@tanstack/react-router'
+import { createFileRoute, Link, Outlet, redirect, useRouter, useRouterState } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import {
   Building2,
@@ -48,6 +48,7 @@ function AdminLayout() {
     session: { name: string; email: string; adminRole: 'super' | 'admin'; permissions: string[] }
   }
   const visibleNav = nav.filter((item) => !item.module || adminHasModule(session, item.module))
+  const router = useRouter()
 
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(
@@ -124,7 +125,7 @@ function AdminLayout() {
         </nav>
 
         <div className={`flex items-center gap-1 border-t border-stone-100 pt-3 dark:border-stone-800 ${collapsed ? 'flex-col lg:items-center' : 'justify-between'}`}>
-          <LogoutButton />
+          <LogoutButton router={router} />
           <button
             type="button"
             onClick={toggleCollapsed}
@@ -157,13 +158,14 @@ function AdminLayout() {
   )
 }
 
-function LogoutButton({ full = false }: { full?: boolean }) {
+function LogoutButton({ full = false, router }: { full?: boolean; router: ReturnType<typeof useRouter> }) {
   return (
     <button
       type="button"
       onClick={async () => {
         await logout()
-        window.location.href = '/3991/login'
+        await router.invalidate()
+        router.navigate({ to: '/3991/login' })
       }}
       title="Déconnexion"
       className={`inline-flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800 ${full ? 'mt-6 w-full justify-center border border-stone-200 dark:border-stone-700' : ''}`}
