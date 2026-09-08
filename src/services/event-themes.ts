@@ -1,6 +1,6 @@
 // Event UI themes — pure data, safe for client and server.
 
-export type EventThemeKey = "" | "revolution" | "newyear" | "xmas" | "valentine" | "fete_nationale"
+export type EventThemeKey = "" | "revolution" | "newyear" | "xmas" | "valentine" | "fete_nationale" | "halloween"
 
 export const EVENT_THEMES: Record<
   Exclude<EventThemeKey, "">,
@@ -50,6 +50,15 @@ export const EVENT_THEMES: Record<
     cta: "#006233",
     ctaHover: "#004d26",
     pill: "#006233",
+  },
+  halloween: {
+    label: "Halloween",
+    banner: "🎃 Joyeux Halloween — Réservez votre table si vous l'osez 👻",
+    emoji: "🎃",
+    gradient: "linear-gradient(90deg, #7c2d12, #c2410c, #581c87)",
+    cta: "#c2410c",
+    ctaHover: "#9a3412",
+    pill: "#c2410c",
   },
 }
 

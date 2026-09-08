@@ -49,3 +49,9 @@ code {
 .event-fete-nationale .event-cta:hover { background-color: #004d26 !important; }
 .event-fete-nationale .event-slot { background-color: #006233 !important; color: #fff !important; }
 .event-fete-nationale .event-pill { background-color: rgba(0, 98, 51, 0.85) !important; }
+
+/* ---- Halloween ---- */
+.event-halloween .event-cta { background-color: #c2410c !important; }
+.event-halloween .event-cta:hover { background-color: #9a3412 !important; }
+.event-halloween .event-slot { background-color: #c2410c !important; color: #fff !important; }
+.event-halloween .event-pill { background-color: rgba(194, 65, 12, 0.85) !important; }
