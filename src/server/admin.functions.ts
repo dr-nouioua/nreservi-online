@@ -186,7 +186,7 @@ export const onboardRestaurant = createServerFn({ method: "POST" })
 
     await db.insert(restaurantOwners).values({
       restaurantId: restaurant.id,
-      email: data.ownerEmail,
+      email: data.ownerEmail.toLowerCase(),
       passwordHash: hashPassword(data.ownerPassword),
       name: data.ownerName,
     });
