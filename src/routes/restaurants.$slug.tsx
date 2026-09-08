@@ -8,7 +8,6 @@ import { type Ad } from '../components/AdCard'
 import { AdsCarousel } from '../components/AdsCarousel'
 import { SiteHeader } from '../components/SiteHeader'
 import { SiteFooter } from '../components/SiteFooter'
-import { FeteNationaleEffects } from '../components/FeteNationaleEffects'
 
 export const Route = createFileRoute('/restaurants/$slug')({
   loader: async ({ params }) => {
@@ -143,10 +142,9 @@ function RestaurantPage() {
 
   return (
     <div className={`min-h-screen flex flex-col ${restaurant.eventTheme ? `event-${restaurant.eventTheme}` : ""}`}>
-      {restaurant.eventTheme === 'fete_nationale' && <FeteNationaleEffects />}
       {restaurant.eventTheme && EVENT_THEMES[restaurant.eventTheme as keyof typeof EVENT_THEMES] && (
         <div
-          className={`px-4 py-2.5 text-center text-sm font-medium text-white ${restaurant.eventTheme === 'fete_nationale' ? 'event-fete-nationale-shimmer' : ''}`}
+          className="px-4 py-2.5 text-center text-sm font-medium text-white"
           style={{ background: EVENT_THEMES[restaurant.eventTheme as keyof typeof EVENT_THEMES].gradient }}
         >
           {EVENT_THEMES[restaurant.eventTheme as keyof typeof EVENT_THEMES].banner}
