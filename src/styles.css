@@ -55,7 +55,3 @@ code {
 .event-halloween .event-cta:hover { background-color: #9a3412 !important; }
 .event-halloween .event-slot { background-color: #c2410c !important; color: #fff !important; }
 .event-halloween .event-pill { background-color: rgba(194, 65, 12, 0.85) !important; }
-
-/* Hide scrollbar for category cards */
-.scrollbar-hide::-webkit-scrollbar { display: none; }
-.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

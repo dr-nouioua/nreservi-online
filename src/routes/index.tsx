@@ -14,12 +14,12 @@ export const Route = createFileRoute('/')({
 })
 
 const CATEGORIES = [
-  { key: '', label: 'Tout', icon: SlidersHorizontal, color: 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300', activeColor: 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900', ring: 'ring-stone-300 dark:ring-stone-600' },
-  { key: 'restaurant', label: 'Restaurants', icon: UtensilsCrossed, color: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300', activeColor: 'bg-amber-600 text-white dark:bg-amber-500 dark:text-white', ring: 'ring-amber-300 dark:ring-amber-500/50' },
-  { key: 'beauty_salon', label: 'Salons de beauté', icon: Scissors, color: 'bg-pink-50 text-pink-700 dark:bg-pink-500/10 dark:text-pink-300', activeColor: 'bg-pink-600 text-white dark:bg-pink-500 dark:text-white', ring: 'ring-pink-300 dark:ring-pink-500/50' },
-  { key: 'spa', label: 'Spa & Bien-être', icon: Sparkles, color: 'bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-300', activeColor: 'bg-teal-600 text-white dark:bg-teal-500 dark:text-white', ring: 'ring-teal-300 dark:ring-teal-500/50' },
-  { key: 'football_pitch', label: 'Terrains de foot', icon: Timer, color: 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-300', activeColor: 'bg-green-600 text-white dark:bg-green-500 dark:text-white', ring: 'ring-green-300 dark:ring-green-500/50' },
-  { key: 'car_rental', label: 'Location de voitures', icon: Car, color: 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300', activeColor: 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white', ring: 'ring-blue-300 dark:ring-blue-500/50' },
+  { key: '', label: 'Tout', icon: SlidersHorizontal, color: 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300', activeColor: 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900' },
+  { key: 'restaurant', label: 'Restaurants', icon: UtensilsCrossed, color: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300', activeColor: 'bg-amber-600 text-white dark:bg-amber-500 dark:text-white' },
+  { key: 'beauty_salon', label: 'Salons', icon: Scissors, color: 'bg-pink-50 text-pink-700 dark:bg-pink-500/10 dark:text-pink-300', activeColor: 'bg-pink-600 text-white dark:bg-pink-500 dark:text-white' },
+  { key: 'spa', label: 'Spa', icon: Sparkles, color: 'bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-300', activeColor: 'bg-teal-600 text-white dark:bg-teal-500 dark:text-white' },
+  { key: 'football_pitch', label: 'Foot', icon: Timer, color: 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-300', activeColor: 'bg-green-600 text-white dark:bg-green-500 dark:text-white' },
+  { key: 'car_rental', label: 'Voitures', icon: Car, color: 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300', activeColor: 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white' },
 ] as const
 
 const CATEGORY_BADGES: Record<string, { label: string; color: string }> = {
@@ -106,28 +106,40 @@ function Home() {
 
       {/* Category cards */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-2">
-        <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:grid-cols-6">
           {CATEGORIES.map((cat) => {
             const count = categoryCounts[cat.key as keyof typeof categoryCounts] ?? 0
             const isActive = category === cat.key
+            const isAll = cat.key === ''
             return (
               <button
                 key={cat.key}
                 onClick={() => { setCategory(cat.key); setCuisine('all') }}
-                snap-align="start"
-                className={`flex items-center gap-3 shrink-0 w-[160px] sm:w-auto sm:flex-1 sm:min-w-[140px] rounded-xl px-4 py-3.5 text-left font-medium transition-all duration-200 border-2 ${
+                className={`group flex flex-col items-center gap-2 rounded-xl px-2 py-4 text-center font-medium transition-all duration-200 border ${
                   isActive
-                    ? `${cat.activeColor} border-transparent shadow-lg scale-[1.03] ring-2 ${cat.ring}`
-                    : `${cat.color} border-transparent hover:scale-[1.02] hover:shadow-md`
+                    ? `${cat.activeColor} border-transparent shadow-md`
+                    : isAll
+                      ? 'bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:border-stone-700 dark:hover:bg-stone-700'
+                      : `${cat.color} border-transparent hover:shadow-sm`
                 }`}
               >
-                <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${isActive ? 'bg-white/20 dark:bg-black/20' : 'bg-black/5 dark:bg-white/10'}`}>
+                <span className={`flex h-11 w-11 items-center justify-center rounded-full transition ${
+                  isActive
+                    ? 'bg-white/25 dark:bg-black/25'
+                    : isAll
+                      ? 'bg-stone-200 dark:bg-stone-700'
+                      : 'bg-black/5 dark:bg-white/10 group-hover:bg-black/10 dark:group-hover:bg-white/15'
+                }`}>
                   <cat.icon className="h-5 w-5" />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-sm leading-tight truncate">{cat.label}</span>
-                  <span className={`block text-xs mt-0.5 ${isActive ? 'opacity-80' : 'opacity-60'}`}>
-                    {count} {count === 1 ? 'établissement' : 'établissements'}
+                  <span className="block text-xs sm:text-sm leading-tight">{cat.label}</span>
+                  <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] sm:text-xs ${
+                    isActive
+                      ? 'bg-white/20 dark:bg-black/20'
+                      : 'bg-black/5 dark:bg-white/10'
+                  }`}>
+                    {count}
                   </span>
                 </span>
               </button>
