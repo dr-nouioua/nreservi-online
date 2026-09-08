@@ -32,7 +32,7 @@ export const loginOwner = createServerFn({ method: "POST" })
     if (!rateLimit(`login:${data.email.toLowerCase()}`, 10, 15 * 60 * 1000)) {
       return { error: "Trop de tentatives. Réessayez dans quelques minutes." };
     }
-    const [owner] = await db.select().from(restaurantOwners).where(eq(restaurantOwners.email, data.email));
+    const [owner] = await db.select().from(restaurantOwners).where(eq(restaurantOwners.email, data.email.toLowerCase()));
     if (!owner || !verifyPassword(data.password, owner.passwordHash)) {
       return { error: "E-mail ou mot de passe incorrect" };
     }
@@ -53,7 +53,7 @@ export const loginStaff = createServerFn({ method: "POST" })
     if (!rateLimit(`login:${data.email.toLowerCase()}`, 10, 15 * 60 * 1000)) {
       return { error: "Trop de tentatives. Réessayez dans quelques minutes." };
     }
-    const [staff] = await db.select().from(staffUsers).where(eq(staffUsers.email, data.email));
+    const [staff] = await db.select().from(staffUsers).where(eq(staffUsers.email, data.email.toLowerCase()));
     if (!staff || !verifyPassword(data.password, staff.passwordHash)) {
       return { error: "E-mail ou mot de passe incorrect" };
     }
@@ -75,7 +75,7 @@ export const loginAdmin = createServerFn({ method: "POST" })
     if (!rateLimit(`login:${data.email.toLowerCase()}`, 10, 15 * 60 * 1000)) {
       return { error: "Trop de tentatives. Réessayez dans quelques minutes." };
     }
-    const [admin] = await db.select().from(adminUsers).where(eq(adminUsers.email, data.email));
+    const [admin] = await db.select().from(adminUsers).where(eq(adminUsers.email, data.email.toLowerCase()));
     if (!admin || !verifyPassword(data.password, admin.passwordHash)) {
       return { error: "E-mail ou mot de passe incorrect" };
     }
