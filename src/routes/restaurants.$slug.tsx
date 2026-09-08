@@ -6,6 +6,19 @@ import { EVENT_THEMES } from '../services/event-themes'
 import { formatPriceDA } from '../services/format'
 import { type Ad } from '../components/AdCard'
 import { AdsCarousel } from '../components/AdsCarousel'
+
+function SoccerBall({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+      <path d="M2 12h20" />
+      <path d="m17.5 7.5-3.5 2.5 3.5 2.5" />
+      <path d="m6.5 7.5 3.5 2.5-3.5 2.5" />
+      <path d="m12 7.5v5" />
+    </svg>
+  )
+}
 import { SiteHeader } from '../components/SiteHeader'
 import { SiteFooter } from '../components/SiteFooter'
 
@@ -239,7 +252,7 @@ function RestaurantPage() {
               >
                 <span className="flex items-center gap-3.5">
                   <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-lime-100 dark:bg-lime-500/15">
-                    {isFootball ? <Timer className="h-7 w-7 text-lime-700 dark:text-lime-300" /> : isCarRental ? <Car className="h-7 w-7 text-lime-700 dark:text-lime-300" /> : <UtensilsCrossed className="h-7 w-7 text-lime-700 dark:text-lime-300" />}
+                    {isFootball ? <SoccerBall className="h-7 w-7 text-lime-700 dark:text-lime-300" /> : isCarRental ? <Car className="h-7 w-7 text-lime-700 dark:text-lime-300" /> : <UtensilsCrossed className="h-7 w-7 text-lime-700 dark:text-lime-300" />}
                   </span>
                   <span>
                     <span className="block text-lg font-semibold text-stone-900 dark:text-stone-100">{isFootball ? 'Nos terrains' : isCarRental ? 'Nos véhicules' : 'Menu'}</span>

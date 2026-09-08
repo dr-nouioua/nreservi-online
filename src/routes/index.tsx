@@ -1,9 +1,22 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
-import { Car, MapPin, Search, Scissors, SlidersHorizontal, Sparkles, Timer, UtensilsCrossed } from 'lucide-react'
+import { Car, MapPin, Search, Scissors, SlidersHorizontal, Sparkles, UtensilsCrossed } from 'lucide-react'
 import { listRestaurants } from '../server/booking.functions'
 import { SiteHeader } from '../components/SiteHeader'
 import { SiteFooter } from '../components/SiteFooter'
+
+function SoccerBall({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+      <path d="M2 12h20" />
+      <path d="m17.5 7.5-3.5 2.5 3.5 2.5" />
+      <path d="m6.5 7.5 3.5 2.5-3.5 2.5" />
+      <path d="m12 7.5v5" />
+    </svg>
+  )
+}
 
 export const Route = createFileRoute('/')({
   loader: async () => {
@@ -18,7 +31,7 @@ const CATEGORIES = [
   { key: 'restaurant', label: 'Restaurants', icon: UtensilsCrossed, color: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300', activeColor: 'bg-amber-600 text-white dark:bg-amber-500 dark:text-white' },
   { key: 'beauty_salon', label: 'Salons', icon: Scissors, color: 'bg-pink-50 text-pink-700 dark:bg-pink-500/10 dark:text-pink-300', activeColor: 'bg-pink-600 text-white dark:bg-pink-500 dark:text-white' },
   { key: 'spa', label: 'Spa', icon: Sparkles, color: 'bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-300', activeColor: 'bg-teal-600 text-white dark:bg-teal-500 dark:text-white' },
-  { key: 'football_pitch', label: 'Foot', icon: Timer, color: 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-300', activeColor: 'bg-green-600 text-white dark:bg-green-500 dark:text-white' },
+  { key: 'football_pitch', label: 'Foot', icon: SoccerBall, color: 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-300', activeColor: 'bg-green-600 text-white dark:bg-green-500 dark:text-white' },
   { key: 'car_rental', label: 'Voitures', icon: Car, color: 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300', activeColor: 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white' },
 ] as const
 
@@ -35,7 +48,7 @@ const CATEGORY_ICONS: Record<string, typeof UtensilsCrossed> = {
   restaurant: UtensilsCrossed,
   beauty_salon: Scissors,
   spa: Sparkles,
-  football_pitch: Timer,
+  football_pitch: SoccerBall,
   car_rental: Car,
   barbershop: Scissors,
 }
