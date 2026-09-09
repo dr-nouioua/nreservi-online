@@ -203,7 +203,7 @@ function RestaurantPage() {
         <div className="absolute inset-x-0 bottom-0 mx-auto max-w-5xl px-4 pb-8 sm:px-6">
           <div className="flex items-end justify-between gap-4 flex-wrap text-white">
             <div className="flex items-end gap-4">
-              <div className="h-20 w-20 overflow-hidden rounded-lg border-4 border-white bg-white dark:bg-stone-900 shadow-lg">
+              <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg border-4 border-white bg-white dark:bg-stone-900 shadow-lg p-1">
                 {restaurant.logoUrl ? <img src={restaurant.logoUrl} alt="" className="h-full w-full object-contain" /> : <div className="flex h-full items-center justify-center text-2xl font-bold text-stone-700 dark:text-stone-300">{restaurant.name.slice(0, 1)}</div>}
               </div>
               <div className="min-w-0">
