@@ -109,6 +109,27 @@ export const listReservationsForDateRange = createServerFn({ method: "GET" })
         ),
       )
       .orderBy(reservations.date, reservations.time);
+
+    // Auto no-show: if reservation time + 1hr has passed and status is still confirmed/seated
+    const now = new Date()
+    const graceMs = 60 * 60 * 1000 // 1 hour
+    const toUpdate: number[] = []
+    for (const r of rows) {
+      if (r.status !== 'confirmed' && r.status !== 'seated') continue
+      const reservationEnd = new Date(`${r.date}T${r.time}`)
+      reservationEnd.setTime(reservationEnd.getTime() + graceMs)
+      if (now > reservationEnd) {
+        toUpdate.push(r.id)
+        r.status = 'no_show' // mutate in-place for immediate UI effect
+      }
+    }
+    if (toUpdate.length > 0) {
+      await db
+        .update(reservations)
+        .set({ status: 'no_show', updatedAt: new Date() })
+        .where(inArray(reservations.id, toUpdate))
+    }
+
     return rows;
   });
 
