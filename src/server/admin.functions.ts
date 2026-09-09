@@ -870,18 +870,6 @@ const DEFAULT_SITE_CONTENT = {
           "Tous les services : restaurant, soins, sport, voiture",
         ],
       },
-      admin: {
-        visible: true,
-        title: "Pour l'administration",
-        items: [
-          "Vue d'ensemble multi-établissements",
-          "Contrôle des accès par catégorie et par module",
-          "Journal d'activité complet",
-          "Onboarding en un clic d'un nouvel établissement",
-          "Gestion des abonnements et facturation",
-          "Accès support direct à tout compte",
-        ],
-      },
     },
     tarifs: { visible: true },
     contact: { visible: true },

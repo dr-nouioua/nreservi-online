@@ -8,7 +8,6 @@ import {
   Menu,
   Phone,
   Scissors,
-  ShieldCheck,
   Sparkles,
   Users,
   UtensilsCrossed,
@@ -58,7 +57,6 @@ function LandingPage() {
   const sol = s.solutions ?? {}
   const prof = sol.professionals ?? {}
   const cli = sol.clients ?? {}
-  const adm = sol.admin ?? {}
 
   const [menuOpen, setMenuOpen] = useState(false)
   useEffect(() => {
@@ -186,7 +184,7 @@ function LandingPage() {
         <section id="solutions" className="scroll-mt-20 bg-white py-16 dark:bg-stone-900/40">
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <h2 className="text-center text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl">Solutions</h2>
-            <div className="mt-10 grid gap-6 lg:grid-cols-3">
+          <div className="mt-10 grid gap-6 lg:grid-cols-2">
               {prof.visible !== false && (
                 <div className="rounded-2xl border border-stone-200 bg-stone-50 p-7 dark:border-stone-800 dark:bg-stone-950/40">
                   <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-lime-100 dark:bg-lime-500/15">
@@ -213,20 +211,7 @@ function LandingPage() {
                   </ul>
                 </div>
               )}
-              {adm.visible !== false && (
-                <div className="rounded-2xl border border-stone-200 bg-stone-50 p-7 dark:border-stone-800 dark:bg-stone-950/40">
-                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-stone-200 dark:bg-stone-800">
-                    <ShieldCheck className="h-5 w-5 text-stone-600 dark:text-stone-300" />
-                  </span>
-                  <h3 className="mt-4 text-xl font-bold text-stone-900 dark:text-stone-100">{adm.title || "Pour l'administration"}</h3>
-                  <ul className="mt-4 space-y-2.5 text-sm text-stone-600 dark:text-stone-400">
-                    {(adm.items ?? []).map((f: string) => (
-                      <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-lime-600 dark:text-lime-400" /> {f}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
+          </div>
           </div>
         </section>
       )}

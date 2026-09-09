@@ -56,18 +56,18 @@ function LandingEditorPage() {
     updateSection(path + '.visible', !getVisible(path))
   }
 
-  function updateSolutionItem(section: 'professionals' | 'clients' | 'admin', index: number, value: string) {
+  function updateSolutionItem(section: 'professionals' | 'clients', index: number, value: string) {
     const items = [...(sections.solutions?.[section]?.items ?? [])]
     items[index] = value
     updateSection(`solutions.${section}.items`, items)
   }
 
-  function addSolutionItem(section: 'professionals' | 'clients' | 'admin') {
+  function addSolutionItem(section: 'professionals' | 'clients') {
     const items = [...(sections.solutions?.[section]?.items ?? []), '']
     updateSection(`solutions.${section}.items`, items)
   }
 
-  function removeSolutionItem(section: 'professionals' | 'clients' | 'admin', index: number) {
+  function removeSolutionItem(section: 'professionals' | 'clients', index: number) {
     const items = (sections.solutions?.[section]?.items ?? []).filter((_: string, i: number) => i !== index)
     updateSection(`solutions.${section}.items`, items)
   }
@@ -152,7 +152,7 @@ function LandingEditorPage() {
           toggle={<Toggle label={getVisible('solutions') ? 'Visible' : 'Masqué'} path="solutions" />}
         >
           <p className="text-xs text-stone-400 mb-3">Trois colonnes modifiables. Chacune peut être activée indépendamment.</p>
-          {(['professionals', 'clients', 'admin'] as const).map((key) => (
+          {(['professionals', 'clients'] as const).map((key) => (
             <div key={key} className="rounded-lg border border-stone-200 p-4 space-y-2 dark:border-stone-800">
               <div className="flex flex-wrap items-center gap-2">
                 <Toggle label={sections.solutions?.[key]?.visible !== false ? 'On' : 'Off'} path={`solutions.${key}`} />
