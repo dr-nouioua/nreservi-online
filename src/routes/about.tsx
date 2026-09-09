@@ -235,40 +235,65 @@ function LandingPage() {
       {s.tarifs?.visible !== false && (
         <section id="tarifs" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6">
           <h2 className="text-center text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl">Tarifs</h2>
-          <p className="mt-3 text-center text-stone-600 dark:text-stone-400">Des formules simples pour chaque établissement — et des emplacements publicitaires pour les marques.</p>
-          <div className="mt-10 grid gap-6 lg:grid-cols-3">
+          <p className="mt-3 text-center text-stone-600 dark:text-stone-400">Un abonnement simple, sans surprise. Choisissez la durée qui vous convient.</p>
+
+          {/* Subscription cards */}
+          <div className="mt-10 grid gap-6 lg:grid-cols-2">
             {subscriptions.map((p) => (
               <div
                 key={p.name}
-                className={`relative rounded-2xl border p-7 ${
+                className={`relative rounded-2xl border-2 p-8 text-center transition ${
                   p.popular
-                    ? 'border-lime-400 bg-lime-50/60 shadow-lg dark:border-lime-500/50 dark:bg-lime-500/5'
+                    ? 'border-lime-400 bg-lime-50/60 shadow-xl dark:border-lime-500/50 dark:bg-lime-500/5'
                     : 'border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900/40'
                 }`}
               >
                 {p.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-lime-400 px-3 py-1 text-xs font-semibold text-stone-950">Populaire</span>
+                  <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-lime-400 px-4 py-1 text-xs font-bold text-stone-950 shadow-sm">
+                    Recommandé
+                  </span>
                 )}
-                <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100">{p.name}</h3>
-                <p className="mt-2">
-                  <span className="text-3xl font-bold text-stone-900 dark:text-stone-100">{p.price}</span>
-                  {p.period && <span className="ml-1.5 text-sm text-stone-500 dark:text-stone-400">{p.period}</span>}
+                <p className="text-sm font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">{p.name}</p>
+                <p className="mt-4">
+                  <span className="text-4xl font-extrabold text-stone-900 dark:text-stone-100">{p.price}</span>
                 </p>
-                <ul className="mt-5 space-y-2.5 text-sm text-stone-600 dark:text-stone-400">
+                {p.period && (
+                  <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-lime-100 px-3 py-1 text-xs font-medium text-lime-800 dark:bg-lime-500/15 dark:text-lime-300">
+                    {p.period}
+                  </p>
+                )}
+                <ul className="mt-6 space-y-3 text-sm text-stone-600 dark:text-stone-400 text-left">
                   {(p.features ?? []).map((f) => (
-                    <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-lime-600 dark:text-lime-400" /> {f}</li>
+                    <li key={f} className="flex items-start gap-2.5">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-lime-600 dark:text-lime-400" />
+                      <span>{f}</span>
+                    </li>
                   ))}
                 </ul>
+                <a
+                  href="#contact"
+                  className={`mt-8 inline-flex w-full items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold transition ${
+                    p.popular
+                      ? 'bg-stone-950 text-white hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white'
+                      : 'border border-stone-300 text-stone-700 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800'
+                  }`}
+                >
+                  Commencer
+                </a>
               </div>
             ))}
           </div>
 
+          {/* Ads section */}
           {adsPackages.length > 0 && (
-            <div className="mt-8 rounded-2xl border border-stone-200 bg-white p-7 dark:border-stone-800 dark:bg-stone-900/40">
-              <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100">Pour les marques & annonceurs</h3>
-              <div className="mt-5 grid gap-6 sm:grid-cols-2">
+            <div className="mt-12 rounded-2xl border border-stone-200 bg-white p-8 dark:border-stone-800 dark:bg-stone-900/40">
+              <div className="text-center">
+                <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100">Pour les marques & annonceurs</h3>
+                <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">Visibilité ciblée auprès de la clientèle de vos établissements partenaires.</p>
+              </div>
+              <div className="mt-6 grid gap-6 sm:grid-cols-2">
                 {adsPackages.map((p) => (
-                  <div key={p.name}>
+                  <div key={p.name} className="rounded-xl border border-stone-200 p-5 dark:border-stone-800">
                     <p className="font-semibold text-stone-900 dark:text-stone-100">{p.name}</p>
                     <p className="mt-1 text-2xl font-bold text-lime-600 dark:text-lime-400">
                       {p.price} {p.period && <span className="text-sm font-normal text-stone-500 dark:text-stone-400">{p.period}</span>}
@@ -281,9 +306,11 @@ function LandingPage() {
                   </div>
                 ))}
               </div>
-              <a href="#contact" className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-lime-700 hover:underline dark:text-lime-300">
-                Discuter d'une campagne <ArrowRight className="h-4 w-4" />
-              </a>
+              <div className="mt-6 text-center">
+                <a href="#contact" className="inline-flex items-center gap-2 text-sm font-medium text-lime-700 hover:underline dark:text-lime-300">
+                  Discuter d'une campagne <ArrowRight className="h-4 w-4" />
+                </a>
+              </div>
             </div>
           )}
         </section>

@@ -187,7 +187,7 @@ function LandingEditorPage() {
           title="Tarifs"
           toggle={<Toggle label={getVisible('tarifs') ? 'Visible' : 'Masqué'} path="tarifs" />}
         >
-          <p className="text-xs text-stone-400">Affiche les formules d'abonnement et publicités (éditable ci-dessous).</p>
+          <p className="text-xs text-stone-400">Abonnements établissements + publicités marques. Les formules sont affichées sur <a href="/about#tarifs" target="_blank" className="underline">/about</a>.</p>
         </Card>
 
         {/* ---- Contact ---- */}
@@ -207,47 +207,103 @@ function LandingEditorPage() {
           </div>
         </Card>
 
-        {/* ---- Formules ---- */}
+        {/* ---- Abonnements ---- */}
         <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-4 sm:p-6 space-y-4 shadow-sm">
-          <p className="font-semibold text-stone-900 dark:text-stone-100">Formules & publicité</p>
-          {packages.map((p, i) => (
-            <div key={i} className="rounded-lg border border-stone-200 p-4 space-y-2.5 dark:border-stone-800">
-              <div className="flex items-center justify-between gap-2">
-                <input value={p.name} onChange={(e) => updatePackage(i, { name: e.target.value })} placeholder="Nom de la formule" className="min-w-0 flex-1 rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
-                <button type="button" onClick={() => setPackages(packages.filter((_, idx) => idx !== i))} aria-label="Supprimer" className="rounded-md p-1.5 text-stone-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10">
-                  <Trash2 className="h-4 w-4" />
-                </button>
+          <div className="flex items-center justify-between">
+            <p className="font-semibold text-stone-900 dark:text-stone-100">Abonnements établissements</p>
+            <button
+              type="button"
+              onClick={() => setPackages([...packages, { name: '', price: '', period: '', features: [], kind: 'subscription', popular: false }])}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 px-3 py-1.5 text-xs text-stone-700 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+            >
+              <Plus className="h-3.5 w-3.5" /> Ajouter
+            </button>
+          </div>
+          <p className="text-xs text-stone-400">Deux formules recommandées : 6 mois (+1 offert) et 12 mois (+2 offerts). Le bouton "Populaire" met en surbrillance la carte sur /about.</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {packages.filter((p) => p.kind === 'subscription').map((p, idx) => {
+              const realIdx = packages.indexOf(p)
+              return (
+                <div key={realIdx} className={`rounded-xl border-2 p-5 space-y-3 transition ${p.popular ? 'border-lime-400 bg-lime-50/50 dark:border-lime-500/50 dark:bg-lime-500/5' : 'border-stone-200 dark:border-stone-800'}`}>
+                  <div className="flex items-center justify-between gap-2">
+                    <input
+                      value={p.name}
+                      onChange={(e) => updatePackage(realIdx, { name: e.target.value })}
+                      placeholder="Ex. 6 mois"
+                      className="min-w-0 flex-1 rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-semibold dark:border-stone-700"
+                    />
+                    <button type="button" onClick={() => setPackages(packages.filter((_, i) => i !== realIdx))} className="rounded-md p-1 text-stone-400 hover:text-red-600 dark:hover:text-red-400">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[11px] font-medium text-stone-500 dark:text-stone-400">Prix</label>
+                      <input value={p.price} onChange={(e) => updatePackage(realIdx, { price: e.target.value })} placeholder="15 000 DA" className="mt-0.5 w-full rounded-lg border border-stone-300 px-2.5 py-1.5 text-sm dark:border-stone-700" />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-medium text-stone-500 dark:text-stone-400">Période</label>
+                      <input value={p.period ?? ''} onChange={(e) => updatePackage(realIdx, { period: e.target.value })} placeholder="6 mois + 1 offert" className="mt-0.5 w-full rounded-lg border border-stone-300 px-2.5 py-1.5 text-sm dark:border-stone-700" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-medium text-stone-500 dark:text-stone-400">Avantages (un par ligne)</label>
+                    <textarea
+                      rows={3}
+                      value={(p.features ?? []).join('\n')}
+                      onChange={(e) => updatePackage(realIdx, { features: e.target.value.split('\n').filter(Boolean) })}
+                      className="mt-0.5 w-full rounded-lg border border-stone-300 px-2.5 py-1.5 text-xs dark:border-stone-700"
+                    />
+                  </div>
+                  <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-stone-600 dark:text-stone-300">
+                    <input type="checkbox" checked={Boolean(p.popular)} onChange={(e) => updatePackage(realIdx, { popular: e.target.checked })} className="accent-lime-500" />
+                    Populaire (mis en avant sur /about)
+                  </label>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* ---- Publicités ---- */}
+        <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-4 sm:p-6 space-y-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="font-semibold text-stone-900 dark:text-stone-100">Publicités (marques & annonceurs)</p>
+            <button
+              type="button"
+              onClick={() => setPackages([...packages, { name: '', price: '', period: 'par mois', features: [], kind: 'ads', popular: false }])}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 px-3 py-1.5 text-xs text-stone-700 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+            >
+              <Plus className="h-3.5 w-3.5" /> Ajouter
+            </button>
+          </div>
+          {packages.filter((p) => p.kind === 'ads').length === 0 && (
+            <p className="text-xs text-stone-400 italic">Aucune formule publicitaire. Cliquez "Ajouter" pour en créer une.</p>
+          )}
+          {packages.filter((p) => p.kind === 'ads').map((p) => {
+            const realIdx = packages.indexOf(p)
+            return (
+              <div key={realIdx} className="rounded-lg border border-stone-200 p-4 space-y-2.5 dark:border-stone-800">
+                <div className="flex items-center justify-between gap-2">
+                  <input value={p.name} onChange={(e) => updatePackage(realIdx, { name: e.target.value })} placeholder="Nom de la publicité" className="min-w-0 flex-1 rounded-lg border border-stone-300 px-3 py-1.5 text-sm dark:border-stone-700" />
+                  <button type="button" onClick={() => setPackages(packages.filter((_, i) => i !== realIdx))} className="rounded-md p-1.5 text-stone-400 hover:text-red-600 dark:hover:text-red-400">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <input value={p.price} onChange={(e) => updatePackage(realIdx, { price: e.target.value })} placeholder="Prix (ex. 5 000 DA+)" className="w-full rounded-lg border border-stone-300 px-3 py-1.5 text-sm dark:border-stone-700" />
+                  <input value={p.period ?? ''} onChange={(e) => updatePackage(realIdx, { period: e.target.value })} placeholder="par mois" className="w-full rounded-lg border border-stone-300 px-3 py-1.5 text-sm dark:border-stone-700" />
+                </div>
+                <textarea
+                  rows={2}
+                  value={(p.features ?? []).join('\n')}
+                  onChange={(e) => updatePackage(realIdx, { features: e.target.value.split('\n').filter(Boolean) })}
+                  placeholder="Avantages (un par ligne)"
+                  className="w-full rounded-lg border border-stone-300 px-3 py-1.5 text-xs dark:border-stone-700"
+                />
               </div>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <input value={p.price} onChange={(e) => updatePackage(i, { price: e.target.value })} placeholder="Prix (ex. 2 500 DA)" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
-                <input value={p.period ?? ''} onChange={(e) => updatePackage(i, { period: e.target.value })} placeholder="Période (par mois)" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
-              </div>
-              <textarea
-                rows={3}
-                value={(p.features ?? []).join('\n')}
-                onChange={(e) => updatePackage(i, { features: e.target.value.split('\n') })}
-                placeholder="Caractéristiques (une par ligne)"
-                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700"
-              />
-              <div className="flex flex-wrap items-center gap-4">
-                <select value={p.kind} onChange={(e) => updatePackage(i, { kind: e.target.value })} className="rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700">
-                  <option value="subscription">Abonnement établissement</option>
-                  <option value="ads">Publicité (marque)</option>
-                </select>
-                <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-stone-600 dark:text-stone-300">
-                  <input type="checkbox" checked={Boolean(p.popular)} onChange={(e) => updatePackage(i, { popular: e.target.checked })} className="accent-lime-500" />
-                  Mettre en avant
-                </label>
-              </div>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={() => setPackages([...packages, { name: '', price: '', period: 'par mois', features: [], kind: 'subscription', popular: false }])}
-            className="inline-flex items-center gap-2 rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-700 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
-          >
-            <Plus className="h-4 w-4" /> Ajouter une formule
-          </button>
+            )
+          })}
         </div>
 
         {message && (
