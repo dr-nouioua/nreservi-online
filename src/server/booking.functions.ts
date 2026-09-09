@@ -286,8 +286,9 @@ export const createReservation = createServerFn({ method: "POST" })
           ),
         );
 
-      // For non-restaurants, block if same time slot is already booked
-      if (!hasTables) {
+      // For non-restaurant categories (except football), block if same time slot is already booked
+      // Football handles this per-terrain below
+      if (!hasTables && category !== 'football_pitch') {
         const bookedAtTime = dayRes.some((r) => r.time.slice(0, 5) === data.time);
         if (bookedAtTime) return { kind: "full" as const };
       }
