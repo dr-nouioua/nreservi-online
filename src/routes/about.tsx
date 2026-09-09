@@ -220,7 +220,7 @@ function LandingPage() {
       {s.tarifs?.visible !== false && (
         <section id="tarifs" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6">
           <h2 className="text-center text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl">Tarifs</h2>
-          <p className="mt-3 text-center text-stone-600 dark:text-stone-400">Un abonnement simple, sans surprise. Choisissez la durée qui vous convient.</p>
+          <p className="mt-3 text-center text-stone-600 dark:text-stone-400">Un abonnement unique, adapté à toutes les catégories : restaurants, salons, spas, terrains de foot, locations de voitures.</p>
 
           {/* Subscription cards */}
           <div className="mt-10 grid gap-6 lg:grid-cols-2">
