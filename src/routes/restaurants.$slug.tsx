@@ -77,6 +77,17 @@ function RestaurantPage() {
   const isCarRental = restaurant.category === 'car_rental'
   const isNoPartySize = isFootball || isCarRental
 
+  const cat = restaurant.category ?? 'restaurant'
+  const profileLabels: Record<string, { sectionTitle: string; sectionSub: string; btnShow: string; btnHide: string; btnFixed: string; icon: typeof UtensilsCrossed }> = {
+    restaurant: { sectionTitle: 'Menu', sectionSub: 'Découvrez nos plats', btnShow: 'Voir le menu', btnHide: 'Masquer', btnFixed: 'Menu', icon: UtensilsCrossed },
+    beauty_salon: { sectionTitle: 'Nos prestations', sectionSub: 'Coiffure, manucure, soins…', btnShow: 'Voir les prestations', btnHide: 'Masquer', btnFixed: 'Prestations', icon: Scissors },
+    spa: { sectionTitle: 'Nos soins', sectionSub: 'Hammam, massage, gommage…', btnShow: 'Voir les soins', btnHide: 'Masquer', btnFixed: 'Soins', icon: Sparkles },
+    football_pitch: { sectionTitle: 'Nos terrains', sectionSub: 'Formats disponibles', btnShow: 'Voir les terrains', btnHide: 'Masquer', btnFixed: 'Terrains', icon: SoccerBall },
+    car_rental: { sectionTitle: 'Nos véhicules', sectionSub: 'Voitures disponibles à la location', btnShow: 'Voir les véhicules', btnHide: 'Masquer', btnFixed: 'Véhicules', icon: Car },
+    barbershop: { sectionTitle: 'Nos prestations', sectionSub: 'Coupe, barbe, soins…', btnShow: 'Voir les prestations', btnHide: 'Masquer', btnFixed: 'Prestations', icon: Scissors },
+  }
+  const L = profileLabels[cat] ?? profileLabels.restaurant
+
   // Whole menu collapsed by default — long catalogs stay light to load & scan.
   const [menuOpen, setMenuOpen] = useState(restaurant.menuFixed)
   const [date, setDate] = useState(todayISO())
@@ -255,15 +266,15 @@ function RestaurantPage() {
               >
                 <span className="flex items-center gap-3.5">
                   <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-lime-100 dark:bg-lime-500/15">
-                    {isFootball ? <SoccerBall className="h-7 w-7 text-lime-700 dark:text-lime-300" /> : isCarRental ? <Car className="h-7 w-7 text-lime-700 dark:text-lime-300" /> : <UtensilsCrossed className="h-7 w-7 text-lime-700 dark:text-lime-300" />}
+                    <L.icon className="h-7 w-7 text-lime-700 dark:text-lime-300" />
                   </span>
                   <span>
-                    <span className="block text-lg font-semibold text-stone-900 dark:text-stone-100">{isFootball ? 'Nos terrains' : isCarRental ? 'Nos véhicules' : 'Menu'}</span>
-                    <span className="block text-sm text-stone-500 dark:text-stone-400">{isFootball ? 'Formats disponibles' : isCarRental ? 'Voitures disponibles à la location' : 'Découvrez nos plats'}</span>
+                    <span className="block text-lg font-semibold text-stone-900 dark:text-stone-100">{L.sectionTitle}</span>
+                    <span className="block text-sm text-stone-500 dark:text-stone-400">{L.sectionSub}</span>
                   </span>
                 </span>
                 <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 dark:border-stone-700 dark:text-stone-300">
-                  {restaurant.menuFixed ? (isFootball ? 'Terrains' : isCarRental ? 'Véhicules' : 'Menu') : menuOpen ? 'Masquer' : isFootball ? 'Voir les terrains' : isCarRental ? 'Voir les véhicules' : 'Voir le menu'}
+                  {restaurant.menuFixed ? L.btnFixed : menuOpen ? L.btnHide : L.btnShow}
                   <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${menuOpen ? 'rotate-180' : ''}`} />
                 </span>
               </button>
@@ -309,7 +320,7 @@ function RestaurantPage() {
           <>
           <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 p-6 h-fit sticky top-20 shadow-xl">
             <h2 className="font-semibold text-stone-900 dark:text-stone-100 mb-4 flex items-center gap-2">
-              <CalendarDays className="h-4 w-4" /> {isFootball ? 'Réserver un terrain' : 'Réserver'}
+              <CalendarDays className="h-4 w-4" /> {isFootball ? 'Réserver un terrain' : isCarRental ? 'Louer' : 'Réserver'}
             </h2>
             <div className="space-y-3">
               <div>
