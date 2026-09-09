@@ -92,13 +92,15 @@ export const getAvailability = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     // Expired / suspended / pending restaurants expose no slots at all.
     const [restaurantRow] = await db
-      .select({ status: restaurants.status, subscriptionEnd: restaurants.subscriptionEnd, slotDuration: restaurants.slotDuration, openingHours: restaurants.openingHours })
+      .select({ status: restaurants.status, subscriptionEnd: restaurants.subscriptionEnd, slotDuration: restaurants.slotDuration, openingHours: restaurants.openingHours, category: restaurants.category })
       .from(restaurants)
       .where(eq(restaurants.id, data.restaurantId));
     if (!restaurantRow || !isSubscriptionValid(restaurantRow)) return [];
 
     const slotDuration = restaurantRow.slotDuration ?? 30;
     const openingHours = (restaurantRow.openingHours as Record<string, { open: string; close: string }[]>) ?? {};
+    const category = restaurantRow.category ?? 'restaurant';
+    const hasTables = category === 'restaurant';
 
     // Get day of week from date (0=Sunday, 1=Monday, etc.)
     const dateObj = new Date(data.date + 'T12:00:00');
@@ -120,14 +122,39 @@ export const getAvailability = createServerFn({ method: "GET" })
       }
     }
 
-    // If no opening hours configured, use default slots
+    // If no opening hours configured, use sensible defaults per category
     if (allSlots.length === 0) {
-      const defaultSlots = ["12:00", "12:30", "13:00", "13:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00"];
-      for (let i = 0; i < defaultSlots.length; i += Math.max(1, Math.floor(30 / slotDuration))) {
-        allSlots.push(defaultSlots[i]);
+      const defaultStart = hasTables ? 720 : 480; // 12:00 for restaurants, 08:00 for others
+      const defaultEnd = hasTables ? 1320 : 1320; // 22:00 for all
+      for (let m = defaultStart; m + slotDuration <= defaultEnd; m += slotDuration) {
+        const h = Math.floor(m / 60);
+        const min = m % 60;
+        allSlots.push(`${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`);
       }
     }
 
+    // For non-restaurant categories, there are no tables — check reservation conflicts only
+    if (!hasTables) {
+      const dayRes = await db
+        .select()
+        .from(reservations)
+        .where(
+          and(
+            eq(reservations.restaurantId, data.restaurantId),
+            eq(reservations.date, data.date),
+            ne(reservations.status, "cancelled"),
+            ne(reservations.status, "no_show"),
+          ),
+        );
+      const bookedTimes = new Set(dayRes.map((r) => r.time.slice(0, 5)));
+      return allSlots.map((slot) => ({
+        time: slot,
+        available: !bookedTimes.has(slot),
+        tableCount: bookedTimes.has(slot) ? 0 : 1,
+      }));
+    }
+
+    // Restaurant: check table availability
     const tableRows = await db
       .select()
       .from(tables)
