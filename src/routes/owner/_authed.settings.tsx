@@ -36,7 +36,7 @@ function SettingsPage() {
   const [lockerRooms, setLockerRooms] = useState(initial.restaurant?.hasLockerRooms ?? false)
   const [nightLighting, setNightLighting] = useState(initial.restaurant?.hasNightLighting ?? false)
   const [childSeat, setChildSeat] = useState(initial.restaurant?.hasChildSeat ?? false)
-  const [slotDuration, setSlotDuration] = useState(initial.restaurant?.slotDuration ?? 30)
+  const [slotDuration, setLocalSlotDuration] = useState(initial.restaurant?.slotDuration ?? 30)
 
   const category = initial.restaurant?.category ?? 'restaurant'
   const isFootball = category === 'football_pitch'
@@ -365,7 +365,7 @@ function SettingsPage() {
           <label className="text-sm text-stone-700 dark:text-stone-300">Durée :</label>
           <select
             value={slotDuration}
-            onChange={(e) => setSlotDuration(Number(e.target.value))}
+            onChange={(e) => setLocalSlotDuration(Number(e.target.value))}
             className="rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700"
           >
             <option value={15}>15 minutes</option>
