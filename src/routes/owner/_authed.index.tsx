@@ -106,6 +106,18 @@ function OwnerReservationsBoard() {
   const [expandedId, setExpandedId] = useState<number | null>(null)
   const whatsappReady = Boolean(whatsapp.whatsappNumber)
 
+  const category = overview.restaurant?.category ?? 'restaurant'
+  const hasTables = category === 'restaurant'
+
+  const NOTES_PLACEHOLDER: Record<string, string> = {
+    restaurant: 'VIP, allergies...',
+    football_pitch: "Équipe, équipement...",
+    beauty_salon: 'Demandes spéciales...',
+    spa: 'Demandes spéciales...',
+    barbershop: 'Demandes spéciales...',
+    car_rental: 'Permis, besoins...',
+  }
+
   const dayChips = Array.from({ length: 4 }, (_, i) => {
     const d = new Date(Date.now() + i * 86_400_000)
     return d.toISOString().slice(0, 10)
@@ -335,7 +347,7 @@ function OwnerReservationsBoard() {
                       {statusSelect(r)}
                     </div>
 
-                    <dl className="mt-2.5 grid grid-cols-3 gap-2 text-center text-xs">
+                    <dl className={`mt-2.5 grid gap-2 text-center text-xs ${hasTables ? 'grid-cols-3' : 'grid-cols-2'}`}>
                       <div className="rounded-lg bg-stone-50 py-1.5 dark:bg-stone-800/60">
                         <dt className="text-stone-400">Heure</dt>
                         <dd className="font-semibold text-stone-800 dark:text-stone-200">{r.time.slice(0, 5)}</dd>
@@ -344,13 +356,15 @@ function OwnerReservationsBoard() {
                         <dt className="text-stone-400">Personnes</dt>
                         <dd className="font-semibold inline-flex items-center gap-1 text-stone-800 dark:text-stone-200">
                           {r.partySize}<Users className="h-3 w-3 text-stone-400" />
-                          {r.babySeats > 0 && <span className="inline-flex items-center gap-0.5 text-amber-600 dark:text-amber-400" title={`${r.babySeats} chaise(s) bébé`}><Baby className="h-3 w-3" />{r.babySeats}</span>}
+                          {hasTables && r.babySeats > 0 && <span className="inline-flex items-center gap-0.5 text-amber-600 dark:text-amber-400" title={`${r.babySeats} chaise(s) bébé`}><Baby className="h-3 w-3" />{r.babySeats}</span>}
                         </dd>
                       </div>
-                      <div className="rounded-lg bg-stone-50 py-1.5 dark:bg-stone-800/60">
-                        <dt className="text-stone-400">Table</dt>
-                        <dd className="font-semibold text-stone-800 dark:text-stone-200">{tablesById.get(r.tableId)?.label ?? '—'}</dd>
-                      </div>
+                      {hasTables && (
+                        <div className="rounded-lg bg-stone-50 py-1.5 dark:bg-stone-800/60">
+                          <dt className="text-stone-400">Table</dt>
+                          <dd className="font-semibold text-stone-800 dark:text-stone-200">{tablesById.get(r.tableId)?.label ?? '—'}</dd>
+                        </div>
+                      )}
                     </dl>
 
                     {r.specialRequests && <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">📝 {r.specialRequests}</p>}
@@ -371,7 +385,7 @@ function OwnerReservationsBoard() {
                         <input
                           defaultValue={r.notes}
                           onBlur={(e) => setNotes(r.id, e.target.value)}
-                          placeholder="VIP, allergies..."
+                          placeholder={NOTES_PLACEHOLDER[category] ?? 'Notes...'}
                           className="w-full px-2.5 py-1.5 rounded border border-stone-200 text-xs dark:border-stone-800 dark:bg-stone-900 dark:text-stone-100"
                         />
                         <p className="text-[11px] text-stone-400">Enregistré automatiquement en quittant le champ.</p>
@@ -392,7 +406,7 @@ function OwnerReservationsBoard() {
                       <th className="px-4 py-3">Heure</th>
                       <th className="px-4 py-3">Client</th>
                       <th className="px-4 py-3">Pers.</th>
-                      <th className="px-4 py-3">Table</th>
+                      {hasTables && <th className="px-4 py-3">Table</th>}
                       <th className="px-4 py-3">Statut</th>
                       <th className="px-4 py-3">Notes</th>
                       {whatsappReady && <th className="px-4 py-3">Contact</th>}
@@ -409,19 +423,19 @@ function OwnerReservationsBoard() {
                         </td>
                         <td className="px-4 py-3">
                           {r.partySize}
-                          {r.babySeats > 0 && (
+                          {hasTables && r.babySeats > 0 && (
                             <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-400" title={`${r.babySeats} chaise(s) bébé`}>
                               <Baby className="h-3 w-3" /> {r.babySeats}
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3">{tablesById.get(r.tableId)?.label ?? '—'}</td>
+                        {hasTables && <td className="px-4 py-3">{tablesById.get(r.tableId)?.label ?? '—'}</td>}
                         <td className="px-4 py-3">{statusSelect(r)}</td>
                         <td className="px-4 py-3">
                           <input
                             defaultValue={r.notes}
                             onBlur={(e) => setNotes(r.id, e.target.value)}
-                            placeholder="VIP, allergies..."
+                            placeholder={NOTES_PLACEHOLDER[category] ?? 'Notes...'}
                             className="w-full px-2 py-1 rounded border border-stone-200 dark:border-stone-800 text-xs"
                           />
                         </td>
@@ -444,7 +458,9 @@ function OwnerReservationsBoard() {
       </div>
 
       {/* ========== Floor plan (today only) ========== */}
-      <h2 className="text-base sm:text-lg font-semibold text-stone-900 dark:text-stone-100 mt-10 mb-2">Plan de salle</h2>
+      <h2 className="text-base sm:text-lg font-semibold text-stone-900 dark:text-stone-100 mt-10 mb-2">
+        {hasTables ? 'Plan de salle' : category === 'football_pitch' ? 'Terrains du jour' : category === 'car_rental' ? 'Véhicules du jour' : 'Postes du jour'}
+      </h2>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-4">
         {[['confirmed', 'bg-blue-500'], ['seated', 'bg-emerald-500'], ['completed', 'bg-stone-400'], ['no_show', 'bg-red-500']].map(([st, color]) => (
           <span key={st} className="inline-flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400">
@@ -455,33 +471,60 @@ function OwnerReservationsBoard() {
           <span className="h-2.5 w-2.5 rounded-full border-2 border-dashed border-stone-300 dark:border-stone-600" /> Libre
         </span>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-        {overview.areas.map((area: any) => (
-          <div key={area.id} className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-3 sm:p-4">
-            <p className="text-sm font-medium text-stone-700 dark:text-stone-300 mb-3 truncate">{area.name}</p>
-            <div className="grid grid-cols-3 gap-2">
-              {overview.tables.filter((t: any) => t.areaId === area.id).map((t: any) => {
-                const res = reservations.find((r) => r.tableId === t.id && r.date === today && ['seated', 'confirmed'].includes(r.status))
-                const planColor: Record<string, string> = {
-                  confirmed: 'bg-blue-500',
-                  seated: 'bg-emerald-500',
-                }
-                const color = res ? planColor[res.status] ?? 'bg-stone-400' : 'bg-white border-2 border-dashed border-stone-300 text-stone-400 dark:bg-stone-900 dark:border-stone-600 dark:text-stone-500'
-                return (
-                  <div
-                    key={t.id}
-                    title={res ? `${res.guestName} — ${STATUS_LABELS_FR[res.status] ?? res.status}` : 'Libre'}
-                    className={`aspect-square rounded-lg ${color} ${res ? 'text-white' : ''} text-xs flex flex-col items-center justify-center ${t.shape === 'round' ? 'rounded-full' : ''}`}
-                  >
-                    <span className="font-semibold">{t.label}</span>
-                    <span>{t.capacity}p</span>
-                  </div>
-                )
-              })}
+      {hasTables ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+          {overview.areas.map((area: any) => (
+            <div key={area.id} className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-3 sm:p-4">
+              <p className="text-sm font-medium text-stone-700 dark:text-stone-300 mb-3 truncate">{area.name}</p>
+              <div className="grid grid-cols-3 gap-2">
+                {overview.tables.filter((t: any) => t.areaId === area.id).map((t: any) => {
+                  const res = reservations.find((r) => r.tableId === t.id && r.date === today && ['seated', 'confirmed'].includes(r.status))
+                  const planColor: Record<string, string> = {
+                    confirmed: 'bg-blue-500',
+                    seated: 'bg-emerald-500',
+                  }
+                  const color = res ? planColor[res.status] ?? 'bg-stone-400' : 'bg-white border-2 border-dashed border-stone-300 text-stone-400 dark:bg-stone-900 dark:border-stone-600 dark:text-stone-500'
+                  return (
+                    <div
+                      key={t.id}
+                      title={res ? `${res.guestName} — ${STATUS_LABELS_FR[res.status] ?? res.status}` : 'Libre'}
+                      className={`aspect-square rounded-lg ${color} ${res ? 'text-white' : ''} text-xs flex flex-col items-center justify-center ${t.shape === 'round' ? 'rounded-full' : ''}`}
+                    >
+                      <span className="font-semibold">{t.label}</span>
+                      <span>{t.capacity}p</span>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+          {overview.areas.map((area: any) => {
+            const res = reservations.find((r) => r.areaId === area.id && r.date === today && ['seated', 'confirmed'].includes(r.status))
+            const planColor: Record<string, string> = {
+              confirmed: 'bg-blue-500',
+              seated: 'bg-emerald-500',
+            }
+            const color = res ? planColor[res.status] ?? 'bg-stone-400' : 'bg-white border-2 border-dashed border-stone-300 text-stone-400 dark:bg-stone-900 dark:border-stone-600 dark:text-stone-500'
+            return (
+              <div
+                key={area.id}
+                title={res ? `${res.guestName} — ${STATUS_LABELS_FR[res.status] ?? res.status}` : 'Libre'}
+                className={`rounded-xl border-2 ${color} ${res ? 'text-white border-transparent' : 'border-dashed border-stone-300 dark:border-stone-600'} p-4 flex flex-col items-center justify-center min-h-[80px]`}
+              >
+                <span className="font-semibold text-sm">{area.name}</span>
+                {res ? (
+                  <span className="text-xs mt-1 opacity-90">{res.guestName} · {res.time.slice(0, 5)}</span>
+                ) : (
+                  <span className="text-xs mt-1 opacity-60">Libre</span>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* ---- Toasts ---- */}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 w-[calc(100vw-2rem)] max-w-sm">
@@ -506,6 +549,8 @@ function OwnerReservationsBoard() {
       {showWalkIn && (
         <WalkInModal
           tables={overview.tables}
+          areas={overview.areas}
+          category={category}
           reservations={reservations}
           date={today}
           onClose={() => setShowWalkIn(false)}
@@ -529,11 +574,13 @@ function OwnerReservationsBoard() {
   )
 }
 
-function WalkInModal({ tables, reservations, date, onClose, onCreated }: { tables: any[]; reservations: any[]; date: string; onClose: () => void; onCreated: () => void }) {
+function WalkInModal({ tables, areas, category, reservations, date, onClose, onCreated }: { tables: any[]; areas: any[]; category: string; reservations: any[]; date: string; onClose: () => void; onCreated: () => void }) {
+  const hasTables = category === 'restaurant'
   const [guestName, setGuestName] = useState('')
   const [guestPhone, setGuestPhone] = useState('')
   const [partySize, setPartySize] = useState(2)
   const [tableId, setTableId] = useState(tables[0]?.id)
+  const [areaId, setAreaId] = useState(areas[0]?.id)
   const [time, setTime] = useState(new Date().toISOString().slice(11, 16))
   const [error, setError] = useState<string | null>(null)
 
@@ -545,7 +592,7 @@ function WalkInModal({ tables, reservations, date, onClose, onCreated }: { table
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
-    const result = await createWalkIn({ data: { guestName, guestPhone, partySize, date, time, tableId } })
+    const result = await createWalkIn({ data: { guestName, guestPhone, partySize, date, time, tableId: hasTables ? tableId : undefined, areaId: hasTables ? undefined : areaId } })
     if ('error' in result && result.error) {
       setError(result.error)
       return
@@ -563,15 +610,25 @@ function WalkInModal({ tables, reservations, date, onClose, onCreated }: { table
           <input type="number" min={1} value={partySize} onChange={(e) => setPartySize(Number(e.target.value))} className="px-3 py-2.5 rounded-lg border border-stone-300 dark:border-stone-700 text-sm" />
           <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="px-3 py-2.5 rounded-lg border border-stone-300 dark:border-stone-700 text-sm" />
         </div>
-        <select value={tableId} onChange={(e) => setTableId(Number(e.target.value))} className="w-full px-3 py-2.5 rounded-lg border border-stone-300 dark:border-stone-700 text-sm">
-          {tables.map((t) => (
-            <option key={t.id} value={t.id} disabled={occupiedIds.has(t.id)}>
-              {t.label} ({t.capacity}p){occupiedIds.has(t.id) ? ' — occupée' : ''}
-            </option>
-          ))}
-        </select>
-        {occupiedIds.has(tableId) && !error && (
-          <p className="text-xs text-amber-600 dark:text-amber-400">Table occupée à cette heure — une autre table libre sera attribuée automatiquement.</p>
+        {hasTables ? (
+          <>
+            <select value={tableId} onChange={(e) => setTableId(Number(e.target.value))} className="w-full px-3 py-2.5 rounded-lg border border-stone-300 dark:border-stone-700 text-sm">
+              {tables.map((t) => (
+                <option key={t.id} value={t.id} disabled={occupiedIds.has(t.id)}>
+                  {t.label} ({t.capacity}p){occupiedIds.has(t.id) ? ' — occupée' : ''}
+                </option>
+              ))}
+            </select>
+            {occupiedIds.has(tableId) && !error && (
+              <p className="text-xs text-amber-600 dark:text-amber-400">Table occupée à cette heure — une autre table libre sera attribuée automatiquement.</p>
+            )}
+          </>
+        ) : (
+          <select value={areaId} onChange={(e) => setAreaId(Number(e.target.value))} className="w-full px-3 py-2.5 rounded-lg border border-stone-300 dark:border-stone-700 text-sm">
+            {areas.map((a) => (
+              <option key={a.id} value={a.id}>{a.name}</option>
+            ))}
+          </select>
         )}
         {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
         <div className="flex justify-end gap-2 pt-2">

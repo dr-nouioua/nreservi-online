@@ -142,37 +142,68 @@ export const createWalkIn = createServerFn({ method: "POST" })
       partySize: number;
       date: string;
       time: string;
-      tableId: number;
+      tableId?: number;
+      areaId?: number;
     }) => data,
   )
   .handler(async ({ data }) => {
     const restaurantId = await requireRestaurantId();
-    // Table must belong to THIS restaurant (never trust client ids)…
-    const [table] = await db
-      .select()
-      .from(tables)
-      .where(and(eq(tables.id, data.tableId), eq(tables.restaurantId, restaurantId)));
-    if (!table) return { error: "Table introuvable." };
-    // …and must be free at that date/time — a confirmed/installed reservation
-    // keeps its table until it is cancelled or completed.
-    const [conflict] = await db
-      .select({ id: reservations.id })
-      .from(reservations)
-      .where(
-        and(
-          eq(reservations.restaurantId, restaurantId),
-          eq(reservations.tableId, data.tableId),
-          eq(reservations.date, data.date),
-          eq(reservations.time, `${data.time}:00`),
-          inArray(reservations.status, ["confirmed", "seated"]),
-        ),
-      )
-      .limit(1);
-    let assignedTable = table;
-    if (conflict) {
-      // Auto-select another available table with enough seats (same area first).
+    const [restRow] = await db.select({ category: restaurants.category }).from(restaurants).where(eq(restaurants.id, restaurantId));
+    const category = restRow?.category ?? 'restaurant';
+    const hasTables = category === 'restaurant';
+
+    let assignedTableId: number | null = null;
+    let assignedAreaId: number | null = data.areaId ?? null;
+
+    if (hasTables) {
+      // Table must belong to THIS restaurant (never trust client ids)…
+      const [table] = await db
+        .select()
+        .from(tables)
+        .where(and(eq(tables.id, data.tableId!), eq(tables.restaurantId, restaurantId)));
+      if (!table) return { error: "Table introuvable." };
+      // …and must be free at that date/time
+      const [conflict] = await db
+        .select({ id: reservations.id })
+        .from(reservations)
+        .where(
+          and(
+            eq(reservations.restaurantId, restaurantId),
+            eq(reservations.tableId, data.tableId!),
+            eq(reservations.date, data.date),
+            eq(reservations.time, `${data.time}:00`),
+            inArray(reservations.status, ["confirmed", "seated"]),
+          ),
+        )
+        .limit(1);
+      let assignedTable = table;
+      if (conflict) {
         const busy = await db
-        .select({ tableId: reservations.tableId })
+          .select({ tableId: reservations.tableId })
+          .from(reservations)
+          .where(
+            and(
+              eq(reservations.restaurantId, restaurantId),
+              eq(reservations.date, data.date),
+              eq(reservations.time, `${data.time}:00`),
+              inArray(reservations.status, ["confirmed", "seated"]),
+            ),
+          );
+        const busyIds = new Set(busy.map((b) => b.tableId));
+        const candidates = (await db.select().from(tables).where(eq(tables.restaurantId, restaurantId)))
+          .filter((t) => t.id !== table.id && !busyIds.has(t.id) && t.capacity >= data.partySize)
+          .sort((a, b) => (a.areaId === table.areaId ? -1 : b.areaId === table.areaId ? 1 : a.capacity - b.capacity));
+        if (candidates.length === 0) {
+          return { error: `La table ${table.label} est déjà réservée à ${data.time.slice(0, 5)} et aucune autre table n'est disponible.` };
+        }
+        assignedTable = candidates[0];
+      }
+      assignedTableId = assignedTable.id;
+      assignedAreaId = assignedTable.areaId;
+    } else {
+      // Non-restaurant: check time conflict
+      const [conflict] = await db
+        .select({ id: reservations.id })
         .from(reservations)
         .where(
           and(
@@ -181,22 +212,17 @@ export const createWalkIn = createServerFn({ method: "POST" })
             eq(reservations.time, `${data.time}:00`),
             inArray(reservations.status, ["confirmed", "seated"]),
           ),
-        );
-      const busyIds = new Set(busy.map((b) => b.tableId));
-      const candidates = (await db.select().from(tables).where(eq(tables.restaurantId, restaurantId)))
-        .filter((t) => t.id !== table.id && !busyIds.has(t.id) && t.capacity >= data.partySize)
-        .sort((a, b) => (a.areaId === table.areaId ? -1 : b.areaId === table.areaId ? 1 : a.capacity - b.capacity));
-      if (candidates.length === 0) {
-        return { error: `La table ${table.label} est déjà réservée à ${data.time.slice(0, 5)} et aucune autre table n'est disponible.` };
-      }
-      assignedTable = candidates[0];
+        )
+        .limit(1);
+      if (conflict) return { error: `Ce créneau à ${data.time.slice(0, 5)} est déjà occupé.` };
     }
+
     const [reservation] = await db
       .insert(reservations)
       .values({
         restaurantId,
-        tableId: assignedTable.id,
-        areaId: assignedTable.areaId,
+        tableId: assignedTableId,
+        areaId: assignedAreaId,
         guestName: data.guestName,
         guestPhone: data.guestPhone,
         partySize: data.partySize,
