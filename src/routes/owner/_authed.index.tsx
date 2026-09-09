@@ -103,6 +103,7 @@ function OwnerReservationsBoard() {
   const [soundOn, setSoundOn] = useState(true)
   const knownIdsRef = useRef<Set<number> | null>(null)
   const statusMapRef = useRef<Map<number, string> | null>(null)
+  const refreshRef = useRef<() => Promise<void>>()
   const [expandedId, setExpandedId] = useState<number | null>(null)
   const whatsappReady = Boolean(whatsapp.whatsappNumber)
 
@@ -176,6 +177,7 @@ function OwnerReservationsBoard() {
 
     knownIdsRef.current = ids
     statusMapRef.current = statusMap
+    refreshRef.current = refresh
   }
 
   useEffect(() => {
@@ -186,7 +188,7 @@ function OwnerReservationsBoard() {
   }, [])
 
   useEffect(() => {
-    const interval = setInterval(() => refresh(), 15000)
+    const interval = setInterval(() => refreshRef.current?.(), 5000)
     return () => clearInterval(interval)
   }, [])
 
