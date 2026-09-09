@@ -88,7 +88,7 @@ function Home() {
       <SiteHeader />
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-6">
         <div className="overflow-hidden rounded-lg bg-stone-950 text-white dark:ring-1 dark:ring-stone-700">
-          <div className="min-h-[280px] flex flex-col justify-center">
+          <div className="min-h-[320px] flex flex-col justify-center">
             <div className="p-7 sm:p-10 flex flex-col justify-center">
               <p className="text-sm font-medium text-lime-300">Réservations en temps réel</p>
               <h1 className="mt-3 text-4xl sm:text-5xl font-bold tracking-tight">
@@ -98,72 +98,73 @@ function Home() {
                 nreservi.online réunit restaurants, salons de beauté et spas près de chez vous :
                 consultez les disponibilités en direct et recevez votre confirmation par WhatsApp.
               </p>
-              <div className="mt-6 grid gap-3 rounded-lg bg-white dark:bg-stone-900 p-2 text-stone-900 dark:text-stone-100 shadow-xl sm:grid-cols-[1fr_auto_auto]">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
-                  <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un nom, une catégorie ou une ville" className="w-full rounded-md border border-stone-200 dark:border-stone-800 py-2.5 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-lime-500" />
+              <div className="mt-6 rounded-lg bg-white dark:bg-stone-900 p-3 text-stone-900 dark:text-stone-100 shadow-xl">
+                {/* Search row */}
+                <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+                    <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un nom, une catégorie ou une ville" className="w-full rounded-md border border-stone-200 dark:border-stone-800 py-2.5 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-lime-500" />
+                  </div>
+                  <select value={city} onChange={(e) => setCity(e.target.value)} className="rounded-md border border-stone-200 dark:border-stone-800 px-3 py-2.5 text-sm">
+                    <option value="all">Toutes les villes</option>
+                    {cities.map((value) => <option key={value} value={value}>{value}</option>)}
+                  </select>
+                  <select value={cuisine} onChange={(e) => setCuisine(e.target.value)} className="rounded-md border border-stone-200 dark:border-stone-800 px-3 py-2.5 text-sm">
+                    <option value="all">{category === 'beauty_salon' ? 'Toutes les prestations' : category === 'spa' ? 'Toutes les prestations' : category === 'football_pitch' ? 'Tous les formats' : category === 'car_rental' ? 'Tous les types' : 'Toutes les catégories'}</option>
+                    {cuisines.map((value) => <option key={value} value={value}>{value}</option>)}
+                  </select>
                 </div>
-                <select value={city} onChange={(e) => setCity(e.target.value)} className="rounded-md border border-stone-200 dark:border-stone-800 px-3 py-2.5 text-sm">
-                  <option value="all">Toutes les villes</option>
-                  {cities.map((value) => <option key={value} value={value}>{value}</option>)}
-                </select>
-                <select value={cuisine} onChange={(e) => setCuisine(e.target.value)} className="rounded-md border border-stone-200 dark:border-stone-800 px-3 py-2.5 text-sm">
-                  <option value="all">{category === 'beauty_salon' ? 'Toutes les prestations' : category === 'spa' ? 'Toutes les prestations' : category === 'football_pitch' ? 'Tous les formats' : category === 'car_rental' ? 'Tous les types' : 'Toutes les catégories'}</option>
-                  {cuisines.map((value) => <option key={value} value={value}>{value}</option>)}
-                </select>
+                {/* Category grid */}
+                <div className="mt-3 pt-3 border-t border-stone-200 dark:border-stone-800">
+                  <div className="grid grid-cols-3 gap-2 lg:grid-cols-6">
+                    {CATEGORIES.map((cat) => {
+                      const count = categoryCounts[cat.key as keyof typeof categoryCounts] ?? 0
+                      const isActive = category === cat.key
+                      const isAll = cat.key === ''
+                      return (
+                        <button
+                          key={cat.key}
+                          onClick={() => { setCategory(cat.key); setCuisine('all') }}
+                          className={`group flex flex-col items-center gap-1.5 rounded-lg px-2 py-3 text-center font-medium transition-all duration-200 border ${
+                            isActive
+                              ? `${cat.activeColor} border-transparent shadow-md`
+                              : isAll
+                                ? 'bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:border-stone-700 dark:hover:bg-stone-700'
+                                : `${cat.color} border-transparent hover:shadow-sm`
+                          }`}
+                        >
+                          <span className={`flex h-9 w-9 items-center justify-center rounded-full transition ${
+                            isActive
+                              ? 'bg-white/25 dark:bg-black/25'
+                              : isAll
+                                ? 'bg-stone-200 dark:bg-stone-700'
+                                : 'bg-black/5 dark:bg-white/10 group-hover:bg-black/10 dark:group-hover:bg-white/15'
+                          }`}>
+                            <cat.icon className="h-4 w-4" />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block text-xs leading-tight">{cat.label}</span>
+                            <span className={`mt-0.5 inline-block rounded-full px-1.5 py-0.5 text-[10px] ${
+                              isActive
+                                ? 'bg-white/20 dark:bg-black/20'
+                                : 'bg-black/5 dark:bg-white/10'
+                            }`}>
+                              {count}
+                            </span>
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Category cards */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-2">
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:grid-cols-6">
-          {CATEGORIES.map((cat) => {
-            const count = categoryCounts[cat.key as keyof typeof categoryCounts] ?? 0
-            const isActive = category === cat.key
-            const isAll = cat.key === ''
-            return (
-              <button
-                key={cat.key}
-                onClick={() => { setCategory(cat.key); setCuisine('all') }}
-                className={`group flex flex-col items-center gap-2 rounded-xl px-2 py-4 text-center font-medium transition-all duration-200 border ${
-                  isActive
-                    ? `${cat.activeColor} border-transparent shadow-md`
-                    : isAll
-                      ? 'bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:border-stone-700 dark:hover:bg-stone-700'
-                      : `${cat.color} border-transparent hover:shadow-sm`
-                }`}
-              >
-                <span className={`flex h-11 w-11 items-center justify-center rounded-full transition ${
-                  isActive
-                    ? 'bg-white/25 dark:bg-black/25'
-                    : isAll
-                      ? 'bg-stone-200 dark:bg-stone-700'
-                      : 'bg-black/5 dark:bg-white/10 group-hover:bg-black/10 dark:group-hover:bg-white/15'
-                }`}>
-                  <cat.icon className="h-5 w-5" />
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-xs sm:text-sm leading-tight">{cat.label}</span>
-                  <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] sm:text-xs ${
-                    isActive
-                      ? 'bg-white/20 dark:bg-black/20'
-                      : 'bg-black/5 dark:bg-white/10'
-                  }`}>
-                    {count}
-                  </span>
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      </section>
-
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-4 flex items-center justify-between">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-4">
         <p className="text-sm text-stone-500 dark:text-stone-400">{filtered.length} établissement{filtered.length === 1 ? '' : 's'} disponible{filtered.length === 1 ? '' : 's'}</p>
-        <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 dark:bg-stone-800 px-3 py-1 text-xs font-medium text-stone-600 dark:text-stone-400"><SlidersHorizontal className="h-3.5 w-3.5" /> Filtres intelligents</span>
       </section>
 
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
