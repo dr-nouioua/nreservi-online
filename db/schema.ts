@@ -22,6 +22,7 @@ export const adminUsers = pgTable("admin_users", {
   name: text("name").notNull(),
   role: text("role").notNull().default("admin"), // super | admin
   permissions: jsonb("permissions").notNull().default([]), // module keys for non-super admins
+  analyticsCategories: jsonb("analytics_categories").notNull().default([]), // category keys non-super admins can see (empty = all)
   createdAt: timestamp("created_at").defaultNow(),
 });
 

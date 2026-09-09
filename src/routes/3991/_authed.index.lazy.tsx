@@ -80,7 +80,17 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 function AdminIndex() {
   const initial = Route.useLoaderData()
-  const [restaurants, setRestaurants] = useState(initial.restaurants)
+  const { session } = Route.useRouteContext() as {
+    session: { adminRole: 'super' | 'admin'; analyticsCategories?: string[] | null }
+  }
+  const isSuper = session.adminRole === 'super'
+  const allowedCategories = isSuper ? null : (session.analyticsCategories ?? [])
+  const [restaurants, setRestaurants] = useState(() =>
+    allowedCategories && allowedCategories.length > 0
+      ? initial.restaurants.filter((r: any) => allowedCategories.includes(r.category ?? 'restaurant'))
+      : initial.restaurants
+  )
+  const [allRestaurants] = useState(initial.restaurants)
   const [analytics, setAnalytics] = useState(initial.analytics)
   const [visits] = useState(initial.visits)
   const [eventTheme, setEventTheme] = useState('')
@@ -125,13 +135,13 @@ function AdminIndex() {
 
 
   const stats = [
-    { label: "Établissements au total", value: analytics.totalEstablishments, icon: Building2 },
-    { label: "Actifs", value: analytics.activeEstablishments, icon: TrendingUp },
-    { label: "En attente de validation", value: analytics.pendingEstablishments, icon: Clock },
+    { label: "Établissements au total", value: isSuper ? analytics.totalEstablishments : restaurants.length, icon: Building2 },
+    { label: "Actifs", value: isSuper ? analytics.activeEstablishments : restaurants.filter((r: any) => r.status === 'active').length, icon: TrendingUp },
+    { label: "En attente de validation", value: isSuper ? analytics.pendingEstablishments : restaurants.filter((r: any) => r.status === 'pending').length, icon: Clock },
     { label: "Réservations totales", value: analytics.totalBookings, icon: Users },
   ]
 
-  const categoryStats = Object.entries(analytics.catCounts ?? {}).map(([cat, count]) => ({
+  const categoryStats = (isSuper ? Object.entries(analytics.catCounts ?? {}) : Object.entries(analytics.catCounts ?? {}).filter(([cat]) => allowedCategories.length === 0 || allowedCategories.includes(cat))).map(([cat, count]) => ({
     category: cat,
     label: CATEGORY_LABELS[cat] ?? cat,
     count,
@@ -300,6 +310,7 @@ function AdminIndex() {
               <th className="px-4 py-3">Nom</th>
               <th className="px-4 py-3 hidden sm:table-cell">Catégorie</th>
               <th className="px-4 py-3">Ville</th>
+              {isSuper && <th className="px-4 py-3 hidden md:table-cell">E-mail</th>}
               <th className="px-4 py-3">Statut</th>
               <th className="px-4 py-3">Formule</th>
               <th className="px-4 py-3">Actions</th>
@@ -319,6 +330,7 @@ function AdminIndex() {
                   </span>
                 </td>
                 <td className="px-3 sm:px-4 py-3 hidden sm:table-cell">{r.city}</td>
+                {isSuper && <td className="px-3 sm:px-4 py-3 hidden md:table-cell text-xs text-stone-500 dark:text-stone-400">{r.contactEmail}</td>}
                 <td className="px-4 py-3">
                   <span className={`px-2 py-0.5 rounded-full text-[11px] ${STATUS_COLORS[r.status]}`}>{r.status}</span>
                 </td>
@@ -336,9 +348,9 @@ function AdminIndex() {
                     >
                       <span className={`absolute h-4 w-4 rounded-full bg-white shadow transition-all ${r.status === 'active' ? 'left-[18px]' : 'left-0.5'}`} />
                     </button>
-                    <button onClick={() => impersonate(r.id)} title="Accès support" className="rounded-md p-1.5 text-blue-600 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-500/10">
+                    {isSuper && <button onClick={() => impersonate(r.id)} title="Accès support" className="rounded-md p-1.5 text-blue-600 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-500/10">
                       <UserCheck className="h-4 w-4" />
-                    </button>
+                    </button>}
                     <button
                       onClick={async () => {
                         // Double confirmation for an irreversible action.

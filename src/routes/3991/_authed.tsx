@@ -31,14 +31,14 @@ export const Route = createFileRoute('/3991/_authed')({
   component: AdminLayout,
 })
 
-const nav: { to: string; label: string; icon: typeof Building2; module?: string }[] = [
+const nav: { to: string; label: string; icon: typeof Building2; module?: string; superOnly?: boolean }[] = [
   { to: '/3991', label: 'Dashboard', icon: Building2 },
   { to: '/3991/onboard', label: 'Créer un établissement', icon: Plus, module: 'onboard' },
   { to: '/3991/subscriptions', label: 'Abonnements', icon: CreditCard, module: 'subscriptions' },
   { to: '/3991/emails', label: 'E-mails', icon: Send, module: 'emails' },
   { to: '/3991/ads', label: 'Publicités', icon: Megaphone, module: 'ads' },
   { to: '/3991/mail', label: 'Serveur e-mail', icon: Mail, module: 'mail' },
-  { to: '/3991/logs', label: 'Journal', icon: History, module: undefined },
+  { to: '/3991/logs', label: 'Journal', icon: History, superOnly: true },
   { to: '/3991/landing', label: 'Présentation', icon: Globe, module: 'landing' },
   { to: '/3991/account', label: 'Compte', icon: ShieldCheck },
 ]
@@ -47,7 +47,10 @@ function AdminLayout() {
   const { session } = Route.useRouteContext() as {
     session: { name: string; email: string; adminRole: 'super' | 'admin'; permissions: string[] }
   }
-  const visibleNav = nav.filter((item) => !item.module || adminHasModule(session, item.module))
+  const visibleNav = nav.filter((item) => {
+    if (item.superOnly && session.adminRole !== 'super') return false
+    return !item.module || adminHasModule(session, item.module)
+  })
   const router = useRouter()
 
   const [drawerOpen, setDrawerOpen] = useState(false)

@@ -2,7 +2,7 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { AtSign, KeyRound, Save, ShieldCheck, Trash2, UserPlus } from 'lucide-react'
 import { listAdmins, createAdmin, deleteAdmin, updateAdminAccess } from '../../server/admin.functions'
-import { ADMIN_MODULES } from '../../server/admin.permissions'
+import { ADMIN_MODULES, ALL_CATEGORIES } from '../../server/admin.permissions'
 import { changePassword, updateAccountEmail } from '../../server/auth.functions'
 
 export const Route = createFileRoute('/3991/_authed/account')({
@@ -40,9 +40,19 @@ function AdminAccountPage() {
 
   const [permEditing, setPermEditing] = useState<number | null>(null)
   const [permDraft, setPermDraft] = useState<string[]>([])
+  const [catDraft, setCatDraft] = useState<string[]>([])
+
+  const CATEGORY_LABELS: Record<string, string> = {
+    restaurant: 'Restaurant',
+    beauty_salon: 'Salon de beauté',
+    spa: 'Spa & Bien-être',
+    football_pitch: 'Terrain de foot',
+    car_rental: 'Location de voitures',
+    barbershop: 'Barbier',
+  }
 
   async function savePermissions(id: number) {
-    const result = await updateAdminAccess({ data: { id, permissions: permDraft } })
+    const result = await updateAdminAccess({ data: { id, permissions: permDraft, analyticsCategories: catDraft } })
     if ('error' in result && result.error) {
       setListMessage(result.error)
       return
@@ -135,7 +145,7 @@ function AdminAccountPage() {
               </div>
               {viewerIsSuper && a.id !== session.id && a.adminRole !== 'super' && permEditing !== a.id && (
                 <button
-                  onClick={() => { setPermEditing(a.id); setPermDraft([...((a.permissions as string[]) ?? [])]) }}
+                  onClick={() => { setPermEditing(a.id); setPermDraft([...((a.permissions as string[]) ?? [])]); setCatDraft([...((a.analyticsCategories as string[]) ?? [])]) }}
                   title="Modifier les privilèges"
                   className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-stone-300 px-2.5 py-1.5 text-xs text-stone-600 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800"
                 >
@@ -145,25 +155,49 @@ function AdminAccountPage() {
             </div>
 
             {viewerIsSuper && permEditing === a.id ? (
-              <div className="mt-3 space-y-2 rounded-lg border border-stone-200 bg-stone-50 p-3 dark:border-stone-800 dark:bg-stone-950/40">
-                <p className="text-xs font-medium text-stone-500 dark:text-stone-400">Modules accessibles pour {a.name} :</p>
-                <div className="flex flex-wrap gap-2">
-                  {ADMIN_MODULES.map((m) => (
-                    <label key={m.key} className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-stone-200 px-2.5 py-1.5 text-xs dark:border-stone-800">
-                      <input
-                        type="checkbox"
-                        checked={permDraft.includes(m.key)}
-                        onChange={(e) => {
-                          const next = e.target.checked
-                            ? [...permDraft, m.key]
-                            : permDraft.filter((p) => p !== m.key)
-                          setPermDraft(next)
-                        }}
-                        className="accent-lime-500"
-                      />
-                      {m.label}
-                    </label>
-                  ))}
+              <div className="mt-3 space-y-3 rounded-lg border border-stone-200 bg-stone-50 p-3 dark:border-stone-800 dark:bg-stone-950/40">
+                <div>
+                  <p className="text-xs font-medium text-stone-500 dark:text-stone-400 mb-2">Modules accessibles pour {a.name} :</p>
+                  <div className="flex flex-wrap gap-2">
+                    {ADMIN_MODULES.map((m) => (
+                      <label key={m.key} className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-stone-200 px-2.5 py-1.5 text-xs dark:border-stone-800">
+                        <input
+                          type="checkbox"
+                          checked={permDraft.includes(m.key)}
+                          onChange={(e) => {
+                            const next = e.target.checked
+                              ? [...permDraft, m.key]
+                              : permDraft.filter((p) => p !== m.key)
+                            setPermDraft(next)
+                          }}
+                          className="accent-lime-500"
+                        />
+                        {m.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-stone-500 dark:text-stone-400 mb-2">Catégories d'analytiques visibles :</p>
+                  <div className="flex flex-wrap gap-2">
+                    {ALL_CATEGORIES.map((cat) => (
+                      <label key={cat} className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-stone-200 px-2.5 py-1.5 text-xs dark:border-stone-800">
+                        <input
+                          type="checkbox"
+                          checked={catDraft.includes(cat)}
+                          onChange={(e) => {
+                            const next = e.target.checked
+                              ? [...catDraft, cat]
+                              : catDraft.filter((c) => c !== cat)
+                            setCatDraft(next)
+                          }}
+                          className="accent-lime-500"
+                        />
+                        {CATEGORY_LABELS[cat] ?? cat}
+                      </label>
+                    ))}
+                  </div>
+                  <p className="mt-1 text-[10px] text-stone-400">Si aucune catégorie n'est cochée, l'admin voit toutes les catégories.</p>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => savePermissions(a.id)} className="rounded-lg bg-stone-950 px-3 py-1.5 text-xs font-medium text-white dark:bg-stone-100 dark:text-stone-900">Enregistrer</button>

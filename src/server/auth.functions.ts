@@ -6,27 +6,16 @@ import { adminUsers, restaurantOwners, staffUsers } from "../../db/schema.js";
 import { hashPassword, verifyPassword } from "./crypto.server.js";
 import { signSession, verifySession, type SessionPayload } from "./session.server.js";
 import { rateLimit } from "./rate-limit.server.js";
-
-const COOKIE = "rsv_session";
-const COOKIE_PATH = "/";
-
-// Use COOKIE_SECURE env var — set to "true" when behind a TLS reverse proxy.
-// Do NOT rely on NODE_ENV: the VPS runs NODE_ENV=production over HTTP (port 3000)
-// behind Docker, and secure:true on HTTP silently drops the cookie.
-const COOKIE_SECURE = process.env.COOKIE_SECURE === "true";
-
-function cookieOpts() {
-  return { httpOnly: true, path: COOKIE_PATH, sameSite: "lax" as const, maxAge: 60 * 60 * 2, secure: COOKIE_SECURE };
-}
+import { COOKIE_NAME, COOKIE_PATH, cookieOpts } from "./cookie.config";
 
 export const requireSession = createServerOnlyFn(async (): Promise<SessionPayload | null> => {
-  const token = getCookie(COOKIE);
+  const token = getCookie(COOKIE_NAME);
   const session = verifySession(token);
   // Sliding session: each authenticated request renews the 2h window, so an
   // active admin/owner is never logged out mid-work — 2h of inactivity is.
   if (session && token) {
     try {
-      setCookie(COOKIE, signSession(session), cookieOpts());
+      setCookie(COOKIE_NAME, signSession(session), cookieOpts());
     } catch { /* response context unavailable — ignore */ }
   }
   return session;
@@ -53,7 +42,7 @@ export const loginOwner = createServerFn({ method: "POST" })
       name: owner.name,
       restaurantId: owner.restaurantId,
     });
-    setCookie(COOKIE, token, cookieOpts());
+    setCookie(COOKIE_NAME, token, cookieOpts());
     return { success: true };
   });
 
@@ -75,7 +64,7 @@ export const loginStaff = createServerFn({ method: "POST" })
       restaurantId: staff.restaurantId,
       staffRole: staff.role,
     });
-    setCookie(COOKIE, token, cookieOpts());
+    setCookie(COOKIE_NAME, token, cookieOpts());
     return { success: true };
   });
 
@@ -97,12 +86,12 @@ export const loginAdmin = createServerFn({ method: "POST" })
       adminRole: (admin.role as "super" | "admin") ?? "admin",
       permissions: (admin.permissions as string[]) ?? [],
     });
-    setCookie(COOKIE, token, cookieOpts());
+    setCookie(COOKIE_NAME, token, cookieOpts());
     return { success: true };
   });
 
 export const logout = createServerFn({ method: "POST" }).handler(async () => {
-  deleteCookie(COOKIE, { path: COOKIE_PATH });
+  deleteCookie(COOKIE_NAME, { path: COOKIE_PATH });
   return { success: true };
 });
 

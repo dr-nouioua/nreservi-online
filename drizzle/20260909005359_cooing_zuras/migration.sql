@@ -1,0 +1,1 @@
+ALTER TABLE "admin_users" ADD COLUMN "analytics_categories" jsonb DEFAULT '[]' NOT NULL;

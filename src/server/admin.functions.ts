@@ -7,6 +7,7 @@ import { appendSubscriptionHistory, syncExpiredSubscriptionsInternal } from "./s
 import { computeSubscriptionStatus, daysUntil, SUBSCRIPTION_WARNING_DAYS } from "./subscriptions.shared.js";
 import { hashPassword } from "./crypto.server.js";
 import { signSession } from "./session.server.js";
+import { COOKIE_NAME, cookieOpts } from "./cookie.config.js";
 import { setCookie } from "@tanstack/react-start/server";
 
 async function requireAdmin() {
@@ -238,7 +239,7 @@ export const impersonateRestaurant = createServerFn({ method: "POST" })
       name: `${owner.name} (support session)`,
       restaurantId: owner.restaurantId,
     });
-    setCookie("rsv_session", token, { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 });
+    setCookie(COOKIE_NAME, token, cookieOpts(60 * 60));
     await logAdmin("restaurant.impersonate", String(data.restaurantId));
     return { success: true };
   });
@@ -254,6 +255,7 @@ export const listAdmins = createServerFn({ method: "GET" }).handler(async () => 
       email: adminUsers.email,
       adminRole: adminUsers.role,
       permissions: adminUsers.permissions,
+      analyticsCategories: adminUsers.analyticsCategories,
       createdAt: adminUsers.createdAt,
     })
     .from(adminUsers)
@@ -291,15 +293,17 @@ export const createAdmin = createServerFn({ method: "POST" })
   });
 
 export const updateAdminAccess = createServerFn({ method: "POST" })
-  .inputValidator((data: { id: number; permissions: string[] }) => data)
+  .inputValidator((data: { id: number; permissions: string[]; analyticsCategories?: string[] }) => data)
   .handler(async ({ data }) => {
     const session = await requireAdmin();
     if (session.adminRole !== "super") return { error: "Seul le super administrateur peut modifier les privilèges." };
     if (data.id === session.id) return { error: "Vous ne pouvez pas modifier vos propres privilèges." };
     const validModules = new Set(["onboard", "subscriptions", "emails", "ads", "mail"]);
     const permissions = (data.permissions ?? []).filter((p) => validModules.has(p));
-    await db.update(adminUsers).set({ permissions }).where(eq(adminUsers.id, data.id));
-    await logAdmin("admin.permissions", `admin #${data.id} : [${permissions.join(", ")}]`);
+    const validCategories = new Set(["restaurant", "beauty_salon", "spa", "football_pitch", "car_rental", "barbershop"]);
+    const analyticsCategories = (data.analyticsCategories ?? []).filter((c) => validCategories.has(c));
+    await db.update(adminUsers).set({ permissions, analyticsCategories }).where(eq(adminUsers.id, data.id));
+    await logAdmin("admin.permissions", `admin #${data.id} : modules=[${permissions.join(", ")}] categories=[${analyticsCategories.join(", ")}]`);
     return { success: true as const };
   });
 
