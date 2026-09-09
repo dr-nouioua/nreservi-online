@@ -475,7 +475,7 @@ function OwnerReservationsBoard() {
       </div>
       {hasTables ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-          {overview.areas.map((area: any) => {
+          {[...overview.areas].sort((a: any, b: any) => a.name.localeCompare(b.name)).map((area: any) => {
             const areaTables = overview.tables.filter((t: any) => t.areaId === area.id)
             const areaTableIds = new Set(areaTables.map((t: any) => t.id))
             const todayRes = reservations.filter((r) => r.date === today && areaTableIds.has(r.tableId) && ['seated', 'confirmed'].includes(r.status))
@@ -518,10 +518,12 @@ function OwnerReservationsBoard() {
           for (const r of todayRes) {
             if (r.areaId) resCountByArea.set(r.areaId, (resCountByArea.get(r.areaId) ?? 0) + 1)
           }
+          const sortedAreas = [...overview.areas].sort((a: any, b: any) => a.name.localeCompare(b.name))
           return (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-              {overview.areas.map((area: any) => {
-                const res = todayRes.find((r) => r.areaId === area.id)
+              {sortedAreas.map((area: any) => {
+                const areaRes = todayRes.filter((r) => r.areaId === area.id).sort((a: any, b: any) => a.time.localeCompare(b.time))
+                const res = areaRes[0] ?? null
                 const count = resCountByArea.get(area.id) ?? 0
                 const planColor: Record<string, string> = {
                   confirmed: 'bg-blue-500',

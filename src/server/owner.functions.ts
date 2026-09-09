@@ -478,6 +478,17 @@ export const deleteArea = createServerFn({ method: "POST" })
     if (tableCount.length > 0) {
       return { error: "Supprimez d'abord les tables de cet espace." };
     }
+    // Cancel active reservations for this area before deleting
+    await db
+      .update(reservations)
+      .set({ status: 'cancelled', updatedAt: new Date() })
+      .where(
+        and(
+          eq(reservations.areaId, data.id),
+          eq(reservations.restaurantId, restaurantId),
+          inArray(reservations.status, ['confirmed', 'seated', 'pending']),
+        )
+      );
     await db.delete(areas).where(and(eq(areas.id, data.id), eq(areas.restaurantId, restaurantId)));
     return { success: true };
   });
