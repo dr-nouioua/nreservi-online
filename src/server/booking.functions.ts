@@ -283,8 +283,13 @@ export const createReservation = createServerFn({ method: "POST" })
         tableId = table.id;
         areaId = table.areaId;
       } else {
-        // Non-restaurant: use area if provided
-        areaId = data.areaId ?? null;
+        // Non-restaurant: use area if provided, otherwise auto-assign first area
+        if (data.areaId) {
+          areaId = data.areaId;
+        } else {
+          const [firstArea] = await tx.select({ id: areas.id }).from(areas).where(eq(areas.restaurantId, data.restaurantId)).limit(1);
+          areaId = firstArea?.id ?? null;
+        }
       }
 
       // Baby seats only if the restaurant offers them; hard-capped at 4.

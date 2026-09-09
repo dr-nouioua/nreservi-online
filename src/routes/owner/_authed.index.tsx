@@ -502,30 +502,36 @@ function OwnerReservationsBoard() {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-          {overview.areas.map((area: any) => {
-            const res = reservations.find((r) => r.areaId === area.id && r.date === today && ['seated', 'confirmed'].includes(r.status))
-            const planColor: Record<string, string> = {
-              confirmed: 'bg-blue-500',
-              seated: 'bg-emerald-500',
-            }
-            const color = res ? planColor[res.status] ?? 'bg-stone-400' : 'bg-white border-2 border-dashed border-stone-300 text-stone-400 dark:bg-stone-900 dark:border-stone-600 dark:text-stone-500'
-            return (
-              <div
-                key={area.id}
-                title={res ? `${res.guestName} — ${STATUS_LABELS_FR[res.status] ?? res.status}` : 'Libre'}
-                className={`rounded-xl border-2 ${color} ${res ? 'text-white border-transparent' : 'border-dashed border-stone-300 dark:border-stone-600'} p-4 flex flex-col items-center justify-center min-h-[80px]`}
-              >
-                <span className="font-semibold text-sm">{area.name}</span>
-                {res ? (
-                  <span className="text-xs mt-1 opacity-90">{res.guestName} · {res.time.slice(0, 5)}</span>
-                ) : (
-                  <span className="text-xs mt-1 opacity-60">Libre</span>
-                )}
-              </div>
-            )
-          })}
-        </div>
+        (() => {
+          const todayRes = reservations.filter((r) => r.date === today && ['seated', 'confirmed'].includes(r.status))
+          const bookedAreaIds = new Set(todayRes.map((r) => r.areaId).filter(Boolean))
+          return (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+              {overview.areas.map((area: any) => {
+                const res = todayRes.find((r) => r.areaId === area.id)
+                const planColor: Record<string, string> = {
+                  confirmed: 'bg-blue-500',
+                  seated: 'bg-emerald-500',
+                }
+                const color = res ? planColor[res.status] ?? 'bg-stone-400' : 'bg-white border-2 border-dashed border-stone-300 text-stone-400 dark:bg-stone-900 dark:border-stone-600 dark:text-stone-500'
+                return (
+                  <div
+                    key={area.id}
+                    title={res ? `${res.guestName} — ${STATUS_LABELS_FR[res.status] ?? res.status}` : 'Libre'}
+                    className={`rounded-xl border-2 ${color} ${res ? 'text-white border-transparent' : 'border-dashed border-stone-300 dark:border-stone-600'} p-4 flex flex-col items-center justify-center min-h-[80px]`}
+                  >
+                    <span className="font-semibold text-sm">{area.name}</span>
+                    {res ? (
+                      <span className="text-xs mt-1 opacity-90">{res.guestName} · {res.time.slice(0, 5)}</span>
+                    ) : (
+                      <span className="text-xs mt-1 opacity-60">Libre</span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })()
       )}
 
       {/* ---- Toasts ---- */}
