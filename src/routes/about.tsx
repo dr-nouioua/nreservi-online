@@ -30,18 +30,17 @@ type Package = {
   popular?: boolean
 }
 
-function SoccerBall({ className }: { className?: string }) {
+function FootballIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" fill="currentColor" fillOpacity="0.1" />
-      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z" />
-      <path d="M12 2c2.5 2.5 3.8 5.5 3.8 10s-1.3 7.5-3.8 10" />
-      <path d="M12 2c-2.5 2.5-3.8 5.5-3.8 10s1.3 7.5 3.8 10" />
-      <path d="M2 12h20" />
-      <path d="M4.5 5l3 3.5" />
-      <path d="M19.5 5l-3 3.5" />
-      <path d="M4.5 19l3-3.5" />
-      <path d="M19.5 19l-3-3.5" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 7l2.5 1.5v3L12 13l-2.5-1.5v-3z" />
+      <path d="M12 7V2" />
+      <path d="M14.5 8.5l4-2.5" />
+      <path d="M14.5 11.5l4 2.5" />
+      <path d="M12 13v5" />
+      <path d="M9.5 11.5l-4 2.5" />
+      <path d="M9.5 8.5l-4-2.5" />
     </svg>
   )
 }
@@ -81,7 +80,7 @@ function LandingPage() {
     { icon: UtensilsCrossed, label: 'Restaurants', color: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300', desc: 'Menus, photos, réservation en temps réel' },
     { icon: Scissors, label: 'Salons de beauté', color: 'bg-pink-100 text-pink-700 dark:bg-pink-500/15 dark:text-pink-300', desc: 'Coiffure, manucure, soins — planifiez vos rendez-vous' },
     { icon: Sparkles, label: 'Spa & Bien-être', color: 'bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300', desc: 'Hammam, massage, gommage — détente à portée de main' },
-    { icon: SoccerBall, label: 'Terrains de foot', color: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300', desc: '5v5, 6v6, 7v7 — réservez votre créneau' },
+    { icon: FootballIcon, label: 'Terrains de foot', color: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300', desc: '5v5, 6v6, 7v7 — réservez votre créneau' },
     { icon: Car, label: 'Location de voitures', color: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300', desc: 'Berline, SUV, utilitaire — louez en quelques clics' },
   ]
 

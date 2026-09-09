@@ -38,18 +38,17 @@ const STATUS_COLORS: Record<string, string> = {
   suspended: 'bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-400',
 }
 
-function SoccerBall({ className }: { className?: string }) {
+function FootballIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" fill="currentColor" fillOpacity="0.1" />
-      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z" />
-      <path d="M12 2c2.5 2.5 3.8 5.5 3.8 10s-1.3 7.5-3.8 10" />
-      <path d="M12 2c-2.5 2.5-3.8 5.5-3.8 10s1.3 7.5 3.8 10" />
-      <path d="M2 12h20" />
-      <path d="M4.5 5l3 3.5" />
-      <path d="M19.5 5l-3 3.5" />
-      <path d="M4.5 19l3-3.5" />
-      <path d="M19.5 19l-3-3.5" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 7l2.5 1.5v3L12 13l-2.5-1.5v-3z" />
+      <path d="M12 7V2" />
+      <path d="M14.5 8.5l4-2.5" />
+      <path d="M14.5 11.5l4 2.5" />
+      <path d="M12 13v5" />
+      <path d="M9.5 11.5l-4 2.5" />
+      <path d="M9.5 8.5l-4-2.5" />
     </svg>
   )
 }
@@ -67,7 +66,7 @@ const CATEGORY_ICONS: Record<string, typeof UtensilsCrossed> = {
   restaurant: UtensilsCrossed,
   beauty_salon: Scissors,
   spa: Sparkles,
-  football_pitch: SoccerBall,
+  football_pitch: FootballIcon,
   car_rental: Car,
   barbershop: Scissors,
 }
