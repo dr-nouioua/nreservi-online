@@ -2,10 +2,14 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import {
   ArrowRight,
+  Car,
   Check,
   Mail,
   Menu,
   Phone,
+  Scissors,
+  ShieldCheck,
+  Sparkles,
   Users,
   UtensilsCrossed,
   X,
@@ -25,6 +29,19 @@ type Package = {
   features?: string[]
   kind?: string
   popular?: boolean
+}
+
+function SoccerBall({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+      <path d="M2 12h20" />
+      <path d="m17.5 7.5-3.5 2.5 3.5 2.5" />
+      <path d="m6.5 7.5 3.5 2.5-3.5 2.5" />
+      <path d="m12 7.5v5" />
+    </svg>
+  )
 }
 
 function LandingPage() {
@@ -50,6 +67,14 @@ function LandingPage() {
 
   const subscriptions = content.packages.filter((p) => p.kind !== 'ads')
   const adsPackages = content.packages.filter((p) => p.kind === 'ads')
+
+  const categories = [
+    { icon: UtensilsCrossed, label: 'Restaurants', color: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300', desc: 'Menus, photos, réservation en temps réel' },
+    { icon: Scissors, label: 'Salons de beauté', color: 'bg-pink-100 text-pink-700 dark:bg-pink-500/15 dark:text-pink-300', desc: 'Coiffure, manucure, soins — planifiez vos rendez-vous' },
+    { icon: Sparkles, label: 'Spa & Bien-être', color: 'bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300', desc: 'Hammam, massage, gommage — détente à portée de main' },
+    { icon: SoccerBall, label: 'Terrains de foot', color: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300', desc: '5v5, 6v6, 7v7 — réservez votre créneau' },
+    { icon: Car, label: 'Location de voitures', color: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300', desc: 'Berline, SUV, utilitaire — louez en quelques clics' },
+  ]
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-950">
@@ -78,7 +103,7 @@ function LandingPage() {
               </a>
             ))}
             <Link to="/" className="mt-2 block rounded-lg px-3 py-2.5 text-sm font-medium text-lime-700 hover:bg-lime-50 dark:text-lime-300 dark:hover:bg-lime-500/10">
-              Réserver une table →
+              Explorer les établissements →
             </Link>
           </nav>
         )}
@@ -87,21 +112,21 @@ function LandingPage() {
       {/* ---- Hero ---- */}
       <section className="mx-auto max-w-6xl px-4 pt-14 pb-16 text-center sm:px-6">
         <p className="inline-flex items-center gap-1.5 rounded-full bg-lime-100 px-3 py-1 text-xs font-medium text-lime-800 dark:bg-lime-500/15 dark:text-lime-300">
-          🇩🇿 Solution 100 % algérienne
+          🇩🇿 Plateforme 100 % algérienne
         </p>
         <h1 className="mx-auto mt-5 max-w-3xl text-4xl font-bold tracking-tight text-stone-900 dark:text-stone-100 sm:text-5xl">
-          La réservation de table en ligne, <span className="text-lime-600 dark:text-lime-400">simple et accessible</span>
+          Réservez, planifiez, louez — <span className="text-lime-600 dark:text-lime-400">tout en un seul endroit</span>
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-lg text-stone-600 dark:text-stone-400">
-          nreservi.online connecte les restaurants et leurs clients : disponibilités en temps réel,
-          confirmation par WhatsApp et gestion complète pour les professionnels.
+          nreservi.online connecte les professionnels et leurs clients : restaurants, salons de beauté, spas,
+          terrains de sport et locations de voitures — disponibilités en temps réel, confirmation par WhatsApp.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link
             to="/"
             className="inline-flex items-center gap-2 rounded-lg bg-stone-950 px-5 py-3 text-sm font-medium text-white hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white"
           >
-            Réserver une table <ArrowRight className="h-4 w-4" />
+            Explorer les établissements <ArrowRight className="h-4 w-4" />
           </Link>
           <a
             href="#contact"
@@ -109,6 +134,23 @@ function LandingPage() {
           >
             Devenir partenaire
           </a>
+        </div>
+      </section>
+
+      {/* ---- Catégories ---- */}
+      <section className="mx-auto max-w-6xl px-4 pb-14 sm:px-6">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {categories.map((cat) => (
+            <div key={cat.label} className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900/40">
+              <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${cat.color}`}>
+                <cat.icon className="h-5 w-5" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">{cat.label}</p>
+                <p className="text-xs text-stone-500 dark:text-stone-400 leading-tight">{cat.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -124,24 +166,27 @@ function LandingPage() {
       <section id="solutions" className="scroll-mt-20 bg-white py-16 dark:bg-stone-900/40">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <h2 className="text-center text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl">Solutions</h2>
-          <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          <div className="mt-10 grid gap-6 lg:grid-cols-3">
+            {/* Pros */}
             <div className="rounded-2xl border border-stone-200 bg-stone-50 p-7 dark:border-stone-800 dark:bg-stone-950/40">
               <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-lime-100 dark:bg-lime-500/15">
                 <UtensilsCrossed className="h-5 w-5 text-lime-700 dark:text-lime-300" />
               </span>
-              <h3 className="mt-4 text-xl font-bold text-stone-900 dark:text-stone-100">Pour les restaurants</h3>
+              <h3 className="mt-4 text-xl font-bold text-stone-900 dark:text-stone-100">Pour les professionnels</h3>
               <ul className="mt-4 space-y-2.5 text-sm text-stone-600 dark:text-stone-400">
                 {[
-                  'Page publique avec menu et photos',
-                  'Module de réservation en temps réel',
+                  'Page publique avec menu/photos/catalogue',
+                  'Réservation en temps réel (tables, créneaux, véhicules)',
                   'Confirmation et rappels par WhatsApp',
-                  'Plan de salle et statistiques',
+                  'Tableau de bord multi-jours avec statistiques',
                   'Campagnes marketing ciblées',
+                  'Gestion du menu, des stocks, des prix',
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-lime-600 dark:text-lime-400" /> {f}</li>
                 ))}
               </ul>
             </div>
+            {/* Clients */}
             <div className="rounded-2xl border border-stone-200 bg-stone-50 p-7 dark:border-stone-800 dark:bg-stone-950/40">
               <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-stone-200 dark:bg-stone-800">
                 <Users className="h-5 w-5 text-stone-600 dark:text-stone-300" />
@@ -149,11 +194,30 @@ function LandingPage() {
               <h3 className="mt-4 text-xl font-bold text-stone-900 dark:text-stone-100">Pour les clients</h3>
               <ul className="mt-4 space-y-2.5 text-sm text-stone-600 dark:text-stone-400">
                 {[
-                  'Recherche par ville et type de cuisine',
+                  'Recherche par ville, catégorie et type',
                   'Réservation en quelques secondes, sans compte',
                   'Confirmation immédiate par WhatsApp',
                   'Gestion de ses réservations à tout moment',
-                  'Options : chaises bébé, demandes spéciales',
+                  'Tous les services : restaurant, soins, sport, voiture',
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-lime-600 dark:text-lime-400" /> {f}</li>
+                ))}
+              </ul>
+            </div>
+            {/* Admin */}
+            <div className="rounded-2xl border border-stone-200 bg-stone-50 p-7 dark:border-stone-800 dark:bg-stone-950/40">
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-stone-200 dark:bg-stone-800">
+                <ShieldCheck className="h-5 w-5 text-stone-600 dark:text-stone-300" />
+              </span>
+              <h3 className="mt-4 text-xl font-bold text-stone-900 dark:text-stone-100">Pour l'administration</h3>
+              <ul className="mt-4 space-y-2.5 text-sm text-stone-600 dark:text-stone-400">
+                {[
+                  "Vue d'ensemble multi-établissements",
+                  'Contrôle des accès par catégorie et par module',
+                  'Journal d\'activité complet',
+                  'Onboarding en un clic d\'un nouvel établissement',
+                  'Gestion des abonnements et facturation',
+                  'Accès support direct à tout compte',
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-lime-600 dark:text-lime-400" /> {f}</li>
                 ))}
@@ -262,9 +326,10 @@ function LandingPage() {
             © {new Date().getFullYear()} nreservi.online — Tous droits réservés.{' '}
             <Link to="/terms" className="underline hover:text-stone-800 dark:hover:text-stone-200">Conditions générales</Link>
           </p>
-          <div className="flex gap-4 text-xs text-stone-400">
-            <Link to="/" className="hover:text-stone-600 dark:hover:text-stone-300">Réserver une table</Link>
+          <div className="flex flex-wrap justify-center gap-4 text-xs text-stone-400">
+            <Link to="/" className="hover:text-stone-600 dark:hover:text-stone-300">Explorer</Link>
             <Link to="/owner/login" className="hover:text-stone-600 dark:hover:text-stone-300">Espace professionnel</Link>
+            <Link to="/3991/login" className="hover:text-stone-600 dark:hover:text-stone-300">Administration</Link>
           </div>
         </div>
       </footer>
