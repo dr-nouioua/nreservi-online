@@ -133,6 +133,18 @@ export const getAvailability = createServerFn({ method: "GET" })
       }
     }
 
+    // Filter out past slots for today
+    const todayStr = new Date().toISOString().slice(0, 10);
+    if (data.date === todayStr) {
+      const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
+      const filteredSlots = allSlots.filter((slot) => {
+        const [h, m] = slot.split(':').map(Number);
+        return h * 60 + m > nowMinutes;
+      });
+      allSlots.length = 0;
+      allSlots.push(...filteredSlots);
+    }
+
     // Football: filter terrains by format, check availability per terrain
     if (category === 'football_pitch' && data.format) {
       const matchingAreas = await db

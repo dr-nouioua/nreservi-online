@@ -524,6 +524,17 @@ export const deleteTable = createServerFn({ method: "POST" })
   .inputValidator((data: { id: number }) => data)
   .handler(async ({ data }) => {
     const restaurantId = await requirePremiumRestaurantId();
+    // Cancel active reservations for this table first
+    await db
+      .update(reservations)
+      .set({ status: 'cancelled', updatedAt: new Date() })
+      .where(
+        and(
+          eq(reservations.tableId, data.id),
+          eq(reservations.restaurantId, restaurantId),
+          inArray(reservations.status, ['confirmed', 'seated', 'pending']),
+        )
+      );
     await db.delete(tables).where(and(eq(tables.id, data.id), eq(tables.restaurantId, restaurantId)));
     return { success: true };
   });
