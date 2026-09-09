@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { Baby, CalendarDays, Car, CheckCircle2, ChevronDown, ImagePlus, MapPin, Sparkles, Users, UtensilsCrossed } from 'lucide-react'
+import { Baby, CalendarDays, Car, CheckCircle2, ChevronDown, ImagePlus, MapPin, Scissors, Sparkles, Users, UtensilsCrossed } from 'lucide-react'
 import { getRestaurantBySlug, getAvailability, createReservation } from '../server/booking.functions'
 import { EVENT_THEMES } from '../services/event-themes'
 import { formatPriceDA } from '../services/format'
