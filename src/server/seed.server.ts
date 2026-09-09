@@ -254,88 +254,153 @@ export async function ensureSeeded() {
     return r;
   };
 
+  // ── Restaurants ──────────────────────────────────────────────────────
   await seedRestaurant({
-    slug: "the-olive-table",
-    name: "The Olive Table",
-    city: "Austin",
-    cuisine: "Mediterranean",
-    avgTicket: "42.00",
-    ownerEmail: "owner@olivetable.dev",
-    coverImageUrl: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1400&q=80",
-    logoUrl: "https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=300&q=80",
+    slug: "le-17-corner",
+    name: "Le 17 Corner",
+    city: "Algiers",
+    cuisine: "Cuisine algérienne, Pizza, Grillades",
+    avgTicket: "18.00",
+    ownerEmail: "owner@le17corner.dev",
+    coverImageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
+    logoUrl: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=300&q=80",
   });
 
   await seedRestaurant({
-    slug: "sakura-house",
-    name: "Sakura House",
-    city: "Seattle",
-    cuisine: "Japanese",
-    avgTicket: "55.00",
-    ownerEmail: "owner@sakurahouse.dev",
-    coverImageUrl: "https://images.unsplash.com/photo-1617196034796-73dfa7b1fd56?auto=format&fit=crop&w=1400&q=80",
-    logoUrl: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=300&q=80",
+    slug: "la-villa-constantine",
+    name: "La Villa",
+    city: "Constantine",
+    cuisine: "Cuisine française, Méditerranéen",
+    avgTicket: "32.00",
+    ownerEmail: "owner@lavilla.dev",
+    coverImageUrl: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1400&q=80",
+    logoUrl: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=300&q=80",
   });
 
+  // ── Beauty Salons ───────────────────────────────────────────────────
   await seedRestaurant({
     slug: "beauty-paradise",
     name: "Beauty Paradise",
     category: "beauty_salon",
     city: "Algiers",
-    cuisine: "Coiffure, Manucure, Soins",
-    avgTicket: "35.00",
+    cuisine: "Coiffure, Manucure, Soins du visage",
+    avgTicket: "25.00",
     ownerEmail: "owner@beautyparadise.dev",
     coverImageUrl: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1400&q=80",
     logoUrl: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=300&q=80",
   });
 
   await seedRestaurant({
+    slug: "salon-elegance",
+    name: "Salon Élégance",
+    category: "beauty_salon",
+    city: "Annaba",
+    cuisine: "Coiffure, Barbe, Coloration",
+    avgTicket: "20.00",
+    ownerEmail: "owner@salonelegance.dev",
+    coverImageUrl: "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=1400&q=80",
+    logoUrl: "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=300&q=80",
+  });
+
+  // ── Spas ────────────────────────────────────────────────────────────
+  await seedRestaurant({
     slug: "spa-serenity",
     name: "Spa Sérénité",
     category: "spa",
     city: "Oran",
     cuisine: "Massage, Hammam, Soins du corps",
-    avgTicket: "60.00",
+    avgTicket: "45.00",
     ownerEmail: "owner@spaserenite.dev",
     coverImageUrl: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1400&q=80",
     logoUrl: "https://images.unsplash.com/photo-1540555700478-4be289fbec6d?auto=format&fit=crop&w=300&q=80",
   });
 
   await seedRestaurant({
+    slug: "hammam-el-baraka",
+    name: "Hammam El Baraka",
+    category: "spa",
+    city: "Blida",
+    cuisine: "Hammam traditionnel, Gommage, Massage",
+    avgTicket: "15.00",
+    ownerEmail: "owner@hammambaraka.dev",
+    coverImageUrl: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=1400&q=80",
+    logoUrl: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=300&q=80",
+  });
+
+  // ── Football Pitches ────────────────────────────────────────────────
+  await seedRestaurant({
     slug: "terrain-goal",
     name: "Terrain Goal Arena",
     category: "football_pitch",
     city: "Algiers",
     cuisine: "5v5 Synthétique, 6v6, 7v7 Indoor",
-    avgTicket: "25.00",
+    avgTicket: "20.00",
     ownerEmail: "owner@terraingoal.dev",
     coverImageUrl: "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&w=1400&q=80",
     logoUrl: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?auto=format&fit=crop&w=300&q=80",
   });
 
   await seedRestaurant({
+    slug: "football-park5",
+    name: "Football Park 5v5",
+    category: "football_pitch",
+    city: "Oran",
+    cuisine: "5v5 Gazon synthétique, Éclairé",
+    avgTicket: "18.00",
+    ownerEmail: "owner@footballpark5.dev",
+    coverImageUrl: "https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&w=1400&q=80",
+    logoUrl: "https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&w=300&q=80",
+  });
+
+  await seedRestaurant({
+    slug: "complexe-sportif-constantine",
+    name: "Complexe Sportif Constantine",
+    category: "football_pitch",
+    city: "Constantine",
+    cuisine: "7v7 Extérieur, 5v5 Couvert",
+    avgTicket: "22.00",
+    ownerEmail: "owner@complexeconstantine.dev",
+    coverImageUrl: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1400&q=80",
+    logoUrl: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80",
+  });
+
+  // ── Car Rentals ─────────────────────────────────────────────────────
+  await seedRestaurant({
     slug: "rent-drive",
     name: "Rent & Drive Algérie",
     category: "car_rental",
     city: "Algiers",
     cuisine: "Berline, SUV, Utilitaire",
-    avgTicket: "40.00",
+    avgTicket: "35.00",
     ownerEmail: "owner@rentdrive.dev",
     coverImageUrl: "https://images.unsplash.com/photo-1449965408869-ebd3fee4656e?auto=format&fit=crop&w=1400&q=80",
     logoUrl: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=300&q=80",
   });
 
+  await seedRestaurant({
+    slug: "location-auto-plus",
+    name: "Location Auto Plus",
+    category: "car_rental",
+    city: "Oran",
+    cuisine: "Citadine, Berline, SUV 4x4",
+    avgTicket: "30.00",
+    ownerEmail: "owner@locationautoplus.dev",
+    coverImageUrl: "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1400&q=80",
+    logoUrl: "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=300&q=80",
+  });
+
   // A restaurant awaiting super-admin approval, to demonstrate onboarding workflow
   await db.insert(restaurants).values({
-    slug: "casa-verde",
-    name: "Casa Verde",
-    city: "Miami",
-    cuisine: "Latin American",
-    address: "88 Ocean Drive, Miami",
-    contactEmail: "owner@casaverde.dev",
-    contactPhone: "+1 555 0200",
+    slug: "cafe-dz-annaba",
+    name: "Café DZ Annaba",
+    city: "Annaba",
+    cuisine: "Café, Pâtisserie, Petit-déjeuner",
+    address: "14 Rue Didouche Mourad, Annaba",
+    contactEmail: "owner@cafedz.dev",
+    contactPhone: "+213 38 86 12 34",
     whatsappNumber: null,
-    description: "New applicant awaiting onboarding approval.",
-    avgTicketPrice: "38.00",
+    description: "Nouveau café en attente de validation par l'administration.",
+    avgTicketPrice: "8.00",
     status: "pending",
     subscriptionTier: "basic",
     openingHours: hours,
