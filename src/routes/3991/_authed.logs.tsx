@@ -13,10 +13,10 @@ export const Route = createFileRoute('/3991/_authed/logs')({
 type LogRow = Awaited<ReturnType<typeof listAdminLogs>>[number]
 
 const ACTION_LABELS: Record<string, string> = {
-  'restaurant.approve': 'Restaurant validé',
-  'restaurant.suspend': 'Restaurant suspendu',
-  'restaurant.delete': 'Restaurant supprimé',
-  'restaurant.onboard': 'Restaurant créé',
+  'restaurant.approve': 'Établissement validé',
+  'restaurant.suspend': 'Établissement suspendu',
+  'restaurant.delete': 'Établissement supprimé',
+  'restaurant.onboard': 'Établissement créé',
   'restaurant.impersonate': 'Accès support ouvert',
   'subscription.tier': 'Formule modifiée',
   'subscription.dates': 'Période modifiée',

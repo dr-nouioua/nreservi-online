@@ -46,7 +46,7 @@ export const getPlatformAnalytics = createServerFn({ method: "GET" }).handler(as
   const c = sql<number>`count(*)::int`;
   // Aggregated in SQL — scales to millions of reservations.
   const [restRows, countRows] = await Promise.all([
-    db.select({ id: restaurants.id, name: restaurants.name, status: restaurants.status }).from(restaurants).orderBy(restaurants.id),
+    db.select({ id: restaurants.id, name: restaurants.name, status: restaurants.status, category: restaurants.category }).from(restaurants).orderBy(restaurants.id),
     db
       .select({ rid: reservations.restaurantId, c })
       .from(reservations)
@@ -55,19 +55,29 @@ export const getPlatformAnalytics = createServerFn({ method: "GET" }).handler(as
 
   const countMap = new Map(countRows.map((r) => [r.rid, r.c]));
   const byRestaurant: Record<string, number> = {};
+  const byCategory: Record<string, number> = {};
   let totalBookings = 0;
   for (const r of restRows) {
     const n = countMap.get(r.id) ?? 0;
     byRestaurant[r.name] = n;
+    byCategory[r.category ?? 'restaurant'] = (byCategory[r.category ?? 'restaurant'] ?? 0) + n;
     totalBookings += n;
   }
 
+  const catCounts: Record<string, number> = {};
+  for (const r of restRows) {
+    const cat = r.category ?? 'restaurant';
+    catCounts[cat] = (catCounts[cat] ?? 0) + 1;
+  }
+
   return {
-    totalRestaurants: restRows.length,
-    activeRestaurants: restRows.filter((r) => r.status === "active").length,
-    pendingRestaurants: restRows.filter((r) => r.status === "pending").length,
+    totalEstablishments: restRows.length,
+    activeEstablishments: restRows.filter((r) => r.status === "active").length,
+    pendingEstablishments: restRows.filter((r) => r.status === "pending").length,
     totalBookings,
     byRestaurant,
+    byCategory,
+    catCounts,
   };
 });
 

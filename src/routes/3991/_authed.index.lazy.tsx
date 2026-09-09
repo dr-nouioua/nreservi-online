@@ -10,7 +10,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
-import { Building2, Clock, Trash2, TrendingUp, UserCheck, Users } from 'lucide-react'
+import { Building2, Clock, Trash2, TrendingUp, UserCheck, Users, Car, Scissors, Sparkles, Timer, UtensilsCrossed } from 'lucide-react'
 import {
   listAllRestaurants,
   getPlatformAnalytics,
@@ -38,6 +38,46 @@ const STATUS_COLORS: Record<string, string> = {
   suspended: 'bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-400',
 }
 
+function SoccerBall({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+      <path d="M2 12h20" />
+      <path d="m17.5 7.5-3.5 2.5 3.5 2.5" />
+      <path d="m6.5 7.5 3.5 2.5-3.5 2.5" />
+      <path d="m12 7.5v5" />
+    </svg>
+  )
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  restaurant: 'Restaurant',
+  beauty_salon: 'Salon',
+  spa: 'Spa',
+  football_pitch: 'Terrain',
+  car_rental: 'Location',
+  barbershop: 'Barbier',
+}
+
+const CATEGORY_ICONS: Record<string, typeof UtensilsCrossed> = {
+  restaurant: UtensilsCrossed,
+  beauty_salon: Scissors,
+  spa: Sparkles,
+  football_pitch: SoccerBall,
+  car_rental: Car,
+  barbershop: Scissors,
+}
+
+const CATEGORY_COLORS: Record<string, string> = {
+  restaurant: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
+  beauty_salon: 'bg-pink-100 text-pink-700 dark:bg-pink-500/15 dark:text-pink-300',
+  spa: 'bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300',
+  football_pitch: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300',
+  car_rental: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
+  barbershop: 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300',
+}
+
 function AdminIndex() {
   const initial = Route.useLoaderData()
   const [restaurants, setRestaurants] = useState(initial.restaurants)
@@ -57,7 +97,7 @@ function AdminIndex() {
   async function applyEventTheme() {
     const ids = eventScope === 'all' ? null : [...eventPicked]
     if (ids !== null && ids.length === 0) {
-      setEventMessage('Sélectionnez au moins un restaurant.')
+      setEventMessage('Sélectionnez au moins un établissement.')
       return
     }
     const result = await setEventThemeFlag({ data: { theme: eventTheme, ids } })
@@ -65,7 +105,7 @@ function AdminIndex() {
       setEventMessage(result.error)
       return
     }
-    setEventMessage(`Thème appliqué à ${result.updated} restaurant(s).`)
+    setEventMessage(`Thème appliqué à ${result.updated} établissement(s).`)
   }
 
   async function removeEventTheme() {
@@ -85,11 +125,19 @@ function AdminIndex() {
 
 
   const stats = [
-    { label: "Restaurants au total", value: analytics.totalRestaurants, icon: Building2 },
-    { label: "Active", value: analytics.activeRestaurants, icon: TrendingUp },
-    { label: "En attente de validation", value: analytics.pendingRestaurants, icon: Clock },
+    { label: "Établissements au total", value: analytics.totalEstablishments, icon: Building2 },
+    { label: "Actifs", value: analytics.activeEstablishments, icon: TrendingUp },
+    { label: "En attente de validation", value: analytics.pendingEstablishments, icon: Clock },
     { label: "Réservations totales", value: analytics.totalBookings, icon: Users },
   ]
+
+  const categoryStats = Object.entries(analytics.catCounts ?? {}).map(([cat, count]) => ({
+    category: cat,
+    label: CATEGORY_LABELS[cat] ?? cat,
+    count,
+    icon: CATEGORY_ICONS[cat] ?? UtensilsCrossed,
+    color: CATEGORY_COLORS[cat] ?? 'bg-stone-100 text-stone-600',
+  }))
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 w-full">
@@ -107,9 +155,26 @@ function AdminIndex() {
         ))}
       </div>
 
+      {/* Category breakdown */}
+      {categoryStats.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-4">
+          {categoryStats.map((cs) => (
+            <div key={cs.category} className={`rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-4 flex items-center gap-3`}>
+              <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${cs.color}`}>
+                <cs.icon className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-xs text-stone-500 dark:text-stone-400">{cs.label}s</p>
+                <p className="text-lg font-bold text-stone-900 dark:text-stone-100">{cs.count}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="mt-6">
         <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-6">
-          <h2 className="text-sm font-semibold text-stone-700 dark:text-stone-300 mb-4">Réservations par restaurant</h2>
+          <h2 className="text-sm font-semibold text-stone-700 dark:text-stone-300 mb-4">Réservations par établissement</h2>
           <Bar
             data={{
               labels: Object.keys(analytics.byRestaurant),
@@ -150,7 +215,7 @@ function AdminIndex() {
           </ul>
         )}
         {visits.perRestaurant.length === 0 && (
-          <p className="mt-3 text-xs text-stone-400">Aucune visite de page restaurant enregistrée sur la période.</p>
+          <p className="mt-3 text-xs text-stone-400">Aucune visite de page établissement enregistrée sur la période.</p>
         )}
       </div>
 
@@ -177,8 +242,8 @@ function AdminIndex() {
               onChange={(e) => setEventScope(e.target.value as 'all' | 'pick')}
               className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm dark:border-stone-700"
             >
-              <option value="all">Tous les restaurants</option>
-              <option value="pick">Restaurants spécifiques…</option>
+              <option value="all">Tous les établissements</option>
+              <option value="pick">Établissements spécifiques…</option>
             </select>
           </div>
         </div>
@@ -223,16 +288,17 @@ function AdminIndex() {
           </button>
         </div>
         <p className="text-xs text-stone-400">
-          Le thème ajoute un bandeau festif et des accents colorés sur la page publique des restaurants concernés.
+          Le thème ajoute un bandeau festif et des accents colorés sur la page publique des établissements concernés.
         </p>
       </div>
 
-      <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100 mt-8 mb-3">Restaurants</h2>
+      <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100 mt-8 mb-3">Établissements</h2>
       <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-stone-50 dark:bg-stone-950 text-stone-500 dark:text-stone-400 text-left">
             <tr>
               <th className="px-4 py-3">Nom</th>
+              <th className="px-4 py-3 hidden sm:table-cell">Catégorie</th>
               <th className="px-4 py-3">Ville</th>
               <th className="px-4 py-3">Statut</th>
               <th className="px-4 py-3">Formule</th>
@@ -240,9 +306,18 @@ function AdminIndex() {
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
-            {restaurants.map((r) => (
+            {restaurants.map((r) => {
+              const cat = r.category ?? 'restaurant'
+              const CatIcon = CATEGORY_ICONS[cat] ?? UtensilsCrossed
+              const catColor = CATEGORY_COLORS[cat] ?? 'bg-stone-100 text-stone-600'
+              return (
               <tr key={r.id}>
                 <td className="px-3 sm:px-4 py-3 font-medium">{r.name}</td>
+                <td className="px-3 sm:px-4 py-3 hidden sm:table-cell">
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${catColor}`}>
+                    <CatIcon className="h-3 w-3" /> {CATEGORY_LABELS[cat] ?? cat}
+                  </span>
+                </td>
                 <td className="px-3 sm:px-4 py-3 hidden sm:table-cell">{r.city}</td>
                 <td className="px-4 py-3">
                   <span className={`px-2 py-0.5 rounded-full text-[11px] ${STATUS_COLORS[r.status]}`}>{r.status}</span>
@@ -268,7 +343,7 @@ function AdminIndex() {
                       onClick={async () => {
                         // Double confirmation for an irreversible action.
                         if (!confirm(`Supprimer ${r.name} ? Toutes ses données seront définitivement supprimées.`)) return
-                        const typed = prompt(`ATTENTION — action irréversible.\nTapez le nom du restaurant pour confirmer :\n\n${r.name}`)
+                        const typed = prompt(`ATTENTION — action irréversible.\nTapez le nom de l'établissement pour confirmer :\n\n${r.name}`)
                         if (typed === null) return
                         if (typed.trim().toLowerCase() !== r.name.toLowerCase()) {
                           alert('Le nom saisi ne correspond pas — suppression annulée.')
@@ -289,7 +364,8 @@ function AdminIndex() {
                   </div>
                 </td>
               </tr>
-            ))}
+              )
+            })}
           </tbody>
         </table>
       </div>
