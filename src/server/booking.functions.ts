@@ -238,6 +238,12 @@ export const createReservation = createServerFn({ method: "POST" })
         .limit(1);
       if (existing) return { kind: "duplicate" as const };
 
+      // For non-restaurant categories (football, salon, spa, car rental, barbershop),
+      // there are no tables — check reservation time conflicts only.
+      const [restRow] = await tx.select({ category: restaurants.category }).from(restaurants).where(eq(restaurants.id, data.restaurantId));
+      const category = restRow?.category ?? 'restaurant';
+      const hasTables = category === 'restaurant';
+
       const dayRes = await tx
         .select()
         .from(reservations)
@@ -249,9 +255,12 @@ export const createReservation = createServerFn({ method: "POST" })
             ne(reservations.status, "no_show"),
           ),
         );
-      const bookedTableIds = new Set(dayRes.filter((r) => r.time.slice(0, 5) === data.time).map((r) => r.tableId));
-      const table = suitable.find((t) => !bookedTableIds.has(t.id));
-      if (!table) return { kind: "full" as const };
+
+      // For non-restaurants, block if same time slot is already booked
+      if (!hasTables) {
+        const bookedAtTime = dayRes.some((r) => r.time.slice(0, 5) === data.time);
+        if (bookedAtTime) return { kind: "full" as const };
+      }
 
       let [customer] = await tx.select().from(customers).where(eq(customers.phone, data.guestPhone));
       if (!customer) {
@@ -263,6 +272,21 @@ export const createReservation = createServerFn({ method: "POST" })
       const whatsappOptIn = customer.whatsappOptIn;
       const customerId = customer.id;
 
+      let tableId: number | null = null;
+      let areaId: number | null = null;
+
+      if (hasTables) {
+        // Restaurant: assign a specific table
+        const bookedTableIds = new Set(dayRes.filter((r) => r.time.slice(0, 5) === data.time).map((r) => r.tableId));
+        const table = suitable.find((t) => !bookedTableIds.has(t.id));
+        if (!table) return { kind: "full" as const };
+        tableId = table.id;
+        areaId = table.areaId;
+      } else {
+        // Non-restaurant: use area if provided
+        areaId = data.areaId ?? null;
+      }
+
       // Baby seats only if the restaurant offers them; hard-capped at 4.
       const babySeats = restaurant.babySeatAvailable
         ? Math.min(4, Math.max(0, Math.round(data.babySeats ?? 0)))
@@ -273,8 +297,8 @@ export const createReservation = createServerFn({ method: "POST" })
         .values({
           restaurantId: data.restaurantId,
           customerId: customer.id,
-          tableId: table.id,
-          areaId: table.areaId,
+          tableId,
+          areaId,
           guestName: data.guestName,
           guestPhone: data.guestPhone,
           partySize: data.partySize,
@@ -294,7 +318,7 @@ export const createReservation = createServerFn({ method: "POST" })
       return { error: "Vous avez déjà une réservation pour cette date. Une seule réservation par jour est autorisée." };
     }
     if (reservation.kind === "full") {
-      return { error: "Aucune table disponible à cette heure. Choisissez un autre horaire." };
+      return { error: "Ce créneau est déjà réservé. Choisissez un autre horaire." };
     }
     const reservationRecord = reservation.created;
 

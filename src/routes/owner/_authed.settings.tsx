@@ -377,6 +377,21 @@ function SettingsPage() {
             <option value={150}>2h30</option>
             <option value={180}>3 heures</option>
           </select>
+          <button
+            type="button"
+            onClick={async () => {
+              const result = await setSlotDuration({ data: { duration: slotDuration } })
+              if ('error' in result && result.error) {
+                setSaved(result.error)
+              } else {
+                setSaved('Créneau enregistré')
+              }
+              setTimeout(() => setSaved(null), 2000)
+            }}
+            className="rounded-lg bg-stone-900 px-4 py-2 text-sm text-white hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200"
+          >
+            Confirmer
+          </button>
         </div>
       </div>
 
