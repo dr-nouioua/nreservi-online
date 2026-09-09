@@ -478,17 +478,11 @@ export const deleteArea = createServerFn({ method: "POST" })
     if (tableCount.length > 0) {
       return { error: "Supprimez d'abord les tables de cet espace." };
     }
-    // Cancel active reservations for this area before deleting
+    // Nullify areaId on all reservations for this area (FK constraint)
     await db
       .update(reservations)
-      .set({ status: 'cancelled', updatedAt: new Date() })
-      .where(
-        and(
-          eq(reservations.areaId, data.id),
-          eq(reservations.restaurantId, restaurantId),
-          inArray(reservations.status, ['confirmed', 'seated', 'pending']),
-        )
-      );
+      .set({ areaId: null, updatedAt: new Date() })
+      .where(and(eq(reservations.areaId, data.id), eq(reservations.restaurantId, restaurantId)));
     await db.delete(areas).where(and(eq(areas.id, data.id), eq(areas.restaurantId, restaurantId)));
     return { success: true };
   });
@@ -524,17 +518,11 @@ export const deleteTable = createServerFn({ method: "POST" })
   .inputValidator((data: { id: number }) => data)
   .handler(async ({ data }) => {
     const restaurantId = await requirePremiumRestaurantId();
-    // Cancel active reservations for this table first
+    // Nullify tableId on all reservations for this table (FK constraint)
     await db
       .update(reservations)
-      .set({ status: 'cancelled', updatedAt: new Date() })
-      .where(
-        and(
-          eq(reservations.tableId, data.id),
-          eq(reservations.restaurantId, restaurantId),
-          inArray(reservations.status, ['confirmed', 'seated', 'pending']),
-        )
-      );
+      .set({ tableId: null, updatedAt: new Date() })
+      .where(and(eq(reservations.tableId, data.id), eq(reservations.restaurantId, restaurantId)));
     await db.delete(tables).where(and(eq(tables.id, data.id), eq(tables.restaurantId, restaurantId)));
     return { success: true };
   });
