@@ -88,7 +88,7 @@ export const getRestaurantBySlug = createServerFn({ method: "GET" })
   });
 
 export const getAvailability = createServerFn({ method: "GET" })
-  .inputValidator((data: { restaurantId: number; date: string; partySize: number }) => data)
+  .inputValidator((data: { restaurantId: number; date: string; partySize: number; format?: string }) => data)
   .handler(async ({ data }) => {
     // Expired / suspended / pending restaurants expose no slots at all.
     const [restaurantRow] = await db
@@ -133,7 +133,36 @@ export const getAvailability = createServerFn({ method: "GET" })
       }
     }
 
-    // For non-restaurant categories, there are no tables — check reservation conflicts only
+    // Football: filter terrains by format, check availability per terrain
+    if (category === 'football_pitch' && data.format) {
+      const matchingAreas = await db
+        .select()
+        .from(areas)
+        .where(and(eq(areas.restaurantId, data.restaurantId), eq(areas.format, data.format)));
+      const matchingAreaIds = new Set(matchingAreas.map((a) => a.id));
+
+      const dayRes = await db
+        .select()
+        .from(reservations)
+        .where(
+          and(
+            eq(reservations.restaurantId, data.restaurantId),
+            eq(reservations.date, data.date),
+            ne(reservations.status, "cancelled"),
+            ne(reservations.status, "no_show"),
+          ),
+        );
+
+      return allSlots.map((slot) => {
+        const bookedAreaIds = new Set(
+          dayRes.filter((r) => r.time.slice(0, 5) === slot && matchingAreaIds.has(r.areaId)).map((r) => r.areaId)
+        );
+        const availableCount = matchingAreas.filter((a) => !bookedAreaIds.has(a.id)).length;
+        return { time: slot, available: availableCount > 0, tableCount: availableCount };
+      });
+    }
+
+    // For non-restaurant categories (no format), there are no tables — check reservation conflicts only
     if (!hasTables) {
       const dayRes = await db
         .select()
@@ -190,6 +219,7 @@ export const createReservation = createServerFn({ method: "POST" })
       date: string;
       time: string;
       areaId?: number;
+      format?: string;
       specialRequests?: string;
       babySeats?: number;
     }) => data,
@@ -282,8 +312,20 @@ export const createReservation = createServerFn({ method: "POST" })
         if (!table) return { kind: "full" as const };
         tableId = table.id;
         areaId = table.areaId;
+      } else if (category === 'football_pitch' && data.format) {
+        // Football: find a terrain with matching format that's free at this time
+        const matchingAreas = await tx
+          .select()
+          .from(areas)
+          .where(and(eq(areas.restaurantId, data.restaurantId), eq(areas.format, data.format)));
+        const bookedAreaIds = new Set(
+          dayRes.filter((r) => r.time.slice(0, 5) === data.time && matchingAreas.some((a) => a.id === r.areaId)).map((r) => r.areaId)
+        );
+        const freeArea = matchingAreas.find((a) => !bookedAreaIds.has(a.id));
+        if (!freeArea) return { kind: "full" as const };
+        areaId = freeArea.id;
       } else {
-        // Non-restaurant: use area if provided, otherwise auto-assign first area
+        // Other non-restaurants: use area if provided, otherwise auto-assign first area
         if (data.areaId) {
           areaId = data.areaId;
         } else {

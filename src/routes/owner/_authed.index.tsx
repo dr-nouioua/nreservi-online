@@ -475,40 +475,54 @@ function OwnerReservationsBoard() {
       </div>
       {hasTables ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-          {overview.areas.map((area: any) => (
-            <div key={area.id} className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-3 sm:p-4">
-              <p className="text-sm font-medium text-stone-700 dark:text-stone-300 mb-3 truncate">{area.name}</p>
-              <div className="grid grid-cols-3 gap-2">
-                {overview.tables.filter((t: any) => t.areaId === area.id).map((t: any) => {
-                  const res = reservations.find((r) => r.tableId === t.id && r.date === today && ['seated', 'confirmed'].includes(r.status))
-                  const planColor: Record<string, string> = {
-                    confirmed: 'bg-blue-500',
-                    seated: 'bg-emerald-500',
-                  }
-                  const color = res ? planColor[res.status] ?? 'bg-stone-400' : 'bg-white border-2 border-dashed border-stone-300 text-stone-400 dark:bg-stone-900 dark:border-stone-600 dark:text-stone-500'
-                  return (
-                    <div
-                      key={t.id}
-                      title={res ? `${res.guestName} — ${STATUS_LABELS_FR[res.status] ?? res.status}` : 'Libre'}
-                      className={`aspect-square rounded-lg ${color} ${res ? 'text-white' : ''} text-xs flex flex-col items-center justify-center ${t.shape === 'round' ? 'rounded-full' : ''}`}
-                    >
-                      <span className="font-semibold">{t.label}</span>
-                      <span>{t.capacity}p</span>
-                    </div>
-                  )
-                })}
+          {overview.areas.map((area: any) => {
+            const areaTables = overview.tables.filter((t: any) => t.areaId === area.id)
+            const areaTableIds = new Set(areaTables.map((t: any) => t.id))
+            const todayRes = reservations.filter((r) => r.date === today && areaTableIds.has(r.tableId) && ['seated', 'confirmed'].includes(r.status))
+            return (
+              <div key={area.id} className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-3 sm:p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-medium text-stone-700 dark:text-stone-300 truncate">{area.name}</p>
+                  {todayRes.length > 0 && (
+                    <span className="inline-flex items-center justify-center h-5 min-w-[20px] rounded-full bg-blue-500 text-[11px] font-bold text-white px-1.5">{todayRes.length}</span>
+                  )}
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {areaTables.map((t: any) => {
+                    const res = todayRes.find((r) => r.tableId === t.id && ['seated', 'confirmed'].includes(r.status))
+                    const planColor: Record<string, string> = {
+                      confirmed: 'bg-blue-500',
+                      seated: 'bg-emerald-500',
+                    }
+                    const color = res ? planColor[res.status] ?? 'bg-stone-400' : 'bg-white border-2 border-dashed border-stone-300 text-stone-400 dark:bg-stone-900 dark:border-stone-600 dark:text-stone-500'
+                    return (
+                      <div
+                        key={t.id}
+                        title={res ? `${res.guestName} — ${STATUS_LABELS_FR[res.status] ?? res.status}` : 'Libre'}
+                        className={`aspect-square rounded-lg ${color} ${res ? 'text-white' : ''} text-xs flex flex-col items-center justify-center ${t.shape === 'round' ? 'rounded-full' : ''}`}
+                      >
+                        <span className="font-semibold">{t.label}</span>
+                        <span>{t.capacity}p</span>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       ) : (
         (() => {
           const todayRes = reservations.filter((r) => r.date === today && ['seated', 'confirmed'].includes(r.status))
-          const bookedAreaIds = new Set(todayRes.map((r) => r.areaId).filter(Boolean))
+          const resCountByArea = new Map<number, number>()
+          for (const r of todayRes) {
+            if (r.areaId) resCountByArea.set(r.areaId, (resCountByArea.get(r.areaId) ?? 0) + 1)
+          }
           return (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
               {overview.areas.map((area: any) => {
                 const res = todayRes.find((r) => r.areaId === area.id)
+                const count = resCountByArea.get(area.id) ?? 0
                 const planColor: Record<string, string> = {
                   confirmed: 'bg-blue-500',
                   seated: 'bg-emerald-500',
@@ -518,9 +532,13 @@ function OwnerReservationsBoard() {
                   <div
                     key={area.id}
                     title={res ? `${res.guestName} — ${STATUS_LABELS_FR[res.status] ?? res.status}` : 'Libre'}
-                    className={`rounded-xl border-2 ${color} ${res ? 'text-white border-transparent' : 'border-dashed border-stone-300 dark:border-stone-600'} p-4 flex flex-col items-center justify-center min-h-[80px]`}
+                    className={`relative rounded-xl border-2 ${color} ${res ? 'text-white border-transparent' : 'border-dashed border-stone-300 dark:border-stone-600'} p-4 flex flex-col items-center justify-center min-h-[80px]`}
                   >
+                    {count > 0 && (
+                      <span className="absolute -top-2 -right-2 inline-flex items-center justify-center h-5 min-w-[20px] rounded-full bg-blue-500 text-[11px] font-bold text-white px-1.5">{count}</span>
+                    )}
                     <span className="font-semibold text-sm">{area.name}</span>
+                    {area.format && <span className="text-xs opacity-70">{area.format}</span>}
                     {res ? (
                       <span className="text-xs mt-1 opacity-90">{res.guestName} · {res.time.slice(0, 5)}</span>
                     ) : (

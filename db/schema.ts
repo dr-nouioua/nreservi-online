@@ -91,7 +91,8 @@ export const staffUsers = pgTable("staff_users", {
 export const areas = pgTable("areas", {
   id: serial().primaryKey(),
   restaurantId: integer("restaurant_id").notNull().references(() => restaurants.id),
-  name: text("name").notNull(), // indoor, terrace, bar, private room
+  name: text("name").notNull(), // indoor, terrace, bar, private room / terrain 5v5 / poste A
+  format: text("format"), // football: '5v5', '6v6', '7v7' — null for non-football
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
   index("areas_restaurant_idx").on(table.restaurantId),

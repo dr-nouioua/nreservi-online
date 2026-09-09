@@ -45,6 +45,7 @@ function SettingsPage() {
   const isSalonOrSpa = category === 'beauty_salon' || category === 'spa'
   const showTables = category === 'restaurant'
   const [newAreaName, setNewAreaName] = useState('')
+  const [newAreaFormat, setNewAreaFormat] = useState('5v5')
   const [editingAreaId, setEditingAreaId] = useState<number | null>(null)
   const [areaName, setAreaName] = useState('')
   const [areaMessage, setAreaMessage] = useState<string | null>(null)
@@ -116,7 +117,7 @@ function SettingsPage() {
 
   async function createArea(e: React.FormEvent) {
     e.preventDefault()
-    await addArea({ data: { name: newAreaName } })
+    await addArea({ data: { name: newAreaName, format: isFootball ? newAreaFormat : undefined } })
     setNewAreaName('')
     refresh()
   }
@@ -321,7 +322,7 @@ function SettingsPage() {
                 ))
               ) : (
                 <li className="text-sm text-stone-500 dark:text-stone-400 italic">
-                  {isFootball ? 'Terrain de football' : (isSalonOrSpa || isBarbershop) ? 'Poste de travail' : isCarRental ? 'Véhicule' : ''}
+                  {isFootball ? `Terrain ${area.format ?? ''}` : (isSalonOrSpa || isBarbershop) ? 'Poste de travail' : isCarRental ? 'Véhicule' : ''}
                 </li>
               )}
             </ul>
@@ -330,6 +331,13 @@ function SettingsPage() {
 
         <form onSubmit={createArea} className="flex gap-2 pt-2">
           <input placeholder={isFootball ? 'Nom du terrain' : (isSalonOrSpa || isBarbershop) ? 'Nom du poste' : isCarRental ? 'Type de véhicule' : 'Nom du nouvel espace'} value={newAreaName} onChange={(e) => setNewAreaName(e.target.value)} className="flex-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm" />
+          {isFootball && (
+            <select value={newAreaFormat} onChange={(e) => setNewAreaFormat(e.target.value)} className="px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm">
+              <option value="5v5">5v5 (10 joueurs)</option>
+              <option value="6v6">6v6 (12 joueurs)</option>
+              <option value="7v7">7v7 (14 joueurs)</option>
+            </select>
+          )}
           <button className="flex items-center gap-1 rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"><Plus className="h-4 w-4" /> Ajouter</button>
         </form>
 

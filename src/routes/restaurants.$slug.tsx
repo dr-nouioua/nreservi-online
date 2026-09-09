@@ -119,7 +119,7 @@ function RestaurantPage() {
     setSelectedTime(null)
     setError(null)
     try {
-      const result = await getAvailability({ data: { restaurantId: restaurant.id, date, partySize } })
+      const result = await getAvailability({ data: { restaurantId: restaurant.id, date, partySize, format: isFootball ? (partySize === 10 ? '5v5' : partySize === 12 ? '6v6' : '7v7') : undefined } })
       setSlots(result)
     } finally {
       setLoadingSlots(false)
@@ -142,6 +142,7 @@ function RestaurantPage() {
           date,
           time: selectedTime,
           areaId,
+          format: isFootball ? (partySize === 10 ? '5v5' : partySize === 12 ? '6v6' : '7v7') : undefined,
           specialRequests,
         },
       })) as

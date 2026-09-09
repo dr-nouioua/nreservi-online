@@ -462,10 +462,10 @@ export const deleteArea = createServerFn({ method: "POST" })
   });
 
 export const addArea = createServerFn({ method: "POST" })
-  .inputValidator((data: { name: string }) => data)
+  .inputValidator((data: { name: string; format?: string }) => data)
   .handler(async ({ data }) => {
     const restaurantId = await requirePremiumRestaurantId();
-    const [area] = await db.insert(areas).values({ restaurantId, name: data.name }).returning();
+    const [area] = await db.insert(areas).values({ restaurantId, name: data.name, format: data.format ?? null }).returning();
     return area;
   });
 
