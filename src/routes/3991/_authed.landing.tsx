@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
-import { Plus, Save, Trash2 } from 'lucide-react'
+import { Plus, Save, Trash2, Eye, EyeOff } from 'lucide-react'
 import { getSiteContent, saveSiteContent } from '../../server/admin.functions'
 
 export const Route = createFileRoute('/3991/_authed/landing')({
@@ -13,24 +13,64 @@ export const Route = createFileRoute('/3991/_authed/landing')({
 })
 
 type PackageRow = { name: string; price: string; period?: string; features: string[]; kind: string; popular?: boolean }
-type Content = {
-  about: string
-  contactEmail: string
-  contactPhone: string
-  homeHeroImageUrl: string | null
-  packages: PackageRow[]
-}
+type SectionState = Record<string, any>
 
 function LandingEditorPage() {
-  const initial = Route.useLoaderData() as Content
+  const initial = Route.useLoaderData() as {
+    about: string
+    contactEmail: string
+    contactPhone: string
+    packages: PackageRow[]
+    sections: SectionState
+  }
+
   const [about, setAbout] = useState(initial.about)
   const [contactEmail, setContactEmail] = useState(initial.contactEmail)
   const [contactPhone, setContactPhone] = useState(initial.contactPhone)
   const [packages, setPackages] = useState<PackageRow[]>(
     (initial.packages as PackageRow[]).map((p) => ({ ...p, features: p.features ?? [] })),
   )
+  const [sections, setSections] = useState<SectionState>(initial.sections)
   const [message, setMessage] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+
+  function updateSection(path: string, value: any) {
+    setSections((prev) => {
+      const next = JSON.parse(JSON.stringify(prev))
+      const keys = path.split('.')
+      let obj: any = next
+      for (let i = 0; i < keys.length - 1; i++) {
+        obj[keys[i]] = obj[keys[i]] ?? {}
+        obj = obj[keys[i]]
+      }
+      obj[keys[keys.length - 1]] = value
+      return next
+    })
+  }
+
+  function getVisible(path: string): boolean {
+    return path.split('.').reduce((o: any, k) => o?.[k], sections)?.visible ?? false
+  }
+
+  function toggleVisible(path: string) {
+    updateSection(path + '.visible', !getVisible(path))
+  }
+
+  function updateSolutionItem(section: 'professionals' | 'clients' | 'admin', index: number, value: string) {
+    const items = [...(sections.solutions?.[section]?.items ?? [])]
+    items[index] = value
+    updateSection(`solutions.${section}.items`, items)
+  }
+
+  function addSolutionItem(section: 'professionals' | 'clients' | 'admin') {
+    const items = [...(sections.solutions?.[section]?.items ?? []), '']
+    updateSection(`solutions.${section}.items`, items)
+  }
+
+  function removeSolutionItem(section: 'professionals' | 'clients' | 'admin', index: number) {
+    const items = (sections.solutions?.[section]?.items ?? []).filter((_: string, i: number) => i !== index)
+    updateSection(`solutions.${section}.items`, items)
+  }
 
   function updatePackage(i: number, patch: Partial<PackageRow>) {
     setPackages(packages.map((p, idx) => (idx === i ? { ...p, ...patch } : p)))
@@ -40,7 +80,7 @@ function LandingEditorPage() {
     e.preventDefault()
     setSaving(true)
     const result = await saveSiteContent({
-      data: { about, contactEmail, contactPhone, packages },
+      data: { about, contactEmail, contactPhone, packages, sections },
     })
     setSaving(false)
     if ('error' in result && result.error) {
@@ -50,26 +90,111 @@ function LandingEditorPage() {
     setMessage('Page de présentation mise à jour.')
   }
 
+  function Toggle({ label, path }: { label: string; path: string }) {
+    const vis = getVisible(path)
+    return (
+      <button
+        type="button"
+        onClick={() => toggleVisible(path)}
+        className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+          vis
+            ? 'bg-lime-100 text-lime-700 dark:bg-lime-500/15 dark:text-lime-300'
+            : 'bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400'
+        }`}
+      >
+        {vis ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+        {label}
+      </button>
+    )
+  }
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
       <div>
         <p className="text-sm font-medium text-lime-300">Administration</p>
         <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Page de présentation</h1>
         <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
-          Contenu public de <a href="/about" target="_blank" className="underline">/about</a> : à propos, coordonnées et tarifs.
+          Contenu public de <a href="/about" target="_blank" className="underline">/about</a> : activez/désactivez les sections et éditez le contenu.
         </p>
       </div>
 
       <form onSubmit={save} className="space-y-6">
-        {/* À propos */}
-        <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-4 sm:p-6 space-y-3 shadow-sm">
-          <p className="font-semibold text-stone-900 dark:text-stone-100">À propos</p>
-          <textarea rows={4} value={about} onChange={(e) => setAbout(e.target.value)} className="w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm dark:border-stone-700" />
-        </div>
 
-        {/* Contact */}
-        <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-4 sm:p-6 space-y-3 shadow-sm">
-          <p className="font-semibold text-stone-900 dark:text-stone-100">Contact</p>
+        {/* ---- Hero ---- */}
+        <Card
+          title="Hero"
+          toggle={<Toggle label={getVisible('hero') ? 'Visible' : 'Masqué'} path="hero" />}
+        >
+          <Field label="Badge" value={sections.hero?.badge ?? ''} onChange={(v: string) => updateSection('hero.badge', v)} />
+          <Field label="Titre" value={sections.hero?.title ?? ''} onChange={(v: string) => updateSection('hero.title', v)} />
+          <Field label="Sous-titre" value={sections.hero?.subtitle ?? ''} onChange={(v: string) => updateSection('hero.subtitle', v)} />
+        </Card>
+
+        {/* ---- Catégories ---- */}
+        <Card
+          title="Catégories"
+          toggle={<Toggle label={getVisible('categories') ? 'Visible' : 'Masqué'} path="categories" />}
+        >
+          <p className="text-xs text-stone-400">Affiche la grille de catégories (Restaurants, Salons, Spa, Foot, Voitures).</p>
+        </Card>
+
+        {/* ---- À propos ---- */}
+        <Card
+          title="À propos"
+          toggle={<Toggle label={getVisible('about') ? 'Visible' : 'Masqué'} path="about" />}
+        >
+          <textarea rows={4} value={about} onChange={(e) => setAbout(e.target.value)} className="w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm dark:border-stone-700" />
+        </Card>
+
+        {/* ---- Solutions ---- */}
+        <Card
+          title="Solutions"
+          toggle={<Toggle label={getVisible('solutions') ? 'Visible' : 'Masqué'} path="solutions" />}
+        >
+          <p className="text-xs text-stone-400 mb-3">Trois colonnes modifiables. Chacune peut être activée indépendamment.</p>
+          {(['professionals', 'clients', 'admin'] as const).map((key) => (
+            <div key={key} className="rounded-lg border border-stone-200 p-4 space-y-2 dark:border-stone-800">
+              <div className="flex flex-wrap items-center gap-2">
+                <Toggle label={sections.solutions?.[key]?.visible !== false ? 'On' : 'Off'} path={`solutions.${key}`} />
+                <input
+                  value={sections.solutions?.[key]?.title ?? ''}
+                  onChange={(e) => updateSection(`solutions.${key}.title`, e.target.value)}
+                  placeholder={`Titre ${key}`}
+                  className="flex-1 min-w-[150px] rounded-lg border border-stone-300 px-3 py-1.5 text-sm dark:border-stone-700"
+                />
+              </div>
+              {(sections.solutions?.[key]?.items ?? []).map((item: string, i: number) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input
+                    value={item}
+                    onChange={(e) => updateSolutionItem(key, i, e.target.value)}
+                    className="flex-1 rounded-lg border border-stone-300 px-3 py-1.5 text-sm dark:border-stone-700"
+                  />
+                  <button type="button" onClick={() => removeSolutionItem(key, i)} className="rounded-md p-1.5 text-stone-400 hover:text-red-600 dark:hover:text-red-400">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+              <button type="button" onClick={() => addSolutionItem(key)} className="inline-flex items-center gap-1 text-xs text-stone-500 hover:text-stone-700 dark:hover:text-stone-300">
+                <Plus className="h-3 w-3" /> Ajouter
+              </button>
+            </div>
+          ))}
+        </Card>
+
+        {/* ---- Tarifs ---- */}
+        <Card
+          title="Tarifs"
+          toggle={<Toggle label={getVisible('tarifs') ? 'Visible' : 'Masqué'} path="tarifs" />}
+        >
+          <p className="text-xs text-stone-400">Affiche les formules d'abonnement et publicités (éditable ci-dessous).</p>
+        </Card>
+
+        {/* ---- Contact ---- */}
+        <Card
+          title="Contact"
+          toggle={<Toggle label={getVisible('contact') ? 'Visible' : 'Masqué'} path="contact" />}
+        >
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className="text-xs font-medium text-stone-500 dark:text-stone-400">E-mail public</label>
@@ -80,10 +205,9 @@ function LandingEditorPage() {
               <input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="+213 555 00 00 00" className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm dark:border-stone-700" />
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Image accueil */}
-        {/* Formules */}
+        {/* ---- Formules ---- */}
         <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-4 sm:p-6 space-y-4 shadow-sm">
           <p className="font-semibold text-stone-900 dark:text-stone-100">Formules & publicité</p>
           {packages.map((p, i) => (
@@ -107,7 +231,7 @@ function LandingEditorPage() {
               />
               <div className="flex flex-wrap items-center gap-4">
                 <select value={p.kind} onChange={(e) => updatePackage(i, { kind: e.target.value })} className="rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700">
-                  <option value="subscription">Abonnement restaurant</option>
+                  <option value="subscription">Abonnement établissement</option>
                   <option value="ads">Publicité (marque)</option>
                 </select>
                 <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-stone-600 dark:text-stone-300">
@@ -133,6 +257,27 @@ function LandingEditorPage() {
           <Save className="h-4 w-4" /> {saving ? 'Enregistrement…' : 'Enregistrer'}
         </button>
       </form>
+    </div>
+  )
+}
+
+function Card({ title, toggle, children }: { title: string; toggle: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-4 sm:p-6 space-y-3 shadow-sm">
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-semibold text-stone-900 dark:text-stone-100">{title}</p>
+        {toggle}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <label className="text-xs font-medium text-stone-500 dark:text-stone-400">{label}</label>
+      <input value={value} onChange={(e) => onChange(e.target.value)} className="mt-1 w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
     </div>
   )
 }

@@ -839,6 +839,55 @@ export const listAdminLogs = createServerFn({ method: "GET" }).handler(async () 
 
 // ---------- Public landing page content (/about) ----------
 
+const DEFAULT_SITE_CONTENT = {
+  about: "nreservi.online est une solution digitale algérienne qui connecte les professionnels et leurs clients : restaurants, salons de beauté, spas, terrains de sport et locations de voitures. Réservation en temps réel, confirmation par WhatsApp, gestion complète pour les professionnels.",
+  sections: {
+    hero: { visible: true, title: "Réservez, planifiez, louez — tout en un seul endroit", subtitle: "nreservi.online connecte les professionnels et leurs clients : disponibilités en temps réel, confirmation par WhatsApp.", badge: "🇩🇿 Plateforme 100 % algérienne" },
+    categories: { visible: true },
+    about: { visible: true },
+    solutions: {
+      visible: true,
+      professionals: {
+        visible: true,
+        title: "Pour les professionnels",
+        items: [
+          "Page publique avec menu/photos/catalogue",
+          "Réservation en temps réel (tables, créneaux, véhicules)",
+          "Confirmation et rappels par WhatsApp",
+          "Tableau de bord multi-jours avec statistiques",
+          "Campagnes marketing ciblées",
+          "Gestion du menu, des stocks, des prix",
+        ],
+      },
+      clients: {
+        visible: true,
+        title: "Pour les clients",
+        items: [
+          "Recherche par ville, catégorie et type",
+          "Réservation en quelques secondes, sans compte",
+          "Confirmation immédiate par WhatsApp",
+          "Gestion de ses réservations à tout moment",
+          "Tous les services : restaurant, soins, sport, voiture",
+        ],
+      },
+      admin: {
+        visible: true,
+        title: "Pour l'administration",
+        items: [
+          "Vue d'ensemble multi-établissements",
+          "Contrôle des accès par catégorie et par module",
+          "Journal d'activité complet",
+          "Onboarding en un clic d'un nouvel établissement",
+          "Gestion des abonnements et facturation",
+          "Accès support direct à tout compte",
+        ],
+      },
+    },
+    tarifs: { visible: true },
+    contact: { visible: true },
+  },
+};
+
 const DEFAULT_PACKAGES = [
   {
     name: "Basique",
@@ -871,11 +920,12 @@ export const getSiteContent = createServerFn({ method: "GET" }).handler(async ()
   const [row] = await db.select().from(siteContent).where(eq(siteContent.id, 1));
   if (!row) {
     return {
-      about: "nreservi.online est une solution digitale algérienne de réservation de table en ligne. Nous simplifions la relation entre les restaurants et leurs clients : réservation en temps réel, confirmation par WhatsApp et gestion complète pour les professionnels.",
+      about: DEFAULT_SITE_CONTENT.about,
       contactEmail: "",
       contactPhone: "",
       homeHeroImageUrl: null,
       packages: DEFAULT_PACKAGES,
+      sections: DEFAULT_SITE_CONTENT.sections,
     };
   }
   return {
@@ -884,6 +934,7 @@ export const getSiteContent = createServerFn({ method: "GET" }).handler(async ()
     contactPhone: row.contactPhone,
     homeHeroImageUrl: row.homeHeroImageUrl,
     packages: (row.packages as unknown[]) ?? DEFAULT_PACKAGES,
+    sections: { ...DEFAULT_SITE_CONTENT.sections, ...((row.sections as Record<string, unknown>) ?? {}) },
   };
 });
 
@@ -894,6 +945,7 @@ export const saveSiteContent = createServerFn({ method: "POST" })
     contactPhone: string
     homeHeroImageUrl?: string | null
     packages: { name: string; price: string; period?: string; features: string[]; kind: string; popular?: boolean }[]
+    sections?: Record<string, unknown>
   }) => data)
   .handler(async ({ data }) => {
     const session = await requireAdmin();
@@ -916,6 +968,7 @@ export const saveSiteContent = createServerFn({ method: "POST" })
       contactPhone: data.contactPhone.trim(),
       homeHeroImageUrl: data.homeHeroImageUrl?.trim() || null,
       packages,
+      sections: data.sections ?? {},
       updatedAt: new Date(),
     };
     const { siteContent } = await import("../../db/schema.js");

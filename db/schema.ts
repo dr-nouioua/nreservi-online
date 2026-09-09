@@ -240,6 +240,7 @@ export const siteContent = pgTable("site_content", {
   contactPhone: text("contact_phone").notNull().default(""),
   homeHeroImageUrl: text("home_hero_image_url"), // image under the customer search card
   packages: jsonb("packages").notNull().default([]), // [{name, price, features: string[], kind: "subscription"|"ads", popular?: bool}]
+  sections: jsonb("sections").notNull().default({}), // section toggles + editable content
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 

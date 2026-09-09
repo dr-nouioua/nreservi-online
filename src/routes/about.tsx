@@ -50,7 +50,15 @@ function LandingPage() {
     contactEmail: string
     contactPhone: string
     packages: Package[]
+    sections: any
   }
+
+  const s = content.sections ?? {}
+  const hero = s.hero ?? {}
+  const sol = s.solutions ?? {}
+  const prof = sol.professionals ?? {}
+  const cli = sol.clients ?? {}
+  const adm = sol.admin ?? {}
 
   const [menuOpen, setMenuOpen] = useState(false)
   useEffect(() => {
@@ -59,11 +67,11 @@ function LandingPage() {
   }, [menuOpen])
 
   const links = [
-    { href: '#apropos', label: 'À propos' },
-    { href: '#solutions', label: 'Solutions' },
-    { href: '#tarifs', label: 'Tarifs' },
-    { href: '#contact', label: 'Contact' },
-  ]
+    s.about?.visible !== false && { href: '#apropos', label: 'À propos' },
+    s.solutions?.visible !== false && { href: '#solutions', label: 'Solutions' },
+    s.tarifs?.visible !== false && { href: '#tarifs', label: 'Tarifs' },
+    s.contact?.visible !== false && { href: '#contact', label: 'Contact' },
+  ].filter(Boolean) as { href: string; label: string }[]
 
   const subscriptions = content.packages.filter((p) => p.kind !== 'ads')
   const adsPackages = content.packages.filter((p) => p.kind === 'ads')
@@ -110,213 +118,213 @@ function LandingPage() {
       </header>
 
       {/* ---- Hero ---- */}
-      <section className="mx-auto max-w-6xl px-4 pt-14 pb-16 text-center sm:px-6">
-        <p className="inline-flex items-center gap-1.5 rounded-full bg-lime-100 px-3 py-1 text-xs font-medium text-lime-800 dark:bg-lime-500/15 dark:text-lime-300">
-          🇩🇿 Plateforme 100 % algérienne
-        </p>
-        <h1 className="mx-auto mt-5 max-w-3xl text-4xl font-bold tracking-tight text-stone-900 dark:text-stone-100 sm:text-5xl">
-          Réservez, planifiez, louez — <span className="text-lime-600 dark:text-lime-400">tout en un seul endroit</span>
-        </h1>
-        <p className="mx-auto mt-5 max-w-2xl text-lg text-stone-600 dark:text-stone-400">
-          nreservi.online connecte les professionnels et leurs clients : restaurants, salons de beauté, spas,
-          terrains de sport et locations de voitures — disponibilités en temps réel, confirmation par WhatsApp.
-        </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 rounded-lg bg-stone-950 px-5 py-3 text-sm font-medium text-white hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white"
-          >
-            Explorer les établissements <ArrowRight className="h-4 w-4" />
-          </Link>
-          <a
-            href="#contact"
-            className="inline-flex items-center gap-2 rounded-lg border border-stone-300 px-5 py-3 text-sm font-medium text-stone-700 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
-          >
-            Devenir partenaire
-          </a>
-        </div>
-      </section>
+      {hero.visible !== false && (
+        <section className="mx-auto max-w-6xl px-4 pt-14 pb-16 text-center sm:px-6">
+          {hero.badge && (
+            <p className="inline-flex items-center gap-1.5 rounded-full bg-lime-100 px-3 py-1 text-xs font-medium text-lime-800 dark:bg-lime-500/15 dark:text-lime-300">
+              {hero.badge}
+            </p>
+          )}
+          <h1 className="mx-auto mt-5 max-w-3xl text-4xl font-bold tracking-tight text-stone-900 dark:text-stone-100 sm:text-5xl">
+            {(hero.title ?? 'Réservez, planifiez, louez — tout en un seul endroit').split('—').map((part: string, i: number) =>
+              i === 1 ? <span key={i}>— <span className="text-lime-600 dark:text-lime-400">{part.trim()}</span></span> : part
+            )}
+          </h1>
+          {hero.subtitle && (
+            <p className="mx-auto mt-5 max-w-2xl text-lg text-stone-600 dark:text-stone-400">
+              {hero.subtitle}
+            </p>
+          )}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 rounded-lg bg-stone-950 px-5 py-3 text-sm font-medium text-white hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white"
+            >
+              Explorer les établissements <ArrowRight className="h-4 w-4" />
+            </Link>
+            <a
+              href="#contact"
+              className="inline-flex items-center gap-2 rounded-lg border border-stone-300 px-5 py-3 text-sm font-medium text-stone-700 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+            >
+              Devenir partenaire
+            </a>
+          </div>
+        </section>
+      )}
 
       {/* ---- Catégories ---- */}
-      <section className="mx-auto max-w-6xl px-4 pb-14 sm:px-6">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {categories.map((cat) => (
-            <div key={cat.label} className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900/40">
-              <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${cat.color}`}>
-                <cat.icon className="h-5 w-5" />
-              </span>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">{cat.label}</p>
-                <p className="text-xs text-stone-500 dark:text-stone-400 leading-tight">{cat.desc}</p>
+      {s.categories?.visible !== false && (
+        <section className="mx-auto max-w-6xl px-4 pb-14 sm:px-6">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {categories.map((cat) => (
+              <div key={cat.label} className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900/40">
+                <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${cat.color}`}>
+                  <cat.icon className="h-5 w-5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">{cat.label}</p>
+                  <p className="text-xs text-stone-500 dark:text-stone-400 leading-tight">{cat.desc}</p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ---- À propos ---- */}
-      <section id="apropos" className="mx-auto max-w-4xl scroll-mt-20 px-4 py-14 sm:px-6">
-        <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl">À propos</h2>
-        <p className="mt-4 whitespace-pre-line text-lg leading-relaxed text-stone-600 dark:text-stone-400">
-          {content.about}
-        </p>
-      </section>
+      {s.about?.visible !== false && (
+        <section id="apropos" className="mx-auto max-w-4xl scroll-mt-20 px-4 py-14 sm:px-6">
+          <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl">À propos</h2>
+          <p className="mt-4 whitespace-pre-line text-lg leading-relaxed text-stone-600 dark:text-stone-400">
+            {content.about}
+          </p>
+        </section>
+      )}
 
       {/* ---- Solutions ---- */}
-      <section id="solutions" className="scroll-mt-20 bg-white py-16 dark:bg-stone-900/40">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <h2 className="text-center text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl">Solutions</h2>
-          <div className="mt-10 grid gap-6 lg:grid-cols-3">
-            {/* Pros */}
-            <div className="rounded-2xl border border-stone-200 bg-stone-50 p-7 dark:border-stone-800 dark:bg-stone-950/40">
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-lime-100 dark:bg-lime-500/15">
-                <UtensilsCrossed className="h-5 w-5 text-lime-700 dark:text-lime-300" />
-              </span>
-              <h3 className="mt-4 text-xl font-bold text-stone-900 dark:text-stone-100">Pour les professionnels</h3>
-              <ul className="mt-4 space-y-2.5 text-sm text-stone-600 dark:text-stone-400">
-                {[
-                  'Page publique avec menu/photos/catalogue',
-                  'Réservation en temps réel (tables, créneaux, véhicules)',
-                  'Confirmation et rappels par WhatsApp',
-                  'Tableau de bord multi-jours avec statistiques',
-                  'Campagnes marketing ciblées',
-                  'Gestion du menu, des stocks, des prix',
-                ].map((f) => (
-                  <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-lime-600 dark:text-lime-400" /> {f}</li>
-                ))}
-              </ul>
-            </div>
-            {/* Clients */}
-            <div className="rounded-2xl border border-stone-200 bg-stone-50 p-7 dark:border-stone-800 dark:bg-stone-950/40">
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-stone-200 dark:bg-stone-800">
-                <Users className="h-5 w-5 text-stone-600 dark:text-stone-300" />
-              </span>
-              <h3 className="mt-4 text-xl font-bold text-stone-900 dark:text-stone-100">Pour les clients</h3>
-              <ul className="mt-4 space-y-2.5 text-sm text-stone-600 dark:text-stone-400">
-                {[
-                  'Recherche par ville, catégorie et type',
-                  'Réservation en quelques secondes, sans compte',
-                  'Confirmation immédiate par WhatsApp',
-                  'Gestion de ses réservations à tout moment',
-                  'Tous les services : restaurant, soins, sport, voiture',
-                ].map((f) => (
-                  <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-lime-600 dark:text-lime-400" /> {f}</li>
-                ))}
-              </ul>
-            </div>
-            {/* Admin */}
-            <div className="rounded-2xl border border-stone-200 bg-stone-50 p-7 dark:border-stone-800 dark:bg-stone-950/40">
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-stone-200 dark:bg-stone-800">
-                <ShieldCheck className="h-5 w-5 text-stone-600 dark:text-stone-300" />
-              </span>
-              <h3 className="mt-4 text-xl font-bold text-stone-900 dark:text-stone-100">Pour l'administration</h3>
-              <ul className="mt-4 space-y-2.5 text-sm text-stone-600 dark:text-stone-400">
-                {[
-                  "Vue d'ensemble multi-établissements",
-                  'Contrôle des accès par catégorie et par module',
-                  'Journal d\'activité complet',
-                  'Onboarding en un clic d\'un nouvel établissement',
-                  'Gestion des abonnements et facturation',
-                  'Accès support direct à tout compte',
-                ].map((f) => (
-                  <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-lime-600 dark:text-lime-400" /> {f}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ---- Tarifs ---- */}
-      <section id="tarifs" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6">
-        <h2 className="text-center text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl">Tarifs</h2>
-        <p className="mt-3 text-center text-stone-600 dark:text-stone-400">Des formules simples pour chaque établissement — et des emplacements publicitaires pour les marques.</p>
-        <div className="mt-10 grid gap-6 lg:grid-cols-3">
-          {subscriptions.map((p) => (
-            <div
-              key={p.name}
-              className={`relative rounded-2xl border p-7 ${
-                p.popular
-                  ? 'border-lime-400 bg-lime-50/60 shadow-lg dark:border-lime-500/50 dark:bg-lime-500/5'
-                  : 'border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900/40'
-              }`}
-            >
-              {p.popular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-lime-400 px-3 py-1 text-xs font-semibold text-stone-950">Populaire</span>
-              )}
-              <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100">{p.name}</h3>
-              <p className="mt-2">
-                <span className="text-3xl font-bold text-stone-900 dark:text-stone-100">{p.price}</span>
-                {p.period && <span className="ml-1.5 text-sm text-stone-500 dark:text-stone-400">{p.period}</span>}
-              </p>
-              <ul className="mt-5 space-y-2.5 text-sm text-stone-600 dark:text-stone-400">
-                {(p.features ?? []).map((f) => (
-                  <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-lime-600 dark:text-lime-400" /> {f}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        {adsPackages.length > 0 && (
-          <div className="mt-8 rounded-2xl border border-stone-200 bg-white p-7 dark:border-stone-800 dark:bg-stone-900/40">
-            <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100">Pour les marques & annonceurs</h3>
-            <div className="mt-5 grid gap-6 sm:grid-cols-2">
-              {adsPackages.map((p) => (
-                <div key={p.name}>
-                  <p className="font-semibold text-stone-900 dark:text-stone-100">{p.name}</p>
-                  <p className="mt-1 text-2xl font-bold text-lime-600 dark:text-lime-400">
-                    {p.price} {p.period && <span className="text-sm font-normal text-stone-500 dark:text-stone-400">{p.period}</span>}
-                  </p>
-                  <ul className="mt-3 space-y-2 text-sm text-stone-600 dark:text-stone-400">
-                    {(p.features ?? []).map((f) => (
+      {s.solutions?.visible !== false && (
+        <section id="solutions" className="scroll-mt-20 bg-white py-16 dark:bg-stone-900/40">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <h2 className="text-center text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl">Solutions</h2>
+            <div className="mt-10 grid gap-6 lg:grid-cols-3">
+              {prof.visible !== false && (
+                <div className="rounded-2xl border border-stone-200 bg-stone-50 p-7 dark:border-stone-800 dark:bg-stone-950/40">
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-lime-100 dark:bg-lime-500/15">
+                    <UtensilsCrossed className="h-5 w-5 text-lime-700 dark:text-lime-300" />
+                  </span>
+                  <h3 className="mt-4 text-xl font-bold text-stone-900 dark:text-stone-100">{prof.title || 'Pour les professionnels'}</h3>
+                  <ul className="mt-4 space-y-2.5 text-sm text-stone-600 dark:text-stone-400">
+                    {(prof.items ?? []).map((f: string) => (
                       <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-lime-600 dark:text-lime-400" /> {f}</li>
                     ))}
                   </ul>
                 </div>
-              ))}
+              )}
+              {cli.visible !== false && (
+                <div className="rounded-2xl border border-stone-200 bg-stone-50 p-7 dark:border-stone-800 dark:bg-stone-950/40">
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-stone-200 dark:bg-stone-800">
+                    <Users className="h-5 w-5 text-stone-600 dark:text-stone-300" />
+                  </span>
+                  <h3 className="mt-4 text-xl font-bold text-stone-900 dark:text-stone-100">{cli.title || 'Pour les clients'}</h3>
+                  <ul className="mt-4 space-y-2.5 text-sm text-stone-600 dark:text-stone-400">
+                    {(cli.items ?? []).map((f: string) => (
+                      <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-lime-600 dark:text-lime-400" /> {f}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {adm.visible !== false && (
+                <div className="rounded-2xl border border-stone-200 bg-stone-50 p-7 dark:border-stone-800 dark:bg-stone-950/40">
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-stone-200 dark:bg-stone-800">
+                    <ShieldCheck className="h-5 w-5 text-stone-600 dark:text-stone-300" />
+                  </span>
+                  <h3 className="mt-4 text-xl font-bold text-stone-900 dark:text-stone-100">{adm.title || "Pour l'administration"}</h3>
+                  <ul className="mt-4 space-y-2.5 text-sm text-stone-600 dark:text-stone-400">
+                    {(adm.items ?? []).map((f: string) => (
+                      <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-lime-600 dark:text-lime-400" /> {f}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
-            <a href="#contact" className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-lime-700 hover:underline dark:text-lime-300">
-              Discuter d'une campagne <ArrowRight className="h-4 w-4" />
-            </a>
           </div>
-        )}
-      </section>
+        </section>
+      )}
+
+      {/* ---- Tarifs ---- */}
+      {s.tarifs?.visible !== false && (
+        <section id="tarifs" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6">
+          <h2 className="text-center text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl">Tarifs</h2>
+          <p className="mt-3 text-center text-stone-600 dark:text-stone-400">Des formules simples pour chaque établissement — et des emplacements publicitaires pour les marques.</p>
+          <div className="mt-10 grid gap-6 lg:grid-cols-3">
+            {subscriptions.map((p) => (
+              <div
+                key={p.name}
+                className={`relative rounded-2xl border p-7 ${
+                  p.popular
+                    ? 'border-lime-400 bg-lime-50/60 shadow-lg dark:border-lime-500/50 dark:bg-lime-500/5'
+                    : 'border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900/40'
+                }`}
+              >
+                {p.popular && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-lime-400 px-3 py-1 text-xs font-semibold text-stone-950">Populaire</span>
+                )}
+                <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100">{p.name}</h3>
+                <p className="mt-2">
+                  <span className="text-3xl font-bold text-stone-900 dark:text-stone-100">{p.price}</span>
+                  {p.period && <span className="ml-1.5 text-sm text-stone-500 dark:text-stone-400">{p.period}</span>}
+                </p>
+                <ul className="mt-5 space-y-2.5 text-sm text-stone-600 dark:text-stone-400">
+                  {(p.features ?? []).map((f) => (
+                    <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-lime-600 dark:text-lime-400" /> {f}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          {adsPackages.length > 0 && (
+            <div className="mt-8 rounded-2xl border border-stone-200 bg-white p-7 dark:border-stone-800 dark:bg-stone-900/40">
+              <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100">Pour les marques & annonceurs</h3>
+              <div className="mt-5 grid gap-6 sm:grid-cols-2">
+                {adsPackages.map((p) => (
+                  <div key={p.name}>
+                    <p className="font-semibold text-stone-900 dark:text-stone-100">{p.name}</p>
+                    <p className="mt-1 text-2xl font-bold text-lime-600 dark:text-lime-400">
+                      {p.price} {p.period && <span className="text-sm font-normal text-stone-500 dark:text-stone-400">{p.period}</span>}
+                    </p>
+                    <ul className="mt-3 space-y-2 text-sm text-stone-600 dark:text-stone-400">
+                      {(p.features ?? []).map((f) => (
+                        <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-lime-600 dark:text-lime-400" /> {f}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+              <a href="#contact" className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-lime-700 hover:underline dark:text-lime-300">
+                Discuter d'une campagne <ArrowRight className="h-4 w-4" />
+              </a>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* ---- Contact ---- */}
-      <section id="contact" className="scroll-mt-20 bg-white py-16 dark:bg-stone-900/40">
-        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
-          <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl">Contact</h2>
-          <p className="mt-3 text-stone-600 dark:text-stone-400">
-            Une question, une démonstration, un partenariat ? Écrivez-nous ou appelez-nous directement.
-          </p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            {content.contactEmail && (
-              <a
-                href={`mailto:${content.contactEmail}`}
-                className="rounded-xl border border-stone-200 p-6 transition hover:border-lime-400 dark:border-stone-800 dark:hover:border-lime-500/50"
-              >
-                <Mail className="mx-auto h-6 w-6 text-lime-600 dark:text-lime-400" />
-                <p className="mt-3 text-xs uppercase tracking-wide text-stone-400">E-mail</p>
-                <p className="mt-1 font-medium text-stone-900 dark:text-stone-100 break-all">{content.contactEmail}</p>
-              </a>
-            )}
-            {content.contactPhone && (
-              <a
-                href={`tel:${content.contactPhone.replace(/\s/g, '')}`}
-                className="rounded-xl border border-stone-200 p-6 transition hover:border-lime-400 dark:border-stone-800 dark:hover:border-lime-500/50"
-              >
-                <Phone className="mx-auto h-6 w-6 text-lime-600 dark:text-lime-400" />
-                <p className="mt-3 text-xs uppercase tracking-wide text-stone-400">Téléphone</p>
-                <p className="mt-1 font-medium text-stone-900 dark:text-stone-100">{content.contactPhone}</p>
-              </a>
+      {s.contact?.visible !== false && (
+        <section id="contact" className="scroll-mt-20 bg-white py-16 dark:bg-stone-900/40">
+          <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
+            <h2 className="text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl">Contact</h2>
+            <p className="mt-3 text-stone-600 dark:text-stone-400">
+              Une question, une démonstration, un partenariat ? Écrivez-nous ou appelez-nous directement.
+            </p>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              {content.contactEmail && (
+                <a
+                  href={`mailto:${content.contactEmail}`}
+                  className="rounded-xl border border-stone-200 p-6 transition hover:border-lime-400 dark:border-stone-800 dark:hover:border-lime-500/50"
+                >
+                  <Mail className="mx-auto h-6 w-6 text-lime-600 dark:text-lime-400" />
+                  <p className="mt-3 text-xs uppercase tracking-wide text-stone-400">E-mail</p>
+                  <p className="mt-1 font-medium text-stone-900 dark:text-stone-100 break-all">{content.contactEmail}</p>
+                </a>
+              )}
+              {content.contactPhone && (
+                <a
+                  href={`tel:${content.contactPhone.replace(/\s/g, '')}`}
+                  className="rounded-xl border border-stone-200 p-6 transition hover:border-lime-400 dark:border-stone-800 dark:hover:border-lime-500/50"
+                >
+                  <Phone className="mx-auto h-6 w-6 text-lime-600 dark:text-lime-400" />
+                  <p className="mt-3 text-xs uppercase tracking-wide text-stone-400">Téléphone</p>
+                  <p className="mt-1 font-medium text-stone-900 dark:text-stone-100">{content.contactPhone}</p>
+                </a>
+              )}
+            </div>
+            {!content.contactEmail && !content.contactPhone && (
+              <p className="text-sm text-stone-400">Coordonnées bientôt disponibles.</p>
             )}
           </div>
-          {!content.contactEmail && !content.contactPhone && (
-            <p className="text-sm text-stone-400">Coordonnées bientôt disponibles.</p>
-          )}
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ---- Footer ---- */}
       <footer className="border-t border-stone-200 bg-white py-8 dark:border-stone-800 dark:bg-stone-900">
