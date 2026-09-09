@@ -99,9 +99,11 @@ function RestaurantPage() {
   // Whole menu collapsed by default — long catalogs stay light to load & scan.
   const [menuOpen, setMenuOpen] = useState(restaurant.menuFixed)
   const [date, setDate] = useState(todayISO())
+  const [dateEnd, setDateEnd] = useState(todayISO())
   const [partySize, setPartySize] = useState(isFootball ? 10 : 2)
   const [babySeats, setBabySeats] = useState(0)
   const [areaId, setAreaId] = useState<number | undefined>(undefined)
+  const [serviceId, setServiceId] = useState<number | undefined>(undefined)
   const [slots, setSlots] = useState<{ time: string; available: boolean; tableCount: number }[]>([])
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
@@ -352,20 +354,29 @@ function RestaurantPage() {
               <CalendarDays className="h-4 w-4" /> {isFootball ? 'Réserver un terrain' : isCarRental ? 'Louer' : 'Réserver'}
             </h2>
             <div className="space-y-3">
-              <div>
-                <label className="text-xs text-stone-500 dark:text-stone-400">Date</label>
-                <input
-                  type="date"
-                  value={date}
-                  min={todayISO()}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
-                />
-              </div>
-
-              {showPlayerCount ? (
+              {/* ---- Date fields ---- */}
+              {isCarRental ? (
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs text-stone-500 dark:text-stone-400">Date début</label>
+                    <input type="date" value={date} min={todayISO()} onChange={(e) => setDate(e.target.value)} className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-stone-500 dark:text-stone-400">Date fin</label>
+                    <input type="date" value={dateEnd} min={date} onChange={(e) => setDateEnd(e.target.value)} className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
+                  </div>
+                </div>
+              ) : (
                 <div>
-                  <label className="text-xs text-stone-500 dark:text-stone-400">Nombre de joueurs</label>
+                  <label className="text-xs text-stone-500 dark:text-stone-400">Date</label>
+                  <input type="date" value={date} min={todayISO()} onChange={(e) => setDate(e.target.value)} className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
+                </div>
+              )}
+
+              {/* ---- Player count (football) ---- */}
+              {showPlayerCount && (
+                <div>
+                  <label className="text-xs text-stone-500 dark:text-stone-400">Format du terrain</label>
                   <div className="grid grid-cols-3 gap-2 mt-1">
                     {[10, 12, 14].map((n) => (
                       <button
@@ -378,13 +389,16 @@ function RestaurantPage() {
                             : 'border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-500/10'
                         }`}
                       >
-                        {n} joueurs
-                        <span className="block text-xs opacity-70">{n === 10 ? '5v5' : n === 12 ? '6v6' : '7v7'}</span>
+                        {n === 10 ? '5v5' : n === 12 ? '6v6' : '7v7'}
+                        <span className="block text-xs opacity-70">{n} joueurs</span>
                       </button>
                     ))}
                   </div>
                 </div>
-              ) : showPartySize ? (
+              )}
+
+              {/* ---- Party size (restaurant, salon, spa, barbershop) ---- */}
+              {showPartySize && (
                 <div>
                   <label className="text-xs text-stone-500 dark:text-stone-400">
                     {isSalonOrSpa ? 'Nombre de personnes' : isBarbershop ? 'Nombre de personnes' : 'Nombre de personnes'}
@@ -397,23 +411,20 @@ function RestaurantPage() {
                       max={isBarbershop ? 4 : isSalonOrSpa ? 4 : 20}
                       value={partySize}
                       onChange={(e) => setPartySize(Number(e.target.value))}
-                      className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
+                      className="h-11 w-full rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                     />
                   </div>
                 </div>
-              ) : null}
+              )}
 
+              {/* ---- Baby seats (restaurant only) ---- */}
               {showBabySeats && (
                 <div>
                   <label className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400">
                     <Baby className="h-3.5 w-3.5" /> Chaises bébé
                   </label>
                   <div className="w-full mt-1">
-                    <select
-                      value={babySeats}
-                      onChange={(e) => setBabySeats(Number(e.target.value))}
-                      className="h-11 w-full rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
-                    >
+                    <select value={babySeats} onChange={(e) => setBabySeats(Number(e.target.value))} className="h-11 w-full rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100">
                       {[0, 1, 2, 3].map((n) => (
                         <option key={n} value={n}>{n === 0 ? 'Aucune' : `${n} chaise${n > 1 ? 's' : ''} bébé`}</option>
                       ))}
@@ -421,25 +432,51 @@ function RestaurantPage() {
                   </div>
                 </div>
               )}
-              <div>
-                <label className="text-xs text-stone-500 dark:text-stone-400">Espace (facultatif)</label>
-                <select
-                  value={areaId ?? ''}
-                  onChange={(e) => setAreaId(e.target.value ? Number(e.target.value) : undefined)}
-                  className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
-                >
-                  <option value="">Tous les espaces</option>
-                  {areas.map((a) => (
-                    <option key={a.id} value={a.id}>{a.name}</option>
-                  ))}
-                </select>
-              </div>
+
+              {/* ---- Espace / Prestation / Véhicule ---- */}
+              {isCarRental ? (
+                <div>
+                  <label className="text-xs text-stone-500 dark:text-stone-400">Type de véhicule</label>
+                  <select value={areaId ?? ''} onChange={(e) => setAreaId(e.target.value ? Number(e.target.value) : undefined)} className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100">
+                    <option value="">Tous les véhicules</option>
+                    {areas.map((a) => (
+                      <option key={a.id} value={a.id}>{a.name}</option>
+                    ))}
+                  </select>
+                </div>
+              ) : (isSalonOrSpa || isBarbershop) && menu.length > 0 ? (
+                <div>
+                  <label className="text-xs text-stone-500 dark:text-stone-400">
+                    {isSalonOrSpa ? 'Prestation / Soin' : 'Prestation'}
+                  </label>
+                  <select value={serviceId ?? ''} onChange={(e) => setServiceId(e.target.value ? Number(e.target.value) : undefined)} className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100">
+                    <option value="">Choisir une prestation</option>
+                    {menu.map((cat) => (
+                      <optgroup key={cat.id} label={cat.name}>
+                        {cat.items.map((item) => (
+                          <option key={item.id} value={item.id}>{item.name} — {formatPriceDA(item.price)}</option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                </div>
+              ) : !isFootball && areas.length > 0 ? (
+                <div>
+                  <label className="text-xs text-stone-500 dark:text-stone-400">Espace (facultatif)</label>
+                  <select value={areaId ?? ''} onChange={(e) => setAreaId(e.target.value ? Number(e.target.value) : undefined)} className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100">
+                    <option value="">Tous les espaces</option>
+                    {areas.map((a) => (
+                      <option key={a.id} value={a.id}>{a.name}</option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
               <button
                 onClick={checkAvailability}
                 disabled={loadingSlots}
                 className="event-cta w-full py-2.5 rounded-lg bg-stone-900 text-white dark:ring-1 dark:ring-stone-700 text-sm font-medium hover:bg-stone-800 disabled:opacity-50"
               >
-                {loadingSlots ? 'Recherche...' : 'Voir les disponibilités'}
+                {loadingSlots ? 'Recherche...' : isCarRental ? 'Voir les véhicules' : 'Voir les disponibilités'}
               </button>
 
               {slots.length > 0 && (
