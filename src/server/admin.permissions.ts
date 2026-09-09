@@ -1,7 +1,7 @@
 // Pure admin-permission logic — shared by layout, pages and server functions.
 
 export const ADMIN_MODULES = [
-  { key: "onboard", label: "Créer un restaurant" },
+  { key: "onboard", label: "Créer un établissement" },
   { key: "subscriptions", label: "Abonnements" },
   { key: "emails", label: "E-mails" },
   { key: "ads", label: "Publicités" },

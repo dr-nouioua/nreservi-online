@@ -33,7 +33,7 @@ export const Route = createFileRoute('/3991/_authed')({
 
 const nav: { to: string; label: string; icon: typeof Building2; module?: string }[] = [
   { to: '/3991', label: 'Dashboard', icon: Building2 },
-  { to: '/3991/onboard', label: 'Créer un restaurant', icon: Plus, module: 'onboard' },
+  { to: '/3991/onboard', label: 'Créer un établissement', icon: Plus, module: 'onboard' },
   { to: '/3991/subscriptions', label: 'Abonnements', icon: CreditCard, module: 'subscriptions' },
   { to: '/3991/emails', label: 'E-mails', icon: Send, module: 'emails' },
   { to: '/3991/ads', label: 'Publicités', icon: Megaphone, module: 'ads' },
