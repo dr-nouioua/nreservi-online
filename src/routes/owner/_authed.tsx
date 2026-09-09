@@ -2,6 +2,7 @@ import { createFileRoute, Link, Outlet, redirect, useRouter, useRouterState } fr
 import { useEffect, useState } from 'react'
 import {
   BarChart3,
+  Car,
   CreditCard,
   LayoutDashboard,
   Lock,
@@ -11,13 +12,31 @@ import {
   MessageCircle,
   PanelLeftClose,
   PanelLeftOpen,
+  Scissors,
   Settings,
+  Sparkles,
   UtensilsCrossed,
   X,
 } from 'lucide-react'
 import { getSession, logout } from '../../server/auth.functions'
 import { getOwnSubscription } from '../../server/owner.functions'
 import { BrandLogo } from '../../components/BrandLogo'
+
+function SoccerBall({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" fill="currentColor" fillOpacity="0.1" />
+      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z" />
+      <path d="M12 2c2.5 2.5 3.8 5.5 3.8 10s-1.3 7.5-3.8 10" />
+      <path d="M12 2c-2.5 2.5-3.8 5.5-3.8 10s1.3 7.5 3.8 10" />
+      <path d="M2 12h20" />
+      <path d="M4.5 5l3 3.5" />
+      <path d="M19.5 5l-3 3.5" />
+      <path d="M4.5 19l3-3.5" />
+      <path d="M19.5 19l-3-3.5" />
+    </svg>
+  )
+}
 
 export const Route = createFileRoute('/owner/_authed')({
   beforeLoad: async () => {
@@ -33,22 +52,34 @@ export const Route = createFileRoute('/owner/_authed')({
   component: OwnerLayout,
 })
 
-const nav = [
-  { to: '/owner', label: 'Réservations', icon: LayoutDashboard },
-  { to: '/owner/analytics', label: 'Analytics', icon: BarChart3 },
-  { to: '/owner/marketing', label: 'Marketing', icon: Megaphone },
-  { to: '/owner/menu', label: 'Menu', icon: UtensilsCrossed },
-  { to: '/owner/settings', label: 'Paramètres', icon: Settings },
-  { to: '/owner/settings/whatsapp', label: 'WhatsApp', icon: MessageCircle },
-  { to: '/owner/billing', label: 'Abonnement', icon: CreditCard },
-] as const
+function getNavItems(category: string) {
+  const menuConfig: Record<string, { label: string; icon: typeof UtensilsCrossed }> = {
+    restaurant: { label: 'Menu', icon: UtensilsCrossed },
+    beauty_salon: { label: 'Prestations', icon: Scissors },
+    spa: { label: 'Soins', icon: Sparkles },
+    football_pitch: { label: 'Terrains', icon: SoccerBall },
+    car_rental: { label: 'Véhicules', icon: Car },
+    barbershop: { label: 'Prestations', icon: Scissors },
+  }
+  const m = menuConfig[category] ?? menuConfig.restaurant
+  return [
+    { to: '/owner', label: 'Réservations', icon: LayoutDashboard },
+    { to: '/owner/analytics', label: 'Analytics', icon: BarChart3 },
+    { to: '/owner/marketing', label: 'Marketing', icon: Megaphone },
+    { to: '/owner/menu', label: m.label, icon: m.icon },
+    { to: '/owner/settings', label: 'Paramètres', icon: Settings },
+    { to: '/owner/settings/whatsapp', label: 'WhatsApp', icon: MessageCircle },
+    { to: '/owner/billing', label: 'Abonnement', icon: CreditCard },
+  ] as const
+}
 
 function OwnerLayout() {
   const { session, subscription } = Route.useRouteContext() as {
     session: { name: string; email: string }
-    subscription: { effective: string; end: string | null; tier: string; name?: string }
+    subscription: { effective: string; end: string | null; tier: string; name?: string; category: string }
   }
   const router = useRouter()
+  const nav = getNavItems(subscription.category)
 
   // Drawer (mobile/tablet) + icon-only collapse (desktop). Persisted.
   const [drawerOpen, setDrawerOpen] = useState(false)

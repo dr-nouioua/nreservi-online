@@ -58,6 +58,7 @@ export const getOwnSubscription = createServerFn({ method: "GET" }).handler(asyn
       status: restaurants.status,
       start: restaurants.subscriptionStart,
       end: restaurants.subscriptionEnd,
+      category: restaurants.category,
     })
     .from(restaurants)
     .where(eq(restaurants.id, session.restaurantId));
@@ -68,6 +69,7 @@ export const getOwnSubscription = createServerFn({ method: "GET" }).handler(asyn
     adminStatus: row.status,
     start: row.start,
     end: row.end,
+    category: row.category ?? "restaurant",
     effective: computeSubscriptionStatus({ status: row.status, subscriptionEnd: row.end }),
     daysLeft: daysUntil(row.end),
   };
@@ -433,11 +435,12 @@ export const getMenu = createServerFn({ method: "GET" }).handler(async () => {
   const [cats, items, rows] = await Promise.all([
     db.select().from(menuCategories).where(eq(menuCategories.restaurantId, restaurantId)),
     db.select().from(menuItems).where(eq(menuItems.restaurantId, restaurantId)),
-    db.select({ showMenuImages: restaurants.showMenuImages, menuFixed: restaurants.menuFixed }).from(restaurants).where(eq(restaurants.id, restaurantId)),
+    db.select({ showMenuImages: restaurants.showMenuImages, menuFixed: restaurants.menuFixed, category: restaurants.category }).from(restaurants).where(eq(restaurants.id, restaurantId)),
   ]);
   return {
     showMenuImages: rows[0]?.showMenuImages ?? true,
     menuFixed: rows[0]?.menuFixed ?? false,
+    category: rows[0]?.category ?? "restaurant",
     categories: cats.map((c) => ({ ...c, items: items.filter((i) => i.categoryId === c.id) })),
   };
 });

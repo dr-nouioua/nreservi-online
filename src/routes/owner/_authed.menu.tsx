@@ -38,6 +38,17 @@ function MenuPage() {
   const [categories, setCategories] = useState(initial.categories)
   const [newCatName, setNewCatName] = useState('')
   const [newItem, setNewItem] = useState<ItemForm>({ ...EMPTY_ITEM, categoryId: initial.categories[0]?.id ?? null })
+
+  const category = initial.category ?? 'restaurant'
+  const menuLabels: Record<string, { title: string; addCat: string; fixed: string; photos: string; newItem: string; addBtn: string }> = {
+    restaurant: { title: 'Gestion du menu', addCat: 'Ajouter une catégorie', fixed: 'Menu fixe', photos: 'Photos du menu', newItem: 'Nouveau plat', addBtn: 'Ajouter le plat' },
+    beauty_salon: { title: 'Gestion des prestations', addCat: 'Ajouter une catégorie', fixed: 'Prestations fixes', photos: 'Photos des prestations', newItem: 'Nouvelle prestation', addBtn: 'Ajouter' },
+    spa: { title: 'Gestion des soins', addCat: 'Ajouter une catégorie', fixed: 'Soins fixes', photos: 'Photos des soins', newItem: 'Nouveau soin', addBtn: 'Ajouter' },
+    football_pitch: { title: 'Gestion des terrains', addCat: 'Ajouter un type', fixed: 'Terrains fixes', photos: 'Photos des terrains', newItem: 'Nouveau terrain', addBtn: 'Ajouter' },
+    car_rental: { title: 'Gestion des véhicules', addCat: 'Ajouter une catégorie', fixed: 'Véhicules fixes', photos: 'Photos des véhicules', newItem: 'Nouveau véhicule', addBtn: 'Ajouter' },
+    barbershop: { title: 'Gestion des prestations', addCat: 'Ajouter une catégorie', fixed: 'Prestations fixes', photos: 'Photos des prestations', newItem: 'Nouvelle prestation', addBtn: 'Ajouter' },
+  }
+  const labels = menuLabels[category] ?? menuLabels.restaurant
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editForm, setEditForm] = useState<ItemForm>(EMPTY_ITEM)
 
@@ -87,14 +98,16 @@ function MenuPage() {
   }
 
   async function removeItem(id: number, name: string) {
-    if (!window.confirm(`Supprimer « ${name} » du menu ?`)) return
+    const itemWord = category === 'football_pitch' ? 'terrain' : category === 'car_rental' ? 'véhicule' : category === 'spa' ? 'soin' : 'article'
+    if (!window.confirm(`Supprimer « ${name} » ${itemWord} ?`)) return
     await deleteMenuItem({ data: { id } })
     if (editingId === id) setEditingId(null)
     refresh()
   }
 
   async function removeCategory(id: number, name: string, itemCount: number) {
-    const suffix = itemCount > 0 ? ` Cette catégorie contient ${itemCount} plat(s), qui seront également supprimés.` : ''
+    const itemWord = category === 'football_pitch' ? 'terrain' : category === 'car_rental' ? 'véhicule' : category === 'spa' ? 'soin' : 'plat'
+    const suffix = itemCount > 0 ? ` Cette catégorie contient ${itemCount} ${itemWord}(s), qui seront également supprimés.` : ''
     if (!window.confirm(`Supprimer la catégorie « ${name} » ?${suffix}`)) return
     await deleteMenuCategory({ data: { id } })
     refresh()
@@ -129,11 +142,11 @@ function MenuPage() {
       <div className="flex items-end justify-between gap-4 flex-wrap">
         <div>
           <p className="text-sm font-medium text-amber-700 dark:text-amber-400">Catalogue</p>
-          <h1 className="text-2xl sm:text-3xl font-bold text-stone-950 tracking-tight dark:text-stone-50">Gestion du menu</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-stone-950 tracking-tight dark:text-stone-50">{labels.title}</h1>
         </div>
         <div className="grid w-full gap-3 sm:grid-cols-2">
-          <ImageToggle enabled={showImages} onToggle={toggleImages} label="Photos du menu" icon={Images} />
-          <ImageToggle enabled={menuFixed} onToggle={toggleMenuFixed} label="Menu fixe" icon={PanelTop} />
+          <ImageToggle enabled={showImages} onToggle={toggleImages} label={labels.photos} icon={Images} />
+          <ImageToggle enabled={menuFixed} onToggle={toggleMenuFixed} label={labels.fixed} icon={PanelTop} />
         </div>
       </div>
 
@@ -225,13 +238,13 @@ function MenuPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[.75fr_1.25fr] gap-4 mt-6">
         <form onSubmit={createCategory} className="bg-white rounded-lg border border-stone-200 p-4 space-y-2 shadow-sm dark:bg-stone-900 dark:border-stone-800">
-          <p className="text-sm font-medium text-stone-700 flex items-center gap-1 dark:text-stone-300"><Plus className="w-4 h-4" /> Nouvelle catégorie</p>
+          <p className="text-sm font-medium text-stone-700 flex items-center gap-1 dark:text-stone-300"><Plus className="w-4 h-4" /> {labels.addCat}</p>
           <input required value={newCatName} onChange={(e) => setNewCatName(e.target.value)} placeholder="ex. Entrées" className="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white text-sm dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
           <button className="px-3 py-1.5 rounded-lg bg-stone-950 text-white text-sm font-medium hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white">Ajouter</button>
         </form>
 
         <form onSubmit={createItem} className="bg-white rounded-lg border border-stone-200 p-4 space-y-3 shadow-sm dark:bg-stone-900 dark:border-stone-800">
-          <p className="text-sm font-medium text-stone-700 flex items-center gap-1 dark:text-stone-300"><Plus className="w-4 h-4" /> Nouveau plat</p>
+          <p className="text-sm font-medium text-stone-700 flex items-center gap-1 dark:text-stone-300"><Plus className="w-4 h-4" /> {labels.newItem}</p>
           <div className="grid gap-3 sm:grid-cols-[120px_1fr]">
             <PhotoPreview url={newItem.photoUrl} onFile={(f) => readPhoto(f, (url) => setNewItem((item) => ({ ...item, photoUrl: url })))} onClear={() => setNewItem((item) => ({ ...item, photoUrl: '' }))} />
             <div className="space-y-2">
@@ -252,7 +265,7 @@ function MenuPage() {
               <input type="file" accept="image/*" onChange={(e) => readPhoto(e.target.files?.[0], (url) => setNewItem((item) => ({ ...item, photoUrl: url })))} className="sr-only" />
             </label>
           </div>
-          <button className="px-3 py-1.5 rounded-lg bg-stone-950 text-white text-sm font-medium hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white">Ajouter le plat</button>
+          <button className="px-3 py-1.5 rounded-lg bg-stone-950 text-white text-sm font-medium hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white">{labels.addBtn}</button>
         </form>
       </div>
     </div>
