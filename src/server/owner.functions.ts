@@ -362,6 +362,38 @@ export const setHasParking = createServerFn({ method: "POST" })
     return { success: true };
   });
 
+export const setHasShowers = createServerFn({ method: "POST" })
+  .inputValidator((data: { enabled: boolean }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    await db.update(restaurants).set({ hasShowers: data.enabled }).where(eq(restaurants.id, restaurantId));
+    return { success: true };
+  });
+
+export const setHasLockerRooms = createServerFn({ method: "POST" })
+  .inputValidator((data: { enabled: boolean }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    await db.update(restaurants).set({ hasLockerRooms: data.enabled }).where(eq(restaurants.id, restaurantId));
+    return { success: true };
+  });
+
+export const setHasNightLighting = createServerFn({ method: "POST" })
+  .inputValidator((data: { enabled: boolean }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    await db.update(restaurants).set({ hasNightLighting: data.enabled }).where(eq(restaurants.id, restaurantId));
+    return { success: true };
+  });
+
+export const setHasChildSeat = createServerFn({ method: "POST" })
+  .inputValidator((data: { enabled: boolean }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    await db.update(restaurants).set({ hasChildSeat: data.enabled }).where(eq(restaurants.id, restaurantId));
+    return { success: true };
+  });
+
 export const setMenuFixed = createServerFn({ method: "POST" })
   .inputValidator((data: { fixed: boolean }) => data)
   .handler(async ({ data }) => {

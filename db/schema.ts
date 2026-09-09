@@ -52,9 +52,13 @@ export const restaurants = pgTable("restaurants", {
    subscriptionHistory: jsonb("subscription_history").notNull().default([]),
    menuFixed: boolean("menu_fixed").notNull().default(false), // false = collapsible menu, true = always open
    babySeatAvailable: boolean("baby_seat_available").notNull().default(false), // show baby-seat option in the booking form
-   eventTheme: text("event_theme").notNull().default(""), // "" | revolution | newyear | xmas | valentine | fete_nationale | halloween
-   expiryWarningSentFor: date("expiry_warning_sent_for"), // end-date the 14-day warning was last sent for
-   hasParking: boolean("has_parking").notNull().default(false), // parking badge on the public page
+    eventTheme: text("event_theme").notNull().default(""), // "" | revolution | newyear | xmas | valentine | fete_nationale | halloween
+    expiryWarningSentFor: date("expiry_warning_sent_for"), // end-date the 14-day warning was last sent for
+    hasParking: boolean("has_parking").notNull().default(false), // parking badge on the public page
+    hasShowers: boolean("has_showers").notNull().default(false), // football: showers badge
+    hasLockerRooms: boolean("has_locker_rooms").notNull().default(false), // football: locker rooms badge
+    hasNightLighting: boolean("has_night_lighting").notNull().default(false), // football: night lighting badge
+    hasChildSeat: boolean("has_child_seat").notNull().default(false), // car rental: child seat on request
    facebookUrl: text("facebook_url"),
    instagramUrl: text("instagram_url"),
    tiktokUrl: text("tiktok_url"),

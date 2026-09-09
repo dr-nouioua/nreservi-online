@@ -57,6 +57,10 @@ function RestaurantPage() {
       babySeatAvailable: boolean
       eventTheme: string
       hasParking: boolean
+      hasShowers: boolean
+      hasLockerRooms: boolean
+      hasNightLighting: boolean
+      hasChildSeat: boolean
       subscriptionTier: string
       facebookUrl: string | null
       instagramUrl: string | null
@@ -75,7 +79,11 @@ function RestaurantPage() {
 
   const isFootball = restaurant.category === 'football_pitch'
   const isCarRental = restaurant.category === 'car_rental'
-  const isNoPartySize = isFootball || isCarRental
+  const isBarbershop = restaurant.category === 'barbershop'
+  const isSalonOrSpa = restaurant.category === 'beauty_salon' || restaurant.category === 'spa'
+  const showPartySize = !isCarRental && !isFootball
+  const showBabySeats = restaurant.category === 'restaurant' && restaurant.babySeatAvailable
+  const showPlayerCount = isFootball
 
   const cat = restaurant.category ?? 'restaurant'
   const profileLabels: Record<string, { sectionTitle: string; sectionSub: string; btnShow: string; btnHide: string; btnFixed: string; icon: typeof UtensilsCrossed }> = {
@@ -199,8 +207,29 @@ function RestaurantPage() {
               <div className="min-w-0">
                 <p className="mb-2 flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur"><Sparkles className="h-3.5 w-3.5" /> {restaurant.cuisine}</span>
-                  {restaurant.hasParking && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur"><Car className="h-3.5 w-3.5" /> Parking sur place</span>
+                  {cat === 'restaurant' && restaurant.babySeatAvailable && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur"><Baby className="h-3.5 w-3.5" /> Chaises bébé</span>
+                  )}
+                  {cat === 'restaurant' && restaurant.hasParking && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur"><Car className="h-3.5 w-3.5" /> Parking</span>
+                  )}
+                  {cat === 'football_pitch' && restaurant.hasShowers && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur">🚿 Douches</span>
+                  )}
+                  {cat === 'football_pitch' && restaurant.hasLockerRooms && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur">🚪 Vestiaires</span>
+                  )}
+                  {cat === 'football_pitch' && restaurant.hasParking && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur"><Car className="h-3.5 w-3.5" /> Parking</span>
+                  )}
+                  {cat === 'football_pitch' && restaurant.hasNightLighting && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur">💡 Éclairage nocturne</span>
+                  )}
+                  {(cat === 'beauty_salon' || cat === 'spa' || cat === 'barbershop') && restaurant.hasParking && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur"><Car className="h-3.5 w-3.5" /> Parking</span>
+                  )}
+                  {cat === 'car_rental' && restaurant.hasChildSeat && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur"><Baby className="h-3.5 w-3.5" /> Siège bébé sur demande</span>
                   )}
                 </p>
                 <h1 className="text-3xl sm:text-4xl font-bold tracking-tight break-words">{restaurant.name}</h1>
@@ -334,7 +363,7 @@ function RestaurantPage() {
                 />
               </div>
 
-              {isFootball ? (
+              {showPlayerCount ? (
                 <div>
                   <label className="text-xs text-stone-500 dark:text-stone-400">Nombre de joueurs</label>
                   <div className="grid grid-cols-3 gap-2 mt-1">
@@ -355,15 +384,17 @@ function RestaurantPage() {
                     ))}
                   </div>
                 </div>
-              ) : !isCarRental ? (
+              ) : showPartySize ? (
                 <div>
-                  <label className="text-xs text-stone-500 dark:text-stone-400">Nombre de personnes</label>
+                  <label className="text-xs text-stone-500 dark:text-stone-400">
+                    {isSalonOrSpa ? 'Nombre de personnes' : isBarbershop ? 'Nombre de personnes' : 'Nombre de personnes'}
+                  </label>
                   <div className="flex items-center gap-2 mt-1">
                     <Users className="w-4 h-4 text-stone-400" />
                     <input
                       type="number"
                       min={1}
-                      max={20}
+                      max={isBarbershop ? 4 : isSalonOrSpa ? 4 : 20}
                       value={partySize}
                       onChange={(e) => setPartySize(Number(e.target.value))}
                       className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
@@ -372,7 +403,7 @@ function RestaurantPage() {
                 </div>
               ) : null}
 
-              {!isNoPartySize && restaurant.babySeatAvailable && (
+              {showBabySeats && (
                 <div>
                   <label className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400">
                     <Baby className="h-3.5 w-3.5" /> Chaises bébé
