@@ -176,7 +176,7 @@ function Home() {
           return (
             <Link key={r.id} to="/restaurants/$slug" params={{ slug: r.slug }}
               className="group overflow-hidden rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-              <div className="relative aspect-square sm:h-44 bg-stone-100 dark:bg-stone-800">
+              <div className="relative h-44 bg-stone-100 dark:bg-stone-800">
                 {r.coverImageUrl ? (
                   <img src={r.coverImageUrl} alt="" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy" />
                 ) : (
