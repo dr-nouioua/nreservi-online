@@ -8,6 +8,16 @@ import { signSession, verifySession, type SessionPayload } from "./session.serve
 import { rateLimit } from "./rate-limit.server.js";
 
 const COOKIE = "rsv_session";
+const COOKIE_PATH = "/";
+
+// Use COOKIE_SECURE env var — set to "true" when behind a TLS reverse proxy.
+// Do NOT rely on NODE_ENV: the VPS runs NODE_ENV=production over HTTP (port 3000)
+// behind Docker, and secure:true on HTTP silently drops the cookie.
+const COOKIE_SECURE = process.env.COOKIE_SECURE === "true";
+
+function cookieOpts() {
+  return { httpOnly: true, path: COOKIE_PATH, sameSite: "lax" as const, maxAge: 60 * 60 * 2, secure: COOKIE_SECURE };
+}
 
 export const requireSession = createServerOnlyFn(async (): Promise<SessionPayload | null> => {
   const token = getCookie(COOKIE);
@@ -16,7 +26,7 @@ export const requireSession = createServerOnlyFn(async (): Promise<SessionPayloa
   // active admin/owner is never logged out mid-work — 2h of inactivity is.
   if (session && token) {
     try {
-      setCookie(COOKIE, signSession(session), { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 * 2 , secure: process.env.NODE_ENV === "production" });
+      setCookie(COOKIE, signSession(session), cookieOpts());
     } catch { /* response context unavailable — ignore */ }
   }
   return session;
@@ -29,7 +39,7 @@ export const getSession = createServerFn({ method: "GET" }).handler(async () => 
 export const loginOwner = createServerFn({ method: "POST" })
   .inputValidator((data: { email: string; password: string }) => data)
   .handler(async ({ data }) => {
-    if (!rateLimit(`login:${data.email.toLowerCase()}`, 10, 15 * 60 * 1000)) {
+    if (!rateLimit(`login:owner:${data.email.toLowerCase()}`, 10, 15 * 60 * 1000)) {
       return { error: "Trop de tentatives. Réessayez dans quelques minutes." };
     }
     const [owner] = await db.select().from(restaurantOwners).where(eq(restaurantOwners.email, data.email.toLowerCase()));
@@ -43,14 +53,14 @@ export const loginOwner = createServerFn({ method: "POST" })
       name: owner.name,
       restaurantId: owner.restaurantId,
     });
-    setCookie(COOKIE, token, { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 * 2 , secure: process.env.NODE_ENV === "production" });
+    setCookie(COOKIE, token, cookieOpts());
     return { success: true };
   });
 
 export const loginStaff = createServerFn({ method: "POST" })
   .inputValidator((data: { email: string; password: string }) => data)
   .handler(async ({ data }) => {
-    if (!rateLimit(`login:${data.email.toLowerCase()}`, 10, 15 * 60 * 1000)) {
+    if (!rateLimit(`login:staff:${data.email.toLowerCase()}`, 10, 15 * 60 * 1000)) {
       return { error: "Trop de tentatives. Réessayez dans quelques minutes." };
     }
     const [staff] = await db.select().from(staffUsers).where(eq(staffUsers.email, data.email.toLowerCase()));
@@ -65,14 +75,14 @@ export const loginStaff = createServerFn({ method: "POST" })
       restaurantId: staff.restaurantId,
       staffRole: staff.role,
     });
-    setCookie(COOKIE, token, { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 * 2 , secure: process.env.NODE_ENV === "production" });
+    setCookie(COOKIE, token, cookieOpts());
     return { success: true };
   });
 
 export const loginAdmin = createServerFn({ method: "POST" })
   .inputValidator((data: { email: string; password: string }) => data)
   .handler(async ({ data }) => {
-    if (!rateLimit(`login:${data.email.toLowerCase()}`, 10, 15 * 60 * 1000)) {
+    if (!rateLimit(`login:admin:${data.email.toLowerCase()}`, 10, 15 * 60 * 1000)) {
       return { error: "Trop de tentatives. Réessayez dans quelques minutes." };
     }
     const [admin] = await db.select().from(adminUsers).where(eq(adminUsers.email, data.email.toLowerCase()));
@@ -87,12 +97,12 @@ export const loginAdmin = createServerFn({ method: "POST" })
       adminRole: (admin.role as "super" | "admin") ?? "admin",
       permissions: (admin.permissions as string[]) ?? [],
     });
-    setCookie(COOKIE, token, { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 * 2 , secure: process.env.NODE_ENV === "production" });
+    setCookie(COOKIE, token, cookieOpts());
     return { success: true };
   });
 
 export const logout = createServerFn({ method: "POST" }).handler(async () => {
-  deleteCookie(COOKIE, { path: "/" });
+  deleteCookie(COOKIE, { path: COOKIE_PATH });
   return { success: true };
 });
 
@@ -188,6 +198,6 @@ export const updateAccountEmail = createServerFn({ method: "POST" })
         : session.role === "staff"
           ? { role: "staff" as const, id: session.id, email: newEmail, name: session.name, restaurantId: session.restaurantId, staffRole: session.staffRole }
           : { role: "owner" as const, id: session.id, email: newEmail, name: session.name, restaurantId: session.restaurantId };
-    setCookie(COOKIE, signSession(payload), { httpOnly: true, path: "/", sameSite: "lax", maxAge: 60 * 60 * 2, secure: process.env.NODE_ENV === "production" });
+    setCookie(COOKIE, signSession(payload), cookieOpts());
     return { success: true };
   });

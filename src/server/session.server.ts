@@ -20,11 +20,11 @@ export type SessionPayload =
 
 const SESSION_TTL_MS = 2 * 60 * 60 * 1000; // 2h — sliding, renewed on each authenticated request
 
-type SignedPayload = SessionPayload & { iat: number; exp: number };
+type SignedPayload = SessionPayload & { iat: number; exp: number; jti: string };
 
 export function signSession(payload: SessionPayload): string {
   const body = Buffer.from(
-    JSON.stringify({ ...payload, iat: Date.now(), exp: Date.now() + SESSION_TTL_MS } satisfies SignedPayload),
+    JSON.stringify({ ...payload, iat: Date.now(), exp: Date.now() + SESSION_TTL_MS, jti: randomBytes(8).toString("hex") } satisfies SignedPayload),
   ).toString("base64url");
   const sig = createHmac("sha256", getSecret()).update(body).digest("base64url");
   return `${body}.${sig}`;
