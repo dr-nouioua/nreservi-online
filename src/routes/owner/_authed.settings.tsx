@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { AtSign, Baby, Car, ChevronRight, DoorOpen, Droplets, ImagePlus, KeyRound, Lightbulb, MessageCircle, Pencil, Plus, Save, Trash2, Upload } from 'lucide-react'
-import { getOwnerOverview, updateRestaurantSettings, addArea, addTable, deleteTable, renameArea, deleteArea, setBabySeatAvailable, setHasParking, setHasShowers, setHasLockerRooms, setHasNightLighting, setHasChildSeat } from '../../server/owner.functions'
+import { getOwnerOverview, updateRestaurantSettings, addArea, addTable, deleteTable, renameArea, deleteArea, setBabySeatAvailable, setHasParking, setHasShowers, setHasLockerRooms, setHasNightLighting, setHasChildSeat, setSlotDuration } from '../../server/owner.functions'
 import { changePassword, updateAccountEmail } from '../../server/auth.functions'
 
 export const Route = createFileRoute('/owner/_authed/settings')({
@@ -36,6 +36,14 @@ function SettingsPage() {
   const [lockerRooms, setLockerRooms] = useState(initial.restaurant?.hasLockerRooms ?? false)
   const [nightLighting, setNightLighting] = useState(initial.restaurant?.hasNightLighting ?? false)
   const [childSeat, setChildSeat] = useState(initial.restaurant?.hasChildSeat ?? false)
+  const [slotDuration, setSlotDuration] = useState(initial.restaurant?.slotDuration ?? 30)
+
+  const category = initial.restaurant?.category ?? 'restaurant'
+  const isFootball = category === 'football_pitch'
+  const isCarRental = category === 'car_rental'
+  const isBarbershop = category === 'barbershop'
+  const isSalonOrSpa = category === 'beauty_salon' || category === 'spa'
+  const showTables = category === 'restaurant'
   const [newAreaName, setNewAreaName] = useState('')
   const [editingAreaId, setEditingAreaId] = useState<number | null>(null)
   const [areaName, setAreaName] = useState('')
@@ -60,6 +68,7 @@ function SettingsPage() {
       setTimeout(() => setSaved(null), 3500)
       return
     }
+    await setSlotDuration({ data: { duration: slotDuration } })
     setSaved('Enregistré')
     setTimeout(() => setSaved(null), 2000)
   }
@@ -273,7 +282,9 @@ function SettingsPage() {
 
       {initial.restaurant?.subscriptionTier === 'premium' ? (
       <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 p-6 space-y-3 shadow-sm">
-        <p className="font-semibold text-stone-900 dark:text-stone-100">Espaces & tables</p>
+        <p className="font-semibold text-stone-900 dark:text-stone-100">
+          {isFootball ? 'Terrains' : (isSalonOrSpa || isBarbershop) ? 'Postes' : isCarRental ? 'Véhicules' : 'Espaces & tables'}
+        </p>
         {overview.areas.map((area) => (
           <div key={area.id} className="rounded-lg border border-stone-100 dark:border-stone-800 p-3">
             <div className="flex items-center justify-between gap-2">
@@ -299,23 +310,30 @@ function SettingsPage() {
             </div>
             {areaMessage && editingAreaId === null && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{areaMessage}</p>}
             <ul className="mt-2 space-y-1">
-              {overview.tables.filter((t) => t.areaId === area.id).map((t) => (
-                <li key={t.id} className="flex items-center justify-between text-sm text-stone-600 dark:text-stone-400">
-                  <span>{t.label} — {t.capacity} places ({t.shape})</span>
-                  <button onClick={() => removeTable(t.id)} className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300">
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+              {showTables ? (
+                overview.tables.filter((t) => t.areaId === area.id).map((t) => (
+                  <li key={t.id} className="flex items-center justify-between text-sm text-stone-600 dark:text-stone-400">
+                    <span>{t.label} — {t.capacity} places ({t.shape})</span>
+                    <button onClick={() => removeTable(t.id)} className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                ))
+              ) : (
+                <li className="text-sm text-stone-500 dark:text-stone-400 italic">
+                  {isFootball ? 'Terrain de football' : (isSalonOrSpa || isBarbershop) ? 'Poste de travail' : isCarRental ? 'Véhicule' : ''}
                 </li>
-              ))}
+              )}
             </ul>
           </div>
         ))}
 
         <form onSubmit={createArea} className="flex gap-2 pt-2">
-          <input placeholder="Nom du nouvel espace" value={newAreaName} onChange={(e) => setNewAreaName(e.target.value)} className="flex-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm" />
-          <button className="flex items-center gap-1 rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"><Plus className="h-4 w-4" /> Area</button>
+          <input placeholder={isFootball ? 'Nom du terrain' : (isSalonOrSpa || isBarbershop) ? 'Nom du poste' : isCarRental ? 'Type de véhicule' : 'Nom du nouvel espace'} value={newAreaName} onChange={(e) => setNewAreaName(e.target.value)} className="flex-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm" />
+          <button className="flex items-center gap-1 rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"><Plus className="h-4 w-4" /> Ajouter</button>
         </form>
 
+        {showTables && (
         <form onSubmit={createTable} className="flex gap-2 flex-wrap pt-2">
           <select value={newTable.areaId} onChange={(e) => setNewTable({ ...newTable, areaId: Number(e.target.value) })} className="px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm">
             {overview.areas.map((a) => (
@@ -331,6 +349,7 @@ function SettingsPage() {
           </select>
           <button className="flex items-center gap-1 rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"><Plus className="h-4 w-4" /> Table</button>
         </form>
+        )}
       </div>
 
       ) : (
@@ -338,6 +357,28 @@ function SettingsPage() {
           La gestion des espaces & tables est incluse dans la formule <span className="font-semibold">Premium</span>.
         </div>
       )}
+
+      <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 p-6 space-y-3 shadow-sm">
+        <p className="font-semibold text-stone-900 dark:text-stone-100">Créneaux horaires</p>
+        <p className="text-sm text-stone-500 dark:text-stone-400">Durée de chaque créneau de réservation affiché aux clients.</p>
+        <div className="flex items-center gap-3">
+          <label className="text-sm text-stone-700 dark:text-stone-300">Durée :</label>
+          <select
+            value={slotDuration}
+            onChange={(e) => setSlotDuration(Number(e.target.value))}
+            className="rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700"
+          >
+            <option value={15}>15 minutes</option>
+            <option value={30}>30 minutes</option>
+            <option value={45}>45 minutes</option>
+            <option value={60}>1 heure</option>
+            <option value={90}>1h30</option>
+            <option value={120}>2 heures</option>
+            <option value={150}>2h30</option>
+            <option value={180}>3 heures</option>
+          </select>
+        </div>
+      </div>
 
       <form onSubmit={updateEmail} className="bg-white rounded-lg border border-stone-200 p-6 space-y-3 shadow-sm dark:bg-stone-900 dark:border-stone-800">
         <p className="font-semibold text-stone-900 flex items-center gap-2 dark:text-stone-100"><AtSign className="h-4 w-4" /> E-mail de connexion</p>

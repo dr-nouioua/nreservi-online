@@ -59,7 +59,8 @@ export const restaurants = pgTable("restaurants", {
     hasLockerRooms: boolean("has_locker_rooms").notNull().default(false), // football: locker rooms badge
     hasNightLighting: boolean("has_night_lighting").notNull().default(false), // football: night lighting badge
     hasChildSeat: boolean("has_child_seat").notNull().default(false), // car rental: child seat on request
-   facebookUrl: text("facebook_url"),
+    slotDuration: integer("slot_duration").notNull().default(30), // minutes per time slot (15, 30, 45, 60, 90, 120, 150, 180)
+    facebookUrl: text("facebook_url"),
    instagramUrl: text("instagram_url"),
    tiktokUrl: text("tiktok_url"),
    mapsUrl: text("maps_url"), // hidden Google Maps destination behind the clickable address

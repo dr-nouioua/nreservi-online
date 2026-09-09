@@ -92,10 +92,41 @@ export const getAvailability = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     // Expired / suspended / pending restaurants expose no slots at all.
     const [restaurantRow] = await db
-      .select({ status: restaurants.status, subscriptionEnd: restaurants.subscriptionEnd })
+      .select({ status: restaurants.status, subscriptionEnd: restaurants.subscriptionEnd, slotDuration: restaurants.slotDuration, openingHours: restaurants.openingHours })
       .from(restaurants)
       .where(eq(restaurants.id, data.restaurantId));
     if (!restaurantRow || !isSubscriptionValid(restaurantRow)) return [];
+
+    const slotDuration = restaurantRow.slotDuration ?? 30;
+    const openingHours = (restaurantRow.openingHours as Record<string, { open: string; close: string }[]>) ?? {};
+
+    // Get day of week from date (0=Sunday, 1=Monday, etc.)
+    const dateObj = new Date(data.date + 'T12:00:00');
+    const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+    const dayKey = dayNames[dateObj.getDay()];
+    const dayHours = openingHours[dayKey] ?? [];
+
+    // Generate slots based on opening hours and slot duration
+    const allSlots: string[] = [];
+    for (const period of dayHours) {
+      const [openH, openM] = period.open.split(':').map(Number);
+      const [closeH, closeM] = period.close.split(':').map(Number);
+      const openMinutes = openH * 60 + openM;
+      const closeMinutes = closeH * 60 + closeM;
+      for (let m = openMinutes; m + slotDuration <= closeMinutes; m += slotDuration) {
+        const h = Math.floor(m / 60);
+        const min = m % 60;
+        allSlots.push(`${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`);
+      }
+    }
+
+    // If no opening hours configured, use default slots
+    if (allSlots.length === 0) {
+      const defaultSlots = ["12:00", "12:30", "13:00", "13:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00"];
+      for (let i = 0; i < defaultSlots.length; i += Math.max(1, Math.floor(30 / slotDuration))) {
+        allSlots.push(defaultSlots[i]);
+      }
+    }
 
     const tableRows = await db
       .select()
@@ -115,8 +146,7 @@ export const getAvailability = createServerFn({ method: "GET" })
         ),
       );
 
-    const slots = ["12:00", "12:30", "13:00", "13:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00"];
-    return slots.map((slot) => {
+    return allSlots.map((slot) => {
       const bookedTableIds = new Set(dayRes.filter((r) => r.time.slice(0, 5) === slot).map((r) => r.tableId));
       const availableTables = suitable.filter((t) => !bookedTableIds.has(t.id));
       return { time: slot, available: availableTables.length > 0, tableCount: availableTables.length };

@@ -394,6 +394,14 @@ export const setHasChildSeat = createServerFn({ method: "POST" })
     return { success: true };
   });
 
+export const setSlotDuration = createServerFn({ method: "POST" })
+  .inputValidator((data: { duration: number }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    await db.update(restaurants).set({ slotDuration: data.duration }).where(eq(restaurants.id, restaurantId));
+    return { success: true };
+  });
+
 export const setMenuFixed = createServerFn({ method: "POST" })
   .inputValidator((data: { fixed: boolean }) => data)
   .handler(async ({ data }) => {

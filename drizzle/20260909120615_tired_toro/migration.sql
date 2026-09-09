@@ -1,0 +1,1 @@
+ALTER TABLE "restaurants" ADD COLUMN "slot_duration" integer DEFAULT 30 NOT NULL;
