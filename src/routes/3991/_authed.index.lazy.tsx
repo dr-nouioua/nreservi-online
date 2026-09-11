@@ -88,9 +88,8 @@ function AdminIndex() {
   const initial = Route.useLoaderData()
   const ctx = Route.useRouteContext() as Record<string, any> | undefined
   const session = ctx?.session as { adminRole: 'super' | 'admin'; analyticsCategories?: string[] | null } | undefined
-  if (!session) return null
-  const isSuper = session.adminRole === 'super'
-  const allowedCategories = isSuper ? null : (session.analyticsCategories ?? [])
+  const isSuper = session?.adminRole === 'super'
+  const allowedCategories = isSuper ? null : (session?.analyticsCategories ?? [])
   const [restaurants, setRestaurants] = useState(() =>
     allowedCategories && allowedCategories.length > 0
       ? initial.restaurants.filter((r: any) => allowedCategories.includes(r.category ?? 'restaurant'))
@@ -104,6 +103,7 @@ function AdminIndex() {
   const [eventPicked, setEventPicked] = useState<Set<number>>(new Set())
   const [eventMessage, setEventMessage] = useState<string | null>(null)
   const [prospectStats, setProspectStats] = useState<any>(null)
+  if (!session) return null
 
   async function refresh() {
     const [r, a] = await Promise.all([listAllRestaurants(), getPlatformAnalytics()])

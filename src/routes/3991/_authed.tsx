@@ -55,10 +55,9 @@ const nav: { to: string; label: string; icon: typeof Building2; module?: string;
 function AdminLayout() {
   const ctx = Route.useRouteContext() as Record<string, any> | undefined
   const session = ctx?.session as { name: string; email: string; adminRole: 'super' | 'admin'; permissions: string[] } | undefined
-  if (!session) return null
   const visibleNav = nav.filter((item) => {
-    if (item.superOnly && session.adminRole !== 'super') return false
-    return !item.module || adminHasModule(session, item.module)
+    if (item.superOnly && session?.adminRole !== 'super') return false
+    return !item.module || (session ? adminHasModule(session, item.module) : false)
   })
   const router = useRouter()
 
@@ -73,6 +72,8 @@ function AdminLayout() {
     document.body.style.overflow = drawerOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [drawerOpen])
+
+  if (!session) return null
 
   function toggleCollapsed() {
     setCollapsed((c) => {

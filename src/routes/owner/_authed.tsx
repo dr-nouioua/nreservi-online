@@ -83,9 +83,8 @@ function OwnerLayout() {
   const ctx = Route.useRouteContext() as Record<string, any> | undefined
   const session = ctx?.session as { name: string; email: string } | undefined
   const subscription = ctx?.subscription as { effective: string; end: string | null; tier: string; name?: string; category: string } | undefined
-  if (!session) return null
   const router = useRouter()
-  const nav = getNavItems(subscription.category)
+  const nav = getNavItems(subscription?.category ?? 'restaurant')
 
   // Drawer (mobile/tablet) + icon-only collapse (desktop). Persisted.
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -101,6 +100,8 @@ function OwnerLayout() {
     document.body.style.overflow = drawerOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [drawerOpen])
+
+  if (!session) return null
 
   function toggleCollapsed() {
     setCollapsed((c) => {
