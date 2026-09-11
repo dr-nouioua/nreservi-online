@@ -22,7 +22,11 @@ export const requireSession = createServerOnlyFn(async (): Promise<SessionPayloa
 });
 
 export const getSession = createServerFn({ method: "GET" }).handler(async () => {
-  return requireSession();
+  try {
+    return await requireSession();
+  } catch {
+    return null;
+  }
 });
 
 export const loginOwner = createServerFn({ method: "POST" })

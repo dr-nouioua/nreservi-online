@@ -39,21 +39,15 @@ function FootballIcon({ className }: { className?: string }) {
 }
 
 export const Route = createFileRoute('/owner/_authed')({
-  beforeLoad: async ({ location }) => {
-    try {
-      const session = await getSession()
-      if (!session || (session.role !== 'owner' && session.role !== 'staff')) {
-        throw redirect({ to: '/owner/login' })
-      }
-      // Ungated subscription snapshot — decides whether the workspace renders
-      // at all. Expired/suspended restaurants get the lock screen below.
-      const subscription = await getOwnSubscription()
-      return { session, subscription }
-    } catch (err) {
-      if (err && typeof err === 'object' && 'isRedirect' in err) throw err
-      console.error('[owner beforeLoad]', location.pathname, err)
+  beforeLoad: async () => {
+    const session = await getSession()
+    if (!session || (session.role !== 'owner' && session.role !== 'staff')) {
       throw redirect({ to: '/owner/login' })
     }
+    // Ungated subscription snapshot — decides whether the workspace renders
+    // at all. Expired/suspended restaurants get the lock screen below.
+    const subscription = await getOwnSubscription()
+    return { session, subscription }
   },
   component: OwnerLayout,
 })
