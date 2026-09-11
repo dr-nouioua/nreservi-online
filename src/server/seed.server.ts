@@ -39,10 +39,18 @@ export async function ensureSeeded() {
 
   await db.insert(adminUsers).values({
         role: "super",
-        permissions: ["onboard", "subscriptions", "emails", "ads", "mail"],
+        permissions: ["onboard", "subscriptions", "emails", "ads", "contacts", "mail"],
     email: "admin@platform.dev",
     passwordHash: hashPassword("admin123"),
     name: "Platform Admin",
+  });
+
+  await db.insert(adminUsers).values({
+        role: "admin",
+        permissions: ["contacts", "ads"],
+    email: "agent@platform.dev",
+    passwordHash: hashPassword("agent1234"),
+    name: "Agent Commercial Demo",
   });
 
   const hours = {
