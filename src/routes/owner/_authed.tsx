@@ -58,21 +58,21 @@ export const Route = createFileRoute('/owner/_authed')({
 })
 
 function getNavItems(category: string) {
-  const menuConfig: Record<string, { label: string; icon: typeof UtensilsCrossed }> = {
-    restaurant: { label: 'Menu', icon: UtensilsCrossed },
-    beauty_salon: { label: 'Prestations', icon: Scissors },
-    spa: { label: 'Soins', icon: Sparkles },
-    football_pitch: { label: 'Terrains', icon: FootballIcon },
-    car_rental: { label: 'Véhicules', icon: Car },
-    barbershop: { label: 'Prestations', icon: Scissors },
-    doctor: { label: 'Services', icon: Stethoscope },
+  const menuConfig: Record<string, { label: string; icon: typeof UtensilsCrossed; to: string }> = {
+    restaurant: { label: 'Menu', icon: UtensilsCrossed, to: '/owner/menu' },
+    beauty_salon: { label: 'Prestations', icon: Scissors, to: '/owner/menu' },
+    spa: { label: 'Soins', icon: Sparkles, to: '/owner/menu' },
+    football_pitch: { label: 'Terrains', icon: FootballIcon, to: '/owner/menu' },
+    car_rental: { label: 'Véhicules', icon: Car, to: '/owner/menu' },
+    barbershop: { label: 'Prestations', icon: Scissors, to: '/owner/menu' },
+    doctor: { label: 'Médecins', icon: Stethoscope, to: '/owner/doctors' },
   }
   const m = menuConfig[category] ?? menuConfig.restaurant
   return [
     { to: '/owner', label: 'Réservations', icon: LayoutDashboard },
     { to: '/owner/analytics', label: 'Analytics', icon: BarChart3 },
     { to: '/owner/marketing', label: 'Marketing', icon: Megaphone },
-    { to: '/owner/menu', label: m.label, icon: m.icon },
+    { to: m.to, label: m.label, icon: m.icon },
     { to: '/owner/settings', label: 'Paramètres', icon: Settings },
     { to: '/owner/settings/whatsapp', label: 'WhatsApp', icon: MessageCircle },
     { to: '/owner/billing', label: 'Abonnement', icon: CreditCard },
