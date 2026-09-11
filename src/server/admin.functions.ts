@@ -281,7 +281,7 @@ export const createAdmin = createServerFn({ method: "POST" })
     const [dup] = await db.select({ id: adminUsers.id }).from(adminUsers).where(eq(adminUsers.email, email));
     if (dup) return { error: "Cet e-mail est déjà utilisé par un administrateur." };
 
-    const validModules = new Set(["onboard", "subscriptions", "emails", "ads", "mail"]);
+    const validModules = new Set(["onboard", "subscriptions", "emails", "ads", "contacts", "mail"]);
     const permissions = (data.permissions ?? []).filter((p) => validModules.has(p));
 
     const [admin] = await db
@@ -298,7 +298,7 @@ export const updateAdminAccess = createServerFn({ method: "POST" })
     const session = await requireAdmin();
     if (session.adminRole !== "super") return { error: "Seul le super administrateur peut modifier les privilèges." };
     if (data.id === session.id) return { error: "Vous ne pouvez pas modifier vos propres privilèges." };
-    const validModules = new Set(["onboard", "subscriptions", "emails", "ads", "mail"]);
+    const validModules = new Set(["onboard", "subscriptions", "emails", "ads", "contacts", "mail"]);
     const permissions = (data.permissions ?? []).filter((p) => validModules.has(p));
     const validCategories = new Set(["restaurant", "beauty_salon", "spa", "football_pitch", "car_rental", "barbershop", "doctor"]);
     const analyticsCategories = (data.analyticsCategories ?? []).filter((c) => validCategories.has(c));

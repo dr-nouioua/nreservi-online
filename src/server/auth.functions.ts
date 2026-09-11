@@ -28,66 +28,81 @@ export const getSession = createServerFn({ method: "GET" }).handler(async () => 
 export const loginOwner = createServerFn({ method: "POST" })
   .inputValidator((data: { email: string; password: string }) => data)
   .handler(async ({ data }) => {
-    if (!rateLimit(`login:owner:${data.email.toLowerCase()}`, 10, 15 * 60 * 1000)) {
-      return { error: "Trop de tentatives. Réessayez dans quelques minutes." };
+    try {
+      if (!rateLimit(`login:owner:${data.email.toLowerCase()}`, 10, 15 * 60 * 1000)) {
+        return { error: "Trop de tentatives. Réessayez dans quelques minutes." };
+      }
+      const [owner] = await db.select().from(restaurantOwners).where(eq(restaurantOwners.email, data.email.toLowerCase()));
+      if (!owner || !verifyPassword(data.password, owner.passwordHash)) {
+        return { error: "E-mail ou mot de passe incorrect" };
+      }
+      const token = signSession({
+        role: "owner",
+        id: owner.id,
+        email: owner.email,
+        name: owner.name,
+        restaurantId: owner.restaurantId,
+      });
+      setCookie(COOKIE_NAME, token, cookieOpts());
+      return { success: true };
+    } catch (err) {
+      console.error("[loginOwner]", err);
+      return { error: "Une erreur est survenue. Réessayez dans un instant." };
     }
-    const [owner] = await db.select().from(restaurantOwners).where(eq(restaurantOwners.email, data.email.toLowerCase()));
-    if (!owner || !verifyPassword(data.password, owner.passwordHash)) {
-      return { error: "E-mail ou mot de passe incorrect" };
-    }
-    const token = signSession({
-      role: "owner",
-      id: owner.id,
-      email: owner.email,
-      name: owner.name,
-      restaurantId: owner.restaurantId,
-    });
-    setCookie(COOKIE_NAME, token, cookieOpts());
-    return { success: true };
   });
 
 export const loginStaff = createServerFn({ method: "POST" })
   .inputValidator((data: { email: string; password: string }) => data)
   .handler(async ({ data }) => {
-    if (!rateLimit(`login:staff:${data.email.toLowerCase()}`, 10, 15 * 60 * 1000)) {
-      return { error: "Trop de tentatives. Réessayez dans quelques minutes." };
+    try {
+      if (!rateLimit(`login:staff:${data.email.toLowerCase()}`, 10, 15 * 60 * 1000)) {
+        return { error: "Trop de tentatives. Réessayez dans quelques minutes." };
+      }
+      const [staff] = await db.select().from(staffUsers).where(eq(staffUsers.email, data.email.toLowerCase()));
+      if (!staff || !verifyPassword(data.password, staff.passwordHash)) {
+        return { error: "E-mail ou mot de passe incorrect" };
+      }
+      const token = signSession({
+        role: "staff",
+        id: staff.id,
+        email: staff.email,
+        name: staff.name,
+        restaurantId: staff.restaurantId,
+        staffRole: staff.role,
+      });
+      setCookie(COOKIE_NAME, token, cookieOpts());
+      return { success: true };
+    } catch (err) {
+      console.error("[loginStaff]", err);
+      return { error: "Une erreur est survenue. Réessayez dans un instant." };
     }
-    const [staff] = await db.select().from(staffUsers).where(eq(staffUsers.email, data.email.toLowerCase()));
-    if (!staff || !verifyPassword(data.password, staff.passwordHash)) {
-      return { error: "E-mail ou mot de passe incorrect" };
-    }
-    const token = signSession({
-      role: "staff",
-      id: staff.id,
-      email: staff.email,
-      name: staff.name,
-      restaurantId: staff.restaurantId,
-      staffRole: staff.role,
-    });
-    setCookie(COOKIE_NAME, token, cookieOpts());
-    return { success: true };
   });
 
 export const loginAdmin = createServerFn({ method: "POST" })
   .inputValidator((data: { email: string; password: string }) => data)
   .handler(async ({ data }) => {
-    if (!rateLimit(`login:admin:${data.email.toLowerCase()}`, 10, 15 * 60 * 1000)) {
-      return { error: "Trop de tentatives. Réessayez dans quelques minutes." };
+    try {
+      if (!rateLimit(`login:admin:${data.email.toLowerCase()}`, 10, 15 * 60 * 1000)) {
+        return { error: "Trop de tentatives. Réessayez dans quelques minutes." };
+      }
+      const [admin] = await db.select().from(adminUsers).where(eq(adminUsers.email, data.email.toLowerCase()));
+      if (!admin || !verifyPassword(data.password, admin.passwordHash)) {
+        return { error: "E-mail ou mot de passe incorrect" };
+      }
+      const token = signSession({
+        role: "admin",
+        id: admin.id,
+        email: admin.email,
+        name: admin.name,
+        adminRole: (admin.role as "super" | "admin") ?? "admin",
+        permissions: (admin.permissions as string[]) ?? [],
+      });
+      setCookie(COOKIE_NAME, token, cookieOpts());
+      return { success: true };
+    } catch (err) {
+      console.error("[loginAdmin]", err);
+      return { error: "Une erreur est survenue. Réessayez dans un instant." };
     }
-    const [admin] = await db.select().from(adminUsers).where(eq(adminUsers.email, data.email.toLowerCase()));
-    if (!admin || !verifyPassword(data.password, admin.passwordHash)) {
-      return { error: "E-mail ou mot de passe incorrect" };
-    }
-    const token = signSession({
-      role: "admin",
-      id: admin.id,
-      email: admin.email,
-      name: admin.name,
-      adminRole: (admin.role as "super" | "admin") ?? "admin",
-      permissions: (admin.permissions as string[]) ?? [],
-    });
-    setCookie(COOKIE_NAME, token, cookieOpts());
-    return { success: true };
   });
 
 export const logout = createServerFn({ method: "POST" }).handler(async () => {
