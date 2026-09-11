@@ -81,12 +81,10 @@ function getNavItems(category: string) {
 }
 
 function OwnerLayout() {
-  const ctx = Route.useRouteContext() as {
-    session?: { name: string; email: string }
-    subscription?: { effective: string; end: string | null; tier: string; name?: string; category: string }
-  }
-  if (!ctx.session) return null
-  const { session, subscription } = ctx as { session: { name: string; email: string }; subscription: { effective: string; end: string | null; tier: string; name?: string; category: string } }
+  const ctx = Route.useRouteContext() as Record<string, any> | undefined
+  const session = ctx?.session as { name: string; email: string } | undefined
+  const subscription = ctx?.subscription as { effective: string; end: string | null; tier: string; name?: string; category: string } | undefined
+  if (!session) return null
   const router = useRouter()
   const nav = getNavItems(subscription.category)
 
