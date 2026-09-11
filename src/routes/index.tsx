@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
-import { Car, MapPin, Scissors, Search, SlidersHorizontal, Sparkles, Stethoscope, UtensilsCrossed } from 'lucide-react'
+import { Car, MapPin, Scissors, Search, Sparkles, Stethoscope, UtensilsCrossed } from 'lucide-react'
 import { listRestaurants } from '../server/booking.functions'
 import { SiteHeader } from '../components/SiteHeader'
 import { SiteFooter } from '../components/SiteFooter'
@@ -29,7 +29,6 @@ export const Route = createFileRoute('/')({
 })
 
 const CATEGORIES = [
-  { key: '', label: 'Tout', icon: SlidersHorizontal, color: 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300', activeColor: 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900' },
   { key: 'restaurant', label: 'Restaurants', icon: UtensilsCrossed, color: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300', activeColor: 'bg-amber-600 text-white dark:bg-amber-500 dark:text-white' },
   { key: 'beauty_salon', label: 'Salons', icon: Scissors, color: 'bg-pink-50 text-pink-700 dark:bg-pink-500/10 dark:text-pink-300', activeColor: 'bg-pink-600 text-white dark:bg-pink-500 dark:text-white' },
   { key: 'spa', label: 'Spa', icon: Sparkles, color: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300', activeColor: 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-white' },
@@ -80,7 +79,6 @@ function Home() {
   })
 
   const categoryCounts = {
-    '': restaurants.length,
     restaurant: restaurants.filter((r) => r.category === 'restaurant').length,
     beauty_salon: restaurants.filter((r) => r.category === 'beauty_salon').length,
     spa: restaurants.filter((r) => r.category === 'spa').length,
@@ -122,29 +120,24 @@ function Home() {
                 </div>
                 {/* Category grid */}
                 <div className="mt-3 pt-3 border-t border-stone-200 dark:border-stone-800">
-                  <div className="grid grid-cols-3 gap-2 lg:grid-cols-7">
+                  <div className="grid grid-cols-3 gap-2 lg:grid-cols-6">
                     {CATEGORIES.map((cat) => {
                       const count = categoryCounts[cat.key as keyof typeof categoryCounts] ?? 0
                       const isActive = category === cat.key
-                      const isAll = cat.key === ''
                       return (
                         <button
                           key={cat.key}
-                          onClick={() => { setCategory(cat.key); setCuisine('all') }}
+                          onClick={() => { setCategory(category === cat.key ? '' : cat.key); setCuisine('all') }}
                           className={`group flex flex-col items-center gap-1.5 rounded-lg px-2 py-3 text-center font-medium transition-all duration-200 border ${
                             isActive
                               ? `${cat.activeColor} border-transparent shadow-md`
-                              : isAll
-                                ? 'bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:border-stone-700 dark:hover:bg-stone-700'
-                                : `${cat.color} border-transparent hover:shadow-sm`
+                              : `${cat.color} border-transparent hover:shadow-sm`
                           }`}
                         >
                           <span className={`flex h-9 w-9 items-center justify-center rounded-full transition ${
                             isActive
                               ? 'bg-white/25 dark:bg-black/25'
-                              : isAll
-                                ? 'bg-stone-200 dark:bg-stone-700'
-                                : 'bg-black/5 dark:bg-white/10 group-hover:bg-black/10 dark:group-hover:bg-white/15'
+                              : 'bg-black/5 dark:bg-white/10 group-hover:bg-black/10 dark:group-hover:bg-white/15'
                           }`}>
                             <cat.icon className="h-4 w-4" />
                           </span>
