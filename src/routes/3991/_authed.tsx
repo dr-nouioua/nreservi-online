@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, redirect, useRouter, useRouterState } from '@tanstack/react-router'
+import { createFileRoute, Link, Outlet, redirect, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import {
   Building2,
@@ -55,25 +55,25 @@ const nav: { to: string; label: string; icon: typeof Building2; module?: string;
 function AdminLayout() {
   const ctx = Route.useRouteContext() as Record<string, any> | undefined
   const session = ctx?.session as { name: string; email: string; adminRole: 'super' | 'admin'; permissions: string[] } | undefined
-  const visibleNav = nav.filter((item) => {
-    if (item.superOnly && session?.adminRole !== 'super') return false
-    return !item.module || (session ? adminHasModule(session, item.module) : false)
-  })
-  const router = useRouter()
 
+  const router = useRouter()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(
     () => typeof window !== 'undefined' && localStorage.getItem('nreservi-admin-sidebar') === 'collapsed',
   )
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
 
-  useEffect(() => { setDrawerOpen(false) }, [pathname])
+  useEffect(() => { setDrawerOpen(false) }, [router.state.location.pathname])
   useEffect(() => {
     document.body.style.overflow = drawerOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [drawerOpen])
 
   if (!session) return null
+
+  const visibleNav = nav.filter((item) => {
+    if (item.superOnly && session.adminRole !== 'super') return false
+    return !item.module || adminHasModule(session, item.module)
+  })
 
   function toggleCollapsed() {
     setCollapsed((c) => {

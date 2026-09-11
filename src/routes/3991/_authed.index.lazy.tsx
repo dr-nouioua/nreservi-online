@@ -103,6 +103,12 @@ function AdminIndex() {
   const [eventPicked, setEventPicked] = useState<Set<number>>(new Set())
   const [eventMessage, setEventMessage] = useState<string | null>(null)
   const [prospectStats, setProspectStats] = useState<any>(null)
+
+  // Load prospect stats on mount
+  useEffect(() => {
+    getProspectStats().then(setProspectStats).catch(() => {})
+  }, [])
+
   if (!session) return null
 
   async function refresh() {
@@ -110,11 +116,6 @@ function AdminIndex() {
     setRestaurants(r)
     setAnalytics(a)
   }
-
-  // Load prospect stats on mount
-  useEffect(() => {
-    getProspectStats().then(setProspectStats).catch(() => {})
-  }, [])
 
   async function applyEventTheme() {
     const ids = eventScope === 'all' ? null : [...eventPicked]

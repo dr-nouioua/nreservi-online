@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, redirect, useRouter, useRouterState } from '@tanstack/react-router'
+import { createFileRoute, Link, Outlet, redirect, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import {
   BarChart3,
@@ -91,10 +91,8 @@ function OwnerLayout() {
   const [collapsed, setCollapsed] = useState(
     () => typeof window !== 'undefined' && localStorage.getItem('nreservi-sidebar') === 'collapsed',
   )
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
-
   // Close the drawer whenever the route changes (spec §5).
-  useEffect(() => { setDrawerOpen(false) }, [pathname])
+  useEffect(() => { setDrawerOpen(false) }, [router.state.location.pathname])
   // Lock body scroll while the drawer is open on mobile.
   useEffect(() => {
     document.body.style.overflow = drawerOpen ? 'hidden' : ''

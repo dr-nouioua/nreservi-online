@@ -32,16 +32,16 @@ function AdminAccountPage() {
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null)
 
+  const [permEditing, setPermEditing] = useState<number | null>(null)
+  const [permDraft, setPermDraft] = useState<string[]>([])
+  const [catDraft, setCatDraft] = useState<string[]>([])
+
   if (!session) return null
 
   async function refresh() {
     const data = await listAdmins()
     setAdmins(data.admins)
   }
-
-  const [permEditing, setPermEditing] = useState<number | null>(null)
-  const [permDraft, setPermDraft] = useState<string[]>([])
-  const [catDraft, setCatDraft] = useState<string[]>([])
 
   const CATEGORY_LABELS: Record<string, string> = {
     restaurant: 'Restaurant',
