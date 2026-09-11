@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, and, desc, count, inArray } from "drizzle-orm";
 import { db } from "../../db/index.js";
-import { adminUsers, ads, mailSettings, marketingCampaigns, marketingRules, marketingSegments, marketingTemplates, menuCategories, menuItems, restaurants, restaurantOwners, reservations, areas, staffUsers, tables, whatsappMessages, campaignLogs } from "../../db/schema.js";
+import { adminUsers, ads, mailSettings, marketingCampaigns, marketingRules, marketingSegments, marketingTemplates, menuCategories, menuItems, restaurants, restaurantOwners, reservations, areas, staffUsers, tables, whatsappMessages, campaignLogs, prospectContacts, prospectActivities } from "../../db/schema.js";
 import { requireSession } from "./auth.functions.js";
 import { appendSubscriptionHistory, syncExpiredSubscriptionsInternal } from "./subscription.server.js";
 import { computeSubscriptionStatus, daysUntil, SUBSCRIPTION_WARNING_DAYS } from "./subscriptions.shared.js";
@@ -1010,3 +1010,196 @@ export const listEventThemes = createServerFn({ method: "GET" }).handler(async (
   const rows = await db.select({ id: restaurants.id, name: restaurants.name, eventTheme: restaurants.eventTheme }).from(restaurants).orderBy(restaurants.name);
   return { themes: EVENT_THEMES, restaurants: rows };
 });
+
+// ---------- Prospection (commercial agents) ----------
+
+export const listProspects = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const session = await requireAdmin();
+    const isSuper = session.role === "super";
+    const rows = await db
+      .select()
+      .from(prospectContacts)
+      .where(isSuper ? undefined : eq(prospectContacts.agentId, session.id))
+      .orderBy(desc(prospectContacts.updatedAt));
+    return rows;
+  });
+
+export const getProspectStats = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const session = await requireAdmin();
+    const isSuper = session.role === "super";
+    const agentCond = isSuper ? undefined : eq(prospectContacts.agentId, session.id);
+
+    const all = await db.select().from(prospectContacts).where(agentCond);
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const thisMonth = all.filter((r) => r.createdAt && r.createdAt >= monthStart);
+    const byStatus: Record<string, number> = {};
+    for (const r of all) {
+      byStatus[r.status ?? "new"] = (byStatus[r.status ?? "new"] ?? 0) + 1;
+    }
+
+    const newThisMonth = thisMonth.length;
+    const inProgress = (byStatus["qualified"] ?? 0) + (byStatus["proposal"] ?? 0) + (byStatus["negotiation"] ?? 0);
+    const converted = byStatus["onboarded"] ?? 0;
+    const total = all.length;
+    const conversionRate = total > 0 ? Math.round((converted / total) * 100) : 0;
+
+    // Pending follow-ups
+    const pending = all.filter((r) => r.status !== "onboarded" && r.status !== "lost");
+
+    return { newThisMonth, inProgress, converted, conversionRate, pending: pending.length, byStatus };
+  });
+
+export const getAgentStats = createServerFn({ method: "GET" })
+  .inputValidator((data: { agentId?: number }) => data)
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    const agentCond = data.agentId ? eq(prospectContacts.agentId, data.agentId) : undefined;
+    const all = await db.select().from(prospectContacts).where(agentCond);
+
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const thisMonth = all.filter((r) => r.createdAt && r.createdAt >= monthStart);
+    const byStatus: Record<string, number> = {};
+    for (const r of all) {
+      byStatus[r.status ?? "new"] = (byStatus[r.status ?? "new"] ?? 0) + 1;
+    }
+
+    const converted = byStatus["onboarded"] ?? 0;
+    const total = all.length;
+    const conversionRate = total > 0 ? Math.round((converted / total) * 100) : 0;
+
+    // Last activity per prospect
+    const prospectIds = all.map((r) => r.id);
+    let lastActivities: Record<number, Date> = {};
+    if (prospectIds.length > 0) {
+      const acts = await db
+        .select({ prospectId: prospectActivities.prospectId, createdAt: prospectActivities.createdAt })
+        .from(prospectActivities)
+        .where(inArray(prospectActivities.prospectId, prospectIds))
+        .orderBy(desc(prospectActivities.createdAt));
+      for (const a of acts) {
+        if (!lastActivities[a.prospectId]) lastActivities[a.prospectId] = a.createdAt!;
+      }
+    }
+
+    const lastActivityDate = Object.values(lastActivities).sort((a, b) => b.getTime() - a.getTime())[0] ?? null;
+
+    return { total, newThisMonth: thisMonth.length, inProgress: (byStatus["qualified"] ?? 0) + (byStatus["proposal"] ?? 0) + (byStatus["negotiation"] ?? 0), converted, conversionRate, byStatus, lastActivityDate };
+  });
+
+export const listAllAgents = createServerFn({ method: "GET" })
+  .handler(async () => {
+    await requireAdmin();
+    const agents = await db.select().from(adminUsers).where(eq(adminUsers.role, "admin")).orderBy(adminUsers.name);
+    return agents;
+  });
+
+export const createProspect = createServerFn({ method: "POST" })
+  .inputValidator((data: { businessName: string; businessType: string; city?: string; address?: string; contactName?: string; contactPhone?: string; contactEmail?: string; source?: string; priority?: string; notes?: string }) => data)
+  .handler(async ({ data }) => {
+    const session = await requireAdmin();
+    const [row] = await db.insert(prospectContacts).values({
+      agentId: session.id,
+      businessName: data.businessName,
+      businessType: data.businessType,
+      city: data.city ?? "",
+      address: data.address ?? "",
+      contactName: data.contactName ?? "",
+      contactPhone: data.contactPhone ?? "",
+      contactEmail: data.contactEmail ?? "",
+      source: data.source ?? "other",
+      priority: data.priority ?? "medium",
+      notes: data.notes ?? "",
+    }).returning();
+    await logAdmin("prospect.create", `Prospect « ${data.businessName} » créé`);
+    return row;
+  });
+
+export const updateProspect = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: number; businessName?: string; businessType?: string; city?: string; address?: string; contactName?: string; contactPhone?: string; contactEmail?: string; source?: string; priority?: string; status?: string; lostReason?: string; notes?: string }) => data)
+  .handler(async ({ data }) => {
+    const session = await requireAdmin();
+    const updates: Record<string, any> = { updatedAt: new Date() };
+    if (data.businessName !== undefined) updates.businessName = data.businessName;
+    if (data.businessType !== undefined) updates.businessType = data.businessType;
+    if (data.city !== undefined) updates.city = data.city;
+    if (data.address !== undefined) updates.address = data.address;
+    if (data.contactName !== undefined) updates.contactName = data.contactName;
+    if (data.contactPhone !== undefined) updates.contactPhone = data.contactPhone;
+    if (data.contactEmail !== undefined) updates.contactEmail = data.contactEmail;
+    if (data.source !== undefined) updates.source = data.source;
+    if (data.priority !== undefined) updates.priority = data.priority;
+    if (data.status !== undefined) updates.status = data.status;
+    if (data.lostReason !== undefined) updates.lostReason = data.lostReason;
+    if (data.notes !== undefined) updates.notes = data.notes;
+    await db.update(prospectContacts).set(updates).where(eq(prospectContacts.id, data.id));
+    await logAdmin("prospect.update", `Prospect #${data.id} mis à jour`);
+    return { success: true };
+  });
+
+export const deleteProspect = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: number }) => data)
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    await db.delete(prospectContacts).where(eq(prospectContacts.id, data.id));
+    await logAdmin("prospect.delete", `Prospect #${data.id} supprimé`);
+    return { success: true };
+  });
+
+export const listProspectActivities = createServerFn({ method: "GET" })
+  .inputValidator((data: { prospectId: number }) => data)
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    const rows = await db
+      .select()
+      .from(prospectActivities)
+      .where(eq(prospectActivities.prospectId, data.prospectId))
+      .orderBy(desc(prospectActivities.createdAt));
+    return rows;
+  });
+
+export const createProspectActivity = createServerFn({ method: "POST" })
+  .inputValidator((data: { prospectId: number; type: string; direction?: string; subject?: string; notes?: string; outcome?: string; scheduledAt?: Date | null; completedAt?: Date | null }) => data)
+  .handler(async ({ data }) => {
+    const session = await requireAdmin();
+    const [row] = await db.insert(prospectActivities).values({
+      prospectId: data.prospectId,
+      agentId: session.id,
+      type: data.type,
+      direction: data.direction ?? "outbound",
+      subject: data.subject ?? "",
+      notes: data.notes ?? "",
+      outcome: data.outcome ?? "neutral",
+      scheduledAt: data.scheduledAt ?? null,
+      completedAt: data.completedAt ?? null,
+    }).returning();
+    // Update prospect status based on activity type
+    if (data.type === "call" || data.type === "email" || data.type === "visit" || data.type === "meeting") {
+      await db.update(prospectContacts).set({ status: "contacted", updatedAt: new Date() }).where(eq(prospectContacts.id, data.prospectId));
+    }
+    await logAdmin("prospect.activity", `Activité « ${data.type } » ajoutée au prospect #${data.prospectId}`);
+    return row;
+  });
+
+export const updateProspectActivity = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: number; outcome?: string; completedAt?: Date | null }) => data)
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    const updates: Record<string, any> = {};
+    if (data.outcome !== undefined) updates.outcome = data.outcome;
+    if (data.completedAt !== undefined) updates.completedAt = data.completedAt;
+    await db.update(prospectActivities).set(updates).where(eq(prospectActivities.id, data.id));
+    return { success: true };
+  });
+
+export const deleteProspectActivity = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: number }) => data)
+  .handler(async ({ data }) => {
+    await requireAdmin();
+    await db.delete(prospectActivities).where(eq(prospectActivities.id, data.id));
+    return { success: true };
+  });

@@ -14,6 +14,8 @@ import {
   Plus,
   Send,
   ShieldCheck,
+  Users,
+  Handshake,
   X,
 } from 'lucide-react'
 import { getSession, logout } from '../../server/auth.functions'
@@ -33,6 +35,8 @@ export const Route = createFileRoute('/3991/_authed')({
 
 const nav: { to: string; label: string; icon: typeof Building2; module?: string; superOnly?: boolean }[] = [
   { to: '/3991', label: 'Dashboard', icon: Building2 },
+  { to: '/3991/commercials', label: 'Commerciaux', icon: Users, superOnly: true },
+  { to: '/3991/contacts', label: 'Prospection', icon: Handshake, module: 'contacts' },
   { to: '/3991/onboard', label: 'Créer un établissement', icon: Plus, module: 'onboard' },
   { to: '/3991/subscriptions', label: 'Abonnements', icon: CreditCard, module: 'subscriptions' },
   { to: '/3991/emails', label: 'E-mails', icon: Send, module: 'emails' },

@@ -365,3 +365,38 @@ export const ads = pgTable("ads", {
 }, (table) => [
   index("ads_restaurant_active_idx").on(table.restaurantId, table.active),
 ]);
+
+// ---------- Prospection (commercial agents) ----------
+
+export const prospectContacts = pgTable("prospect_contacts", {
+  id: serial().primaryKey(),
+  agentId: integer("agent_id").notNull().references(() => adminUsers.id),
+  businessName: text("business_name").notNull(),
+  businessType: text("business_type").notNull(), // restaurant | beauty_salon | spa | football_pitch | car_rental | doctor
+  city: text("city").default(""),
+  address: text("address").default(""),
+  contactName: text("contact_name").default(""),
+  contactPhone: text("contact_phone").default(""),
+  contactEmail: text("contact_email").default(""),
+  source: text("source").default("other"), // google | referral | walk_in | social | other
+  priority: text("priority").default("medium"), // low | medium | high
+  status: text("status").default("new"), // new | contacted | qualified | proposal | negotiation | onboarded | lost
+  lostReason: text("lost_reason").default(""),
+  notes: text("notes").default(""),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const prospectActivities = pgTable("prospect_activities", {
+  id: serial().primaryKey(),
+  prospectId: integer("prospect_id").notNull().references(() => prospectContacts.id, { onDelete: "cascade" }),
+  agentId: integer("agent_id").notNull().references(() => adminUsers.id),
+  type: text("type").notNull(), // call | email | visit | meeting | note
+  direction: text("direction").default("outbound"), // inbound | outbound
+  subject: text("subject").default(""),
+  notes: text("notes").default(""),
+  outcome: text("outcome").default("neutral"), // positive | neutral | negative | no_answer
+  scheduledAt: timestamp("scheduled_at"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});

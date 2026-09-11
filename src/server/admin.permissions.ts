@@ -5,6 +5,7 @@ export const ADMIN_MODULES = [
   { key: "subscriptions", label: "Abonnements" },
   { key: "emails", label: "E-mails" },
   { key: "ads", label: "Publicités" },
+  { key: "contacts", label: "Contacts" },
   { key: "mail", label: "Serveur e-mail" },
 ] as const;
 

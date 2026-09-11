@@ -71,7 +71,7 @@ function AdminAccountPage() {
       return
     }
     setNewAdmin({ name: '', email: '', password: '', permissions: [] })
-    setNewAdminMessage('Administrateur créé.')
+    setNewAdminMessage('Agent commercial créé.')
     refresh()
   }
 
@@ -117,10 +117,10 @@ function AdminAccountPage() {
         <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Compte &amp; administrateurs</h1>
       </div>
 
-      {/* ---- Administrateurs list (super admin only) ---- */}
+      {/* ---- Agents commerciaux (super admin only) ---- */}
       {viewerIsSuper ? (
       <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-6 shadow-sm">
-        <p className="font-semibold text-stone-900 flex items-center gap-2 dark:text-stone-100"><ShieldCheck className="h-4 w-4" /> Administrateurs de la plateforme</p>
+        <p className="font-semibold text-stone-900 flex items-center gap-2 dark:text-stone-100"><ShieldCheck className="h-4 w-4" /> Agents commerciaux</p>
         <ul className="mt-4 divide-y divide-stone-100 dark:divide-stone-800">
           {admins.map((a: AdminRow) => (
             <li key={a.id} className="py-2.5">
@@ -224,7 +224,7 @@ function AdminAccountPage() {
         </ul>
 
         <form onSubmit={addAdmin} className="mt-5 space-y-3 border-t border-stone-100 pt-4 dark:border-stone-800">
-          <p className="text-sm font-medium text-stone-700 flex items-center gap-1 dark:text-stone-300"><UserPlus className="h-4 w-4" /> Ajouter un administrateur</p>
+          <p className="text-sm font-medium text-stone-700 flex items-center gap-1 dark:text-stone-300"><UserPlus className="h-4 w-4" /> Ajouter un agent commercial</p>
           <div className="grid gap-3 sm:grid-cols-3">
             <input required value={newAdmin.name} onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })} placeholder="Nom" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
             <input required type="email" value={newAdmin.email} onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })} placeholder="E-mail" className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm dark:border-stone-700" />
@@ -249,7 +249,7 @@ function AdminAccountPage() {
             ))}
           </div>
           {newAdminMessage && (
-            <p className={`text-sm ${newAdminMessage === 'Administrateur créé.' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>{newAdminMessage}</p>
+            <p className={`text-sm ${newAdminMessage === 'Agent commercial créé.' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>{newAdminMessage}</p>
           )}
           {listMessage && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{listMessage}</p>}
 

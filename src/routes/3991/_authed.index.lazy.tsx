@@ -10,7 +10,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
-import { Building2, Clock, Trash2, TrendingUp, UserCheck, Users, Car, Scissors, Sparkles, Stethoscope, Timer, UtensilsCrossed } from 'lucide-react'
+import { Building2, Clock, Handshake, Trash2, TrendingUp, UserCheck, Users, Car, Scissors, Sparkles, Stethoscope, Timer, UtensilsCrossed } from 'lucide-react'
 import {
   listAllRestaurants,
   getPlatformAnalytics,
@@ -19,6 +19,7 @@ import {
   deleteRestaurant,
   impersonateRestaurant,
   setEventTheme as setEventThemeFlag,
+  getProspectStats,
 } from '../../server/admin.functions'
 import { EVENT_THEMES, eventThemeLabel } from '../../services/event-themes'
 
@@ -102,12 +103,18 @@ function AdminIndex() {
   const [eventScope, setEventScope] = useState<'all' | 'pick'>('all')
   const [eventPicked, setEventPicked] = useState<Set<number>>(new Set())
   const [eventMessage, setEventMessage] = useState<string | null>(null)
+  const [prospectStats, setProspectStats] = useState<any>(null)
 
   async function refresh() {
     const [r, a] = await Promise.all([listAllRestaurants(), getPlatformAnalytics()])
     setRestaurants(r)
     setAnalytics(a)
   }
+
+  // Load prospect stats on mount
+  useState(() => {
+    getProspectStats().then(setProspectStats).catch(() => {})
+  })
 
   async function applyEventTheme() {
     const ids = eventScope === 'all' ? null : [...eventPicked]
@@ -184,6 +191,36 @@ function AdminIndex() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Prospection Widget */}
+      {prospectStats && (
+        <div className="mt-6">
+          <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Handshake className="h-4 w-4 text-stone-500" />
+              <h2 className="text-sm font-semibold text-stone-700 dark:text-stone-300">Prospection</h2>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div>
+                <p className="text-xs text-stone-500">Nouveaux ce mois</p>
+                <p className="text-xl font-bold text-stone-900 dark:text-stone-100">{prospectStats.newThisMonth}</p>
+              </div>
+              <div>
+                <p className="text-xs text-stone-500">En cours</p>
+                <p className="text-xl font-bold text-amber-600 dark:text-amber-400">{prospectStats.inProgress}</p>
+              </div>
+              <div>
+                <p className="text-xs text-stone-500">Convertis</p>
+                <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{prospectStats.converted}</p>
+              </div>
+              <div>
+                <p className="text-xs text-stone-500">Taux de conversion</p>
+                <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{prospectStats.conversionRate}%</p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

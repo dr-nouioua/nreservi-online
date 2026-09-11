@@ -33,9 +33,12 @@ import { Route as R3991AuthedMailRouteImport } from './routes/3991/_authed.mail'
 import { Route as R3991AuthedLogsRouteImport } from './routes/3991/_authed.logs'
 import { Route as R3991AuthedLandingRouteImport } from './routes/3991/_authed.landing'
 import { Route as R3991AuthedEmailsRouteImport } from './routes/3991/_authed.emails'
+import { Route as R3991AuthedContactsRouteImport } from './routes/3991/_authed.contacts'
+import { Route as R3991AuthedCommercialsRouteImport } from './routes/3991/_authed.commercials'
 import { Route as R3991AuthedAdsRouteImport } from './routes/3991/_authed.ads'
 import { Route as R3991AuthedAccountRouteImport } from './routes/3991/_authed.account'
 import { Route as OwnerAuthedSettingsWhatsappRouteImport } from './routes/owner/_authed.settings_.whatsapp'
+import { Route as R3991AuthedCommercialsIdRouteImport } from './routes/3991/_authed.commercials.$id'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -162,6 +165,16 @@ const R3991AuthedEmailsRoute = R3991AuthedEmailsRouteImport.update({
   path: '/emails',
   getParentRoute: () => R3991AuthedRoute,
 } as any)
+const R3991AuthedContactsRoute = R3991AuthedContactsRouteImport.update({
+  id: '/contacts',
+  path: '/contacts',
+  getParentRoute: () => R3991AuthedRoute,
+} as any)
+const R3991AuthedCommercialsRoute = R3991AuthedCommercialsRouteImport.update({
+  id: '/commercials',
+  path: '/commercials',
+  getParentRoute: () => R3991AuthedRoute,
+} as any)
 const R3991AuthedAdsRoute = R3991AuthedAdsRouteImport.update({
   id: '/ads',
   path: '/ads',
@@ -178,6 +191,12 @@ const OwnerAuthedSettingsWhatsappRoute =
     path: '/settings/whatsapp',
     getParentRoute: () => OwnerAuthedRoute,
   } as any)
+const R3991AuthedCommercialsIdRoute =
+  R3991AuthedCommercialsIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => R3991AuthedCommercialsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -193,6 +212,8 @@ export interface FileRoutesByFullPath {
   '/restaurants/$slug': typeof RestaurantsSlugRoute
   '/3991/account': typeof R3991AuthedAccountRoute
   '/3991/ads': typeof R3991AuthedAdsRoute
+  '/3991/commercials': typeof R3991AuthedCommercialsRouteWithChildren
+  '/3991/contacts': typeof R3991AuthedContactsRoute
   '/3991/emails': typeof R3991AuthedEmailsRoute
   '/3991/landing': typeof R3991AuthedLandingRoute
   '/3991/logs': typeof R3991AuthedLogsRoute
@@ -206,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/owner/settings': typeof OwnerAuthedSettingsRoute
   '/3991/': typeof R3991AuthedIndexRoute
   '/owner/': typeof OwnerAuthedIndexRoute
+  '/3991/commercials/$id': typeof R3991AuthedCommercialsIdRoute
   '/owner/settings/whatsapp': typeof OwnerAuthedSettingsWhatsappRoute
 }
 export interface FileRoutesByTo {
@@ -220,6 +242,8 @@ export interface FileRoutesByTo {
   '/restaurants/$slug': typeof RestaurantsSlugRoute
   '/3991/account': typeof R3991AuthedAccountRoute
   '/3991/ads': typeof R3991AuthedAdsRoute
+  '/3991/commercials': typeof R3991AuthedCommercialsRouteWithChildren
+  '/3991/contacts': typeof R3991AuthedContactsRoute
   '/3991/emails': typeof R3991AuthedEmailsRoute
   '/3991/landing': typeof R3991AuthedLandingRoute
   '/3991/logs': typeof R3991AuthedLogsRoute
@@ -233,6 +257,7 @@ export interface FileRoutesByTo {
   '/owner/settings': typeof OwnerAuthedSettingsRoute
   '/3991': typeof R3991AuthedIndexRoute
   '/owner': typeof OwnerAuthedIndexRoute
+  '/3991/commercials/$id': typeof R3991AuthedCommercialsIdRoute
   '/owner/settings/whatsapp': typeof OwnerAuthedSettingsWhatsappRoute
 }
 export interface FileRoutesById {
@@ -250,6 +275,8 @@ export interface FileRoutesById {
   '/restaurants/$slug': typeof RestaurantsSlugRoute
   '/3991/_authed/account': typeof R3991AuthedAccountRoute
   '/3991/_authed/ads': typeof R3991AuthedAdsRoute
+  '/3991/_authed/commercials': typeof R3991AuthedCommercialsRouteWithChildren
+  '/3991/_authed/contacts': typeof R3991AuthedContactsRoute
   '/3991/_authed/emails': typeof R3991AuthedEmailsRoute
   '/3991/_authed/landing': typeof R3991AuthedLandingRoute
   '/3991/_authed/logs': typeof R3991AuthedLogsRoute
@@ -263,6 +290,7 @@ export interface FileRoutesById {
   '/owner/_authed/settings': typeof OwnerAuthedSettingsRoute
   '/3991/_authed/': typeof R3991AuthedIndexRoute
   '/owner/_authed/': typeof OwnerAuthedIndexRoute
+  '/3991/_authed/commercials/$id': typeof R3991AuthedCommercialsIdRoute
   '/owner/_authed/settings_/whatsapp': typeof OwnerAuthedSettingsWhatsappRoute
 }
 export interface FileRouteTypes {
@@ -281,6 +309,8 @@ export interface FileRouteTypes {
     | '/restaurants/$slug'
     | '/3991/account'
     | '/3991/ads'
+    | '/3991/commercials'
+    | '/3991/contacts'
     | '/3991/emails'
     | '/3991/landing'
     | '/3991/logs'
@@ -294,6 +324,7 @@ export interface FileRouteTypes {
     | '/owner/settings'
     | '/3991/'
     | '/owner/'
+    | '/3991/commercials/$id'
     | '/owner/settings/whatsapp'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -308,6 +339,8 @@ export interface FileRouteTypes {
     | '/restaurants/$slug'
     | '/3991/account'
     | '/3991/ads'
+    | '/3991/commercials'
+    | '/3991/contacts'
     | '/3991/emails'
     | '/3991/landing'
     | '/3991/logs'
@@ -321,6 +354,7 @@ export interface FileRouteTypes {
     | '/owner/settings'
     | '/3991'
     | '/owner'
+    | '/3991/commercials/$id'
     | '/owner/settings/whatsapp'
   id:
     | '__root__'
@@ -337,6 +371,8 @@ export interface FileRouteTypes {
     | '/restaurants/$slug'
     | '/3991/_authed/account'
     | '/3991/_authed/ads'
+    | '/3991/_authed/commercials'
+    | '/3991/_authed/contacts'
     | '/3991/_authed/emails'
     | '/3991/_authed/landing'
     | '/3991/_authed/logs'
@@ -350,6 +386,7 @@ export interface FileRouteTypes {
     | '/owner/_authed/settings'
     | '/3991/_authed/'
     | '/owner/_authed/'
+    | '/3991/_authed/commercials/$id'
     | '/owner/_authed/settings_/whatsapp'
   fileRoutesById: FileRoutesById
 }
@@ -537,6 +574,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof R3991AuthedEmailsRouteImport
       parentRoute: typeof R3991AuthedRoute
     }
+    '/3991/_authed/contacts': {
+      id: '/3991/_authed/contacts'
+      path: '/contacts'
+      fullPath: '/3991/contacts'
+      preLoaderRoute: typeof R3991AuthedContactsRouteImport
+      parentRoute: typeof R3991AuthedRoute
+    }
+    '/3991/_authed/commercials': {
+      id: '/3991/_authed/commercials'
+      path: '/commercials'
+      fullPath: '/3991/commercials'
+      preLoaderRoute: typeof R3991AuthedCommercialsRouteImport
+      parentRoute: typeof R3991AuthedRoute
+    }
     '/3991/_authed/ads': {
       id: '/3991/_authed/ads'
       path: '/ads'
@@ -558,12 +609,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OwnerAuthedSettingsWhatsappRouteImport
       parentRoute: typeof OwnerAuthedRoute
     }
+    '/3991/_authed/commercials/$id': {
+      id: '/3991/_authed/commercials/$id'
+      path: '/$id'
+      fullPath: '/3991/commercials/$id'
+      preLoaderRoute: typeof R3991AuthedCommercialsIdRouteImport
+      parentRoute: typeof R3991AuthedCommercialsRoute
+    }
   }
 }
+
+interface R3991AuthedCommercialsRouteChildren {
+  R3991AuthedCommercialsIdRoute: typeof R3991AuthedCommercialsIdRoute
+}
+
+const R3991AuthedCommercialsRouteChildren: R3991AuthedCommercialsRouteChildren =
+  {
+    R3991AuthedCommercialsIdRoute: R3991AuthedCommercialsIdRoute,
+  }
+
+const R3991AuthedCommercialsRouteWithChildren =
+  R3991AuthedCommercialsRoute._addFileChildren(
+    R3991AuthedCommercialsRouteChildren,
+  )
 
 interface R3991AuthedRouteChildren {
   R3991AuthedAccountRoute: typeof R3991AuthedAccountRoute
   R3991AuthedAdsRoute: typeof R3991AuthedAdsRoute
+  R3991AuthedCommercialsRoute: typeof R3991AuthedCommercialsRouteWithChildren
+  R3991AuthedContactsRoute: typeof R3991AuthedContactsRoute
   R3991AuthedEmailsRoute: typeof R3991AuthedEmailsRoute
   R3991AuthedLandingRoute: typeof R3991AuthedLandingRoute
   R3991AuthedLogsRoute: typeof R3991AuthedLogsRoute
@@ -576,6 +650,8 @@ interface R3991AuthedRouteChildren {
 const R3991AuthedRouteChildren: R3991AuthedRouteChildren = {
   R3991AuthedAccountRoute: R3991AuthedAccountRoute,
   R3991AuthedAdsRoute: R3991AuthedAdsRoute,
+  R3991AuthedCommercialsRoute: R3991AuthedCommercialsRouteWithChildren,
+  R3991AuthedContactsRoute: R3991AuthedContactsRoute,
   R3991AuthedEmailsRoute: R3991AuthedEmailsRoute,
   R3991AuthedLandingRoute: R3991AuthedLandingRoute,
   R3991AuthedLogsRoute: R3991AuthedLogsRoute,
