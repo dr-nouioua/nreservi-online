@@ -32,7 +32,7 @@ export const restaurants = pgTable("restaurants", {
   id: serial().primaryKey(),
   slug: text("slug").notNull().unique(),
   name: text("name").notNull(),
-  category: text("category").notNull().default("restaurant"), // restaurant | beauty_salon | spa | barbershop
+  category: text("category").notNull().default("restaurant"), // restaurant | beauty_salon | spa | barbershop | doctor
   city: text("city").notNull(),
   cuisine: text("cuisine").notNull(),
   address: text("address").notNull(),

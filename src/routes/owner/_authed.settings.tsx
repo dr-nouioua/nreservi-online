@@ -43,6 +43,7 @@ function SettingsPage() {
   const isCarRental = category === 'car_rental'
   const isBarbershop = category === 'barbershop'
   const isSalonOrSpa = category === 'beauty_salon' || category === 'spa'
+  const isDoctor = category === 'doctor'
   const showTables = category === 'restaurant'
   const [newAreaName, setNewAreaName] = useState('')
   const [newAreaFormat, setNewAreaFormat] = useState('5v5')
@@ -284,7 +285,7 @@ function SettingsPage() {
       {initial.restaurant?.subscriptionTier === 'premium' ? (
       <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 p-6 space-y-3 shadow-sm">
         <p className="font-semibold text-stone-900 dark:text-stone-100">
-          {isFootball ? 'Terrains' : (isSalonOrSpa || isBarbershop) ? 'Postes' : isCarRental ? 'Véhicules' : 'Espaces & tables'}
+          {isFootball ? 'Terrains' : (isSalonOrSpa || isBarbershop) ? 'Postes' : isCarRental ? 'Véhicules' : isDoctor ? 'Consultations' : 'Espaces & tables'}
         </p>
         {overview.areas.map((area) => (
           <div key={area.id} className="rounded-lg border border-stone-100 dark:border-stone-800 p-3">
@@ -322,7 +323,7 @@ function SettingsPage() {
                 ))
               ) : (
                 <li className="text-sm text-stone-500 dark:text-stone-400 italic">
-                  {isFootball ? `Terrain ${area.format ?? ''}` : (isSalonOrSpa || isBarbershop) ? 'Poste de travail' : isCarRental ? 'Véhicule' : ''}
+                  {isFootball ? `Terrain ${area.format ?? ''}` : (isSalonOrSpa || isBarbershop) ? 'Poste de travail' : isCarRental ? 'Véhicule' : isDoctor ? 'Salle de consultation' : ''}
                 </li>
               )}
             </ul>

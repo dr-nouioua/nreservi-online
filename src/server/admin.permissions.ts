@@ -40,4 +40,4 @@ export function filterByCategory<T extends { category?: string }>(admin: AdminId
 
 export const ALL_MODULE_KEYS = ADMIN_MODULES.map((m) => m.key);
 
-export const ALL_CATEGORIES = ["restaurant", "beauty_salon", "spa", "football_pitch", "car_rental", "barbershop"] as const;
+export const ALL_CATEGORIES = ["restaurant", "beauty_salon", "spa", "football_pitch", "car_rental", "barbershop", "doctor"] as const;

@@ -300,7 +300,7 @@ export const updateAdminAccess = createServerFn({ method: "POST" })
     if (data.id === session.id) return { error: "Vous ne pouvez pas modifier vos propres privilèges." };
     const validModules = new Set(["onboard", "subscriptions", "emails", "ads", "mail"]);
     const permissions = (data.permissions ?? []).filter((p) => validModules.has(p));
-    const validCategories = new Set(["restaurant", "beauty_salon", "spa", "football_pitch", "car_rental", "barbershop"]);
+    const validCategories = new Set(["restaurant", "beauty_salon", "spa", "football_pitch", "car_rental", "barbershop", "doctor"]);
     const analyticsCategories = (data.analyticsCategories ?? []).filter((c) => validCategories.has(c));
     await db.update(adminUsers).set({ permissions, analyticsCategories }).where(eq(adminUsers.id, data.id));
     await logAdmin("admin.permissions", `admin #${data.id} : modules=[${permissions.join(", ")}] categories=[${analyticsCategories.join(", ")}]`);
@@ -840,7 +840,7 @@ export const listAdminLogs = createServerFn({ method: "GET" }).handler(async () 
 // ---------- Public landing page content (/about) ----------
 
 const DEFAULT_SITE_CONTENT = {
-  about: "nreservi.online est une solution digitale algérienne qui connecte les professionnels et leurs clients : restaurants, salons de beauté, spas, terrains de sport et locations de voitures. Réservation en temps réel, confirmation par WhatsApp, gestion complète pour les professionnels.",
+  about: "nreservi.online est une solution digitale algérienne qui connecte les professionnels et leurs clients : restaurants, salons de beauté, spas, terrains de sport, locations de voitures et médecins. Réservation en temps réel, confirmation par WhatsApp, gestion complète pour les professionnels.",
   sections: {
     hero: { visible: true, title: "Réservez, planifiez, louez — tout en un seul endroit", subtitle: "nreservi.online connecte les professionnels et leurs clients : disponibilités en temps réel, confirmation par WhatsApp.", badge: "🇩🇿 Plateforme 100 % algérienne" },
     categories: { visible: true },
@@ -882,7 +882,7 @@ const DEFAULT_PACKAGES = [
     price: "15 000 DA",
     period: "6 mois + 1 offert",
     features: [
-      "Page publique multi-catégories (restaurant, salon, spa, foot, voiture)",
+      "Page publique multi-catégories (restaurant, salon, spa, foot, voiture, médecin)",
       "Réservation en ligne temps réel",
       "Confirmation & rappels WhatsApp",
       "Tableau de bord & statistiques",

@@ -49,6 +49,7 @@ function AdminAccountPage() {
     football_pitch: 'Terrain de foot',
     car_rental: 'Location de voitures',
     barbershop: 'Barbier',
+    doctor: 'Médecin',
   }
 
   async function savePermissions(id: number) {

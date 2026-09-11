@@ -389,6 +389,30 @@ export async function ensureSeeded() {
     logoUrl: "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=300&q=80",
   });
 
+  // Doctor establishments
+  await seedRestaurant({
+    slug: "cabinet-dr-benali",
+    name: "Cabinet Dr Benaali",
+    category: "doctor",
+    city: "Alger",
+    cuisine: "Cardiologue",
+    avgTicket: "20.00",
+    ownerEmail: "dr.benali@cabinet.dev",
+    coverImageUrl: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1400&q=80",
+    logoUrl: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=300&q=80",
+  });
+  await seedRestaurant({
+    slug: "cabinet-dr-mebarki",
+    name: "Cabinet Dr Mebarki",
+    category: "doctor",
+    city: "Oran",
+    cuisine: "Généraliste, Pédiatre",
+    avgTicket: "15.00",
+    ownerEmail: "dr.mebarki@cabinet.dev",
+    coverImageUrl: "https://images.unsplash.com/photo-1582719471384-894fbb16e074?auto=format&fit=crop&w=1400&q=80",
+    logoUrl: "https://images.unsplash.com/photo-1582719471384-894fbb16e074?auto=format&fit=crop&w=300&q=80",
+  });
+
   // A restaurant awaiting super-admin approval, to demonstrate onboarding workflow
   await db.insert(restaurants).values({
     slug: "cafe-dz-annaba",

@@ -15,6 +15,7 @@ import {
   Scissors,
   Settings,
   Sparkles,
+  Stethoscope,
   UtensilsCrossed,
   X,
 } from 'lucide-react'
@@ -59,6 +60,7 @@ function getNavItems(category: string) {
     football_pitch: { label: 'Terrains', icon: FootballIcon },
     car_rental: { label: 'Véhicules', icon: Car },
     barbershop: { label: 'Prestations', icon: Scissors },
+    doctor: { label: 'Services', icon: Stethoscope },
   }
   const m = menuConfig[category] ?? menuConfig.restaurant
   return [

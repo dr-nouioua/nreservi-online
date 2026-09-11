@@ -219,7 +219,7 @@ function LandingEditorPage() {
               <Plus className="h-3.5 w-3.5" /> Ajouter
             </button>
           </div>
-          <p className="text-xs text-stone-400">Formules valables pour toutes les catégories : restaurants, salons, spas, terrains de foot, locations de voitures. Le bouton "Populaire" met en surbrillance la carte sur /about.</p>
+          <p className="text-xs text-stone-400">Formules valables pour toutes les catégories : restaurants, salons, spas, terrains de foot, locations de voitures, médecins. Le bouton "Populaire" met en surbrillance la carte sur /about.</p>
           <div className="grid gap-4 sm:grid-cols-2">
             {packages.filter((p) => p.kind === 'subscription').map((p, idx) => {
               const realIdx = packages.indexOf(p)

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { Baby, CalendarDays, Car, CheckCircle2, ChevronDown, ImagePlus, MapPin, Scissors, Sparkles, Users, UtensilsCrossed } from 'lucide-react'
+import { Baby, CalendarDays, Car, CheckCircle2, ChevronDown, ImagePlus, MapPin, Scissors, Sparkles, Stethoscope, Users, UtensilsCrossed } from 'lucide-react'
 import { getRestaurantBySlug, getAvailability, createReservation } from '../server/booking.functions'
 import { EVENT_THEMES } from '../services/event-themes'
 import { formatPriceDA } from '../services/format'
@@ -80,6 +80,7 @@ function RestaurantPage() {
   const isCarRental = restaurant.category === 'car_rental'
   const isBarbershop = restaurant.category === 'barbershop'
   const isSalonOrSpa = restaurant.category === 'beauty_salon' || restaurant.category === 'spa'
+  const isDoctor = restaurant.category === 'doctor'
   const showPartySize = !isCarRental && !isFootball
   const showBabySeats = restaurant.category === 'restaurant' && restaurant.babySeatAvailable
   const showPlayerCount = isFootball
@@ -92,6 +93,7 @@ function RestaurantPage() {
     football_pitch: { sectionTitle: 'Nos terrains', sectionSub: 'Formats disponibles', btnShow: 'Voir les terrains', btnHide: 'Masquer', btnFixed: 'Terrains', icon: FootballIcon },
     car_rental: { sectionTitle: 'Nos véhicules', sectionSub: 'Voitures disponibles à la location', btnShow: 'Voir les véhicules', btnHide: 'Masquer', btnFixed: 'Véhicules', icon: Car },
     barbershop: { sectionTitle: 'Nos prestations', sectionSub: 'Coupe, barbe, soins…', btnShow: 'Voir les prestations', btnHide: 'Masquer', btnFixed: 'Prestations', icon: Scissors },
+    doctor: { sectionTitle: 'Nos services', sectionSub: 'Consultations disponibles', btnShow: 'Voir les services', btnHide: 'Masquer', btnFixed: 'Services', icon: Stethoscope },
   }
   const L = profileLabels[cat] ?? profileLabels.restaurant
 
@@ -232,6 +234,9 @@ function RestaurantPage() {
                   )}
                   {cat === 'car_rental' && restaurant.hasChildSeat && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur"><Baby className="h-3.5 w-3.5" /> Siège bébé sur demande</span>
+                  )}
+                  {cat === 'doctor' && restaurant.hasParking && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur"><Car className="h-3.5 w-3.5" /> Parking</span>
                   )}
                 </p>
                 <h1 className="text-3xl sm:text-4xl font-bold tracking-tight break-words">{restaurant.name}</h1>

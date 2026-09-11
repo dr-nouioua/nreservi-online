@@ -47,6 +47,7 @@ function MenuPage() {
     football_pitch: { title: 'Gestion des terrains', addCat: 'Ajouter un type', fixed: 'Terrains fixes', photos: 'Photos des terrains', newItem: 'Nouveau terrain', addBtn: 'Ajouter' },
     car_rental: { title: 'Gestion des véhicules', addCat: 'Ajouter une catégorie', fixed: 'Véhicules fixes', photos: 'Photos des véhicules', newItem: 'Nouveau véhicule', addBtn: 'Ajouter' },
     barbershop: { title: 'Gestion des prestations', addCat: 'Ajouter une catégorie', fixed: 'Prestations fixes', photos: 'Photos des prestations', newItem: 'Nouvelle prestation', addBtn: 'Ajouter' },
+    doctor: { title: 'Gestion des services', addCat: 'Ajouter une catégorie', fixed: 'Services fixes', photos: 'Photos des services', newItem: 'Nouveau service', addBtn: 'Ajouter' },
   }
   const labels = menuLabels[category] ?? menuLabels.restaurant
   const [editingId, setEditingId] = useState<number | null>(null)

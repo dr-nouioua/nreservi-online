@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
-import { Car, MapPin, Search, Scissors, SlidersHorizontal, Sparkles, UtensilsCrossed } from 'lucide-react'
+import { Car, MapPin, Scissors, Search, SlidersHorizontal, Sparkles, Stethoscope, UtensilsCrossed } from 'lucide-react'
 import { listRestaurants } from '../server/booking.functions'
 import { SiteHeader } from '../components/SiteHeader'
 import { SiteFooter } from '../components/SiteFooter'
@@ -32,18 +32,20 @@ const CATEGORIES = [
   { key: '', label: 'Tout', icon: SlidersHorizontal, color: 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300', activeColor: 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900' },
   { key: 'restaurant', label: 'Restaurants', icon: UtensilsCrossed, color: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300', activeColor: 'bg-amber-600 text-white dark:bg-amber-500 dark:text-white' },
   { key: 'beauty_salon', label: 'Salons', icon: Scissors, color: 'bg-pink-50 text-pink-700 dark:bg-pink-500/10 dark:text-pink-300', activeColor: 'bg-pink-600 text-white dark:bg-pink-500 dark:text-white' },
-  { key: 'spa', label: 'Spa', icon: Sparkles, color: 'bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-300', activeColor: 'bg-teal-600 text-white dark:bg-teal-500 dark:text-white' },
-  { key: 'football_pitch', label: 'Foot', icon: FootballIcon, color: 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-300', activeColor: 'bg-green-600 text-white dark:bg-green-500 dark:text-white' },
-  { key: 'car_rental', label: 'Voitures', icon: Car, color: 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300', activeColor: 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white' },
+  { key: 'spa', label: 'Spa', icon: Sparkles, color: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300', activeColor: 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-white' },
+  { key: 'football_pitch', label: 'Foot', icon: FootballIcon, color: 'bg-lime-50 text-lime-700 dark:bg-lime-500/10 dark:text-lime-300', activeColor: 'bg-lime-600 text-white dark:bg-lime-500 dark:text-white' },
+  { key: 'car_rental', label: 'Voitures', icon: Car, color: 'bg-slate-50 text-slate-700 dark:bg-slate-500/10 dark:text-slate-300', activeColor: 'bg-slate-600 text-white dark:bg-slate-500 dark:text-white' },
+  { key: 'doctor', label: 'Médecins', icon: Stethoscope, color: 'bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-300', activeColor: 'bg-[#069494] text-white dark:bg-[#069494] dark:text-white' },
 ] as const
 
 const CATEGORY_BADGES: Record<string, { label: string; color: string }> = {
   restaurant: { label: 'Restaurant', color: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' },
   beauty_salon: { label: 'Salon', color: 'bg-pink-100 text-pink-700 dark:bg-pink-500/15 dark:text-pink-300' },
-  spa: { label: 'Spa', color: 'bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300' },
-  football_pitch: { label: 'Terrain', color: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300' },
-  car_rental: { label: 'Location', color: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300' },
-  barbershop: { label: 'Barbier', color: 'bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300' },
+  spa: { label: 'Spa', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' },
+  football_pitch: { label: 'Terrain', color: 'bg-lime-100 text-lime-700 dark:bg-lime-500/15 dark:text-lime-300' },
+  car_rental: { label: 'Location', color: 'bg-slate-100 text-slate-700 dark:bg-slate-500/15 dark:text-slate-300' },
+  barbershop: { label: 'Barbier', color: 'bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300' },
+  doctor: { label: 'Médecin', color: 'bg-[#069494]/10 text-[#069494] dark:bg-[#069494]/15 dark:text-teal-300' },
 }
 
 const CATEGORY_ICONS: Record<string, typeof UtensilsCrossed> = {
@@ -53,6 +55,7 @@ const CATEGORY_ICONS: Record<string, typeof UtensilsCrossed> = {
   football_pitch: FootballIcon,
   car_rental: Car,
   barbershop: Scissors,
+  doctor: Stethoscope,
 }
 
 function Home() {
@@ -83,6 +86,7 @@ function Home() {
     spa: restaurants.filter((r) => r.category === 'spa').length,
     football_pitch: restaurants.filter((r) => r.category === 'football_pitch').length,
     car_rental: restaurants.filter((r) => r.category === 'car_rental').length,
+    doctor: restaurants.filter((r) => r.category === 'doctor').length,
   }
 
   return (
@@ -97,7 +101,7 @@ function Home() {
                 Réservez votre place en quelques secondes
               </h1>
               <p className="text-stone-300 mt-4 max-w-xl">
-                nreservi.online réunit restaurants, salons de beauté et spas près de chez vous :
+                nreservi.online réunit restaurants, salons de beauté, spas, terrains de foot et médecins près de chez vous :
                 consultez les disponibilités en direct et recevez votre confirmation par WhatsApp.
               </p>
               <div className="mt-6 rounded-lg bg-white dark:bg-stone-900 p-4 text-stone-900 dark:text-stone-100 shadow-xl">
@@ -112,13 +116,13 @@ function Home() {
                     {cities.map((value) => <option key={value} value={value}>{value}</option>)}
                   </select>
                   <select value={cuisine} onChange={(e) => setCuisine(e.target.value)} className="w-full rounded-md border border-stone-200 dark:border-stone-800 px-3 py-2.5 text-sm">
-                    <option value="all">{category === 'beauty_salon' ? 'Toutes les prestations' : category === 'spa' ? 'Toutes les prestations' : category === 'football_pitch' ? 'Tous les formats' : category === 'car_rental' ? 'Tous les types' : 'Toutes les catégories'}</option>
+                    <option value="all">{category === 'beauty_salon' ? 'Toutes les prestations' : category === 'spa' ? 'Toutes les prestations' : category === 'football_pitch' ? 'Tous les formats' : category === 'car_rental' ? 'Tous les types' : category === 'doctor' ? 'Toutes les spécialités' : 'Toutes les catégories'}</option>
                     {cuisines.map((value) => <option key={value} value={value}>{value}</option>)}
                   </select>
                 </div>
                 {/* Category grid */}
                 <div className="mt-3 pt-3 border-t border-stone-200 dark:border-stone-800">
-                  <div className="grid grid-cols-3 gap-2 lg:grid-cols-6">
+                  <div className="grid grid-cols-3 gap-2 lg:grid-cols-7">
                     {CATEGORIES.map((cat) => {
                       const count = categoryCounts[cat.key as keyof typeof categoryCounts] ?? 0
                       const isActive = category === cat.key

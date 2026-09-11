@@ -9,6 +9,7 @@ import {
   Phone,
   Scissors,
   Sparkles,
+  Stethoscope,
   Users,
   UtensilsCrossed,
   X,
@@ -79,9 +80,10 @@ function LandingPage() {
   const categories = [
     { icon: UtensilsCrossed, label: 'Restaurants', color: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300', desc: 'Menus, photos, réservation en temps réel' },
     { icon: Scissors, label: 'Salons de beauté', color: 'bg-pink-100 text-pink-700 dark:bg-pink-500/15 dark:text-pink-300', desc: 'Coiffure, manucure, soins — planifiez vos rendez-vous' },
-    { icon: Sparkles, label: 'Spa & Bien-être', color: 'bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300', desc: 'Hammam, massage, gommage — détente à portée de main' },
-    { icon: FootballIcon, label: 'Terrains de foot', color: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300', desc: '5v5, 6v6, 7v7 — réservez votre créneau' },
-    { icon: Car, label: 'Location de voitures', color: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300', desc: 'Berline, SUV, utilitaire — louez en quelques clics' },
+    { icon: Sparkles, label: 'Spa & Bien-être', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300', desc: 'Hammam, massage, gommage — détente à portée de main' },
+    { icon: FootballIcon, label: 'Terrains de foot', color: 'bg-lime-100 text-lime-700 dark:bg-lime-500/15 dark:text-lime-300', desc: '5v5, 6v5, 7v7 — réservez votre créneau' },
+    { icon: Car, label: 'Location de voitures', color: 'bg-slate-100 text-slate-700 dark:bg-slate-500/15 dark:text-slate-300', desc: 'Berline, SUV, utilitaire — louez en quelques clics' },
+    { icon: Stethoscope, label: 'Médecins', color: 'bg-[#069494]/10 text-[#069494] dark:bg-[#069494]/15 dark:text-teal-300', desc: 'Consultations, spécialistes — prenez rendez-vous facilement' },
   ]
 
   return (
@@ -155,7 +157,7 @@ function LandingPage() {
       {/* ---- Catégories ---- */}
       {s.categories?.visible !== false && (
         <section className="mx-auto max-w-6xl px-4 pb-14 sm:px-6">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {categories.map((cat) => (
               <div key={cat.label} className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900/40">
                 <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${cat.color}`}>
@@ -222,7 +224,7 @@ function LandingPage() {
       {s.tarifs?.visible !== false && (
         <section id="tarifs" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6">
           <h2 className="text-center text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl">Tarifs</h2>
-          <p className="mt-3 text-center text-stone-600 dark:text-stone-400">Un abonnement unique, adapté à toutes les catégories : restaurants, salons, spas, terrains de foot, locations de voitures.</p>
+          <p className="mt-3 text-center text-stone-600 dark:text-stone-400">Un abonnement unique, adapté à toutes les catégories : restaurants, salons, spas, terrains de foot, locations de voitures, médecins.</p>
 
           {/* Subscription cards */}
           <div className="mt-10 grid gap-6 lg:grid-cols-2">

@@ -38,6 +38,7 @@ function OnboardPage() {
     { value: 'football_pitch', label: 'Terrain de foot' },
     { value: 'car_rental', label: 'Location de voitures' },
     { value: 'barbershop', label: 'Barbier' },
+    { value: 'doctor', label: 'Médecin' },
   ]
 
   const CUISINE_HINTS: Record<string, string> = {
@@ -47,6 +48,7 @@ function OnboardPage() {
     football_pitch: 'Ex: 5v5 Synthétique, 6v6, 7v7 Indoor...',
     car_rental: 'Ex: Berline, SUV, Utilitaire...',
     barbershop: 'Ex: Coupe homme, Barbe, Soin...',
+    doctor: 'Ex: Cardiologue, Généraliste, Dentiste...',
   }
 
   function update(key: keyof typeof form, value: string) {

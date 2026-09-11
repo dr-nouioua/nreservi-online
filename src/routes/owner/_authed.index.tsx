@@ -117,6 +117,7 @@ function OwnerReservationsBoard() {
     spa: 'Demandes spéciales...',
     barbershop: 'Demandes spéciales...',
     car_rental: 'Permis, besoins...',
+    doctor: 'Motif, symptômes...',
   }
 
   const dayChips = Array.from({ length: 4 }, (_, i) => {
@@ -461,7 +462,7 @@ function OwnerReservationsBoard() {
 
       {/* ========== Floor plan (today only) ========== */}
       <h2 className="text-base sm:text-lg font-semibold text-stone-900 dark:text-stone-100 mt-10 mb-2">
-        {hasTables ? 'Plan de salle' : category === 'football_pitch' ? 'Terrains du jour' : category === 'car_rental' ? 'Véhicules du jour' : 'Postes du jour'}
+        {hasTables ? 'Plan de salle' : category === 'football_pitch' ? 'Terrains du jour' : category === 'car_rental' ? 'Véhicules du jour' : category === 'doctor' ? 'Consultations du jour' : 'Postes du jour'}
       </h2>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-4">
         {[['confirmed', 'bg-blue-500'], ['seated', 'bg-emerald-500'], ['completed', 'bg-stone-400'], ['no_show', 'bg-red-500']].map(([st, color]) => (
