@@ -63,8 +63,7 @@ export const getRestaurantBySlug = createServerFn({ method: "GET" })
     if (!restaurant) return null;
     const areaRows = await db.select().from(areas).where(eq(areas.restaurantId, restaurant.id));
     const tableRows = await db.select().from(tables).where(eq(tables.restaurantId, restaurant.id));
-    let doctorRows: any[] = [];
-    try { doctorRows = await db.select().from(doctors).where(eq(doctors.restaurantId, restaurant.id)); } catch { /* doctors table may not exist yet */ }
+    const doctorRows = await db.select().from(doctors).where(eq(doctors.restaurantId, restaurant.id));
     const [categoryRows, itemRows, adRows] = await Promise.all([
       db.select().from(menuCategories).where(eq(menuCategories.restaurantId, restaurant.id)),
       db.select().from(menuItems).where(eq(menuItems.restaurantId, restaurant.id)),

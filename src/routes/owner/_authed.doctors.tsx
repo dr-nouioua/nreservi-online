@@ -6,15 +6,11 @@ import { requireSession } from '../../server/auth.functions'
 
 export const Route = createFileRoute('/owner/_authed/doctors')({
   loader: async () => {
-    try {
-      const session = await requireSession()
-      const restaurantId = (session as any).restaurantId
-      if (!restaurantId) return { doctors: [] as any[] }
-      const doctors = await listDoctors({ data: { restaurantId } })
-      return { doctors }
-    } catch {
-      return { doctors: [] as any[] }
-    }
+    const session = await requireSession()
+    const restaurantId = (session as any).restaurantId
+    if (!restaurantId) return { doctors: [] as any[] }
+    const doctors = await listDoctors({ data: { restaurantId } })
+    return { doctors }
   },
   component: DoctorsPage,
 })

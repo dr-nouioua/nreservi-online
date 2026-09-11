@@ -413,13 +413,11 @@ export async function ensureSeeded() {
   });
   // Insert doctor profiles for Cabinet Benaali (group practice)
   if (cabinetBenali) {
-    try {
-      await db.insert(doctors).values([
-        { restaurantId: cabinetBenali.id, name: "Dr. Ahmed Benaali", specialty: "Cardiologue", bio: "Spécialiste en cardiologie interventionnelle avec plus de 15 ans d'expérience. Expert en cathétérisme cardiaque et angioplastie.", qualifications: "Université de Alger, Diplôme de Cardiologie", sortOrder: 1, available: true },
-        { restaurantId: cabinetBenali.id, name: "Dr. Sara Benaali", specialty: "Cardiologue pédiatrique", bio: "Spécialiste en cardiologie pédiatrique. Soins des maladies cardiaques congénitales et acquises chez l'enfant.", qualifications: "Université de Alger, Sous-spécialité Cardiologie Pédiatrique", sortOrder: 2, available: true },
-        { restaurantId: cabinetBenali.id, name: "Dr. Youcef Benaali", specialty: "Médecin généraliste", bio: "Médecin généraliste, suivi médical préventif et curatif pour toute la famille.", qualifications: "Université de Alger, Médecine Générale", sortOrder: 3, available: true },
-      ]);
-    } catch { /* doctors table may not exist yet */ }
+    await db.insert(doctors).values([
+      { restaurantId: cabinetBenali.id, name: "Dr. Ahmed Benaali", specialty: "Cardiologue", bio: "Spécialiste en cardiologie interventionnelle avec plus de 15 ans d'expérience. Expert en cathétérisme cardiaque et angioplastie.", qualifications: "Université de Alger, Diplôme de Cardiologie", sortOrder: 1, available: true },
+      { restaurantId: cabinetBenali.id, name: "Dr. Sara Benaali", specialty: "Cardiologue pédiatrique", bio: "Spécialiste en cardiologie pédiatrique. Soins des maladies cardiaques congénitales et acquises chez l'enfant.", qualifications: "Université de Alger, Sous-spécialité Cardiologie Pédiatrique", sortOrder: 2, available: true },
+      { restaurantId: cabinetBenali.id, name: "Dr. Youcef Benaali", specialty: "Médecin généraliste", bio: "Médecin généraliste, suivi médical préventif et curatif pour toute la famille.", qualifications: "Université de Alger, Médecine Générale", sortOrder: 3, available: true },
+    ]);
   }
 
   const cabinetMebarki = await seedRestaurant({
@@ -448,11 +446,9 @@ export async function ensureSeeded() {
   });
   // Insert doctor profile for Cabinet Mebarki (solo practice)
   if (cabinetMebarki) {
-    try {
-      await db.insert(doctors).values([
-        { restaurantId: cabinetMebarki.id, name: "Dr. Karim Mebarki", specialty: "Généraliste, Pédiatre", bio: "Médecin généraliste et pédiatre, passionné par le suivi médical des familles. Plus de 20 ans de pratique médicale à Oran.", qualifications: "Université d'Oran, Médecine Générale et Pédiatrie", sortOrder: 1, available: true },
-      ]);
-    } catch { /* doctors table may not exist yet */ }
+    await db.insert(doctors).values([
+      { restaurantId: cabinetMebarki.id, name: "Dr. Karim Mebarki", specialty: "Généraliste, Pédiatre", bio: "Médecin généraliste et pédiatre, passionné par le suivi médical des familles. Plus de 20 ans de pratique médicale à Oran.", qualifications: "Université d'Oran, Médecine Générale et Pédiatrie", sortOrder: 1, available: true },
+    ]);
   }
 
   // A restaurant awaiting super-admin approval, to demonstrate onboarding workflow

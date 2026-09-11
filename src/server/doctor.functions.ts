@@ -7,15 +7,11 @@ import { requireRestaurantId } from "./owner.functions.js";
 export const listDoctors = createServerFn({ method: "GET" })
   .inputValidator((data: { restaurantId: number }) => data)
   .handler(async ({ data }) => {
-    try {
-      return await db
-        .select()
-        .from(doctors)
-        .where(eq(doctors.restaurantId, data.restaurantId))
-        .orderBy(asc(doctors.sortOrder), asc(doctors.id));
-    } catch {
-      return [];
-    }
+    return db
+      .select()
+      .from(doctors)
+      .where(eq(doctors.restaurantId, data.restaurantId))
+      .orderBy(asc(doctors.sortOrder), asc(doctors.id));
   });
 
 export const getDoctor = createServerFn({ method: "GET" })
