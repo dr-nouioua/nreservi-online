@@ -101,7 +101,7 @@ function RestaurantPage() {
   const [menuOpen, setMenuOpen] = useState(restaurant.menuFixed)
   const [date, setDate] = useState(todayISO())
   const [dateEnd, setDateEnd] = useState(todayISO())
-  const [partySize, setPartySize] = useState(isFootball ? 10 : 2)
+  const [partySize, setPartySize] = useState(isFootball ? 10 : 1)
   const [babySeats, setBabySeats] = useState(0)
   const [areaId, setAreaId] = useState<number | undefined>(undefined)
   const [serviceId, setServiceId] = useState<number | undefined>(undefined)

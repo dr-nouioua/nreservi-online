@@ -607,7 +607,7 @@ function WalkInModal({ tables, areas, category, reservations, date, onClose, onC
   const hasTables = category === 'restaurant'
   const [guestName, setGuestName] = useState('')
   const [guestPhone, setGuestPhone] = useState('')
-  const [partySize, setPartySize] = useState(2)
+  const [partySize, setPartySize] = useState(1)
   const [tableId, setTableId] = useState(tables[0]?.id)
   const [areaId, setAreaId] = useState(areas[0]?.id)
   const [time, setTime] = useState(new Date().toISOString().slice(11, 16))

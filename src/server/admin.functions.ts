@@ -1016,7 +1016,7 @@ export const listEventThemes = createServerFn({ method: "GET" }).handler(async (
 export const listProspects = createServerFn({ method: "GET" })
   .handler(async () => {
     const session = await requireAdmin();
-    const isSuper = session.role === "super";
+    const isSuper = session.adminRole === "super";
     const rows = await db
       .select()
       .from(prospectContacts)
@@ -1028,7 +1028,7 @@ export const listProspects = createServerFn({ method: "GET" })
 export const getProspectStats = createServerFn({ method: "GET" })
   .handler(async () => {
     const session = await requireAdmin();
-    const isSuper = session.role === "super";
+    const isSuper = session.adminRole === "super";
     const agentCond = isSuper ? undefined : eq(prospectContacts.agentId, session.id);
 
     const all = await db.select().from(prospectContacts).where(agentCond);

@@ -43,7 +43,7 @@ export async function ensureSeeded() {
     email: "admin@platform.dev",
     passwordHash: hashPassword("admin123"),
     name: "Platform Admin",
-  });
+  }).onConflictDoNothing();
 
   await db.insert(adminUsers).values({
         role: "admin",
@@ -51,7 +51,7 @@ export async function ensureSeeded() {
     email: "agent@platform.dev",
     passwordHash: hashPassword("agent1234"),
     name: "Agent Commercial Demo",
-  });
+  }).onConflictDoNothing();
 
   const hours = {
     mon: [{ open: "12:00", close: "23:00" }],
