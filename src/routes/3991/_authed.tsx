@@ -23,12 +23,18 @@ import { adminHasModule } from '../../server/admin.permissions'
 import { BrandLogo } from '../../components/BrandLogo'
 
 export const Route = createFileRoute('/3991/_authed')({
-  beforeLoad: async () => {
-    const session = await getSession()
-    if (!session || session.role !== 'admin') {
+  beforeLoad: async ({ location }) => {
+    try {
+      const session = await getSession()
+      if (!session || session.role !== 'admin') {
+        throw redirect({ to: '/3991/login' })
+      }
+      return { session }
+    } catch (err) {
+      if (err && typeof err === 'object' && 'isRedirect' in err) throw err
+      console.error('[admin beforeLoad]', location.pathname, err)
       throw redirect({ to: '/3991/login' })
     }
-    return { session }
   },
   component: AdminLayout,
 })
