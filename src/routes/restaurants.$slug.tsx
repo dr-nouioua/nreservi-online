@@ -1,8 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Baby, CalendarDays, Car, CheckCircle2, ChevronDown, ImagePlus, MapPin, Scissors, Sparkles, Stethoscope, Users, UtensilsCrossed } from 'lucide-react'
 import { getRestaurantBySlug, getAvailability, createReservation } from '../server/booking.functions'
-import { listDoctors } from '../server/doctor.functions'
 import { EVENT_THEMES } from '../services/event-themes'
 import { formatPriceDA } from '../services/format'
 import { type Ad } from '../components/AdCard'
@@ -41,7 +40,7 @@ function todayISO() {
 function RestaurantPage() {
   // Loader typing flows through the generated route tree, which this
   // TanStack Start beta leaves as `{}` — annotate explicitly here.
-  const { restaurant, areas, menu, ads = [] } = Route.useLoaderData() as {
+  const { restaurant, areas, menu, doctors: doctorList = [], ads = [] } = Route.useLoaderData() as {
     restaurant: {
       id: number
       slug: string
@@ -69,6 +68,7 @@ function RestaurantPage() {
     }
     areas: { id: number; name: string }[]
     tables: unknown[]
+    doctors: { id: number; name: string; specialty: string; bio: string | null; photoUrl: string | null; qualifications: string | null; available: boolean }[]
     menu: {
       id: number
       name: string
@@ -106,8 +106,9 @@ function RestaurantPage() {
   const [babySeats, setBabySeats] = useState(0)
   const [areaId, setAreaId] = useState<number | undefined>(undefined)
   const [serviceId, setServiceId] = useState<number | undefined>(undefined)
-  const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>(undefined)
-  const [doctorList, setDoctorList] = useState<{ id: number; name: string; specialty: string; bio: string | null; photoUrl: string | null; qualifications: string | null; available: boolean }[]>([])
+  const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>(
+    isDoctor && doctorList.length === 1 ? doctorList[0].id : undefined
+  )
   const [slots, setSlots] = useState<{ time: string; available: boolean; tableCount: number }[]>([])
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
@@ -118,21 +119,12 @@ function RestaurantPage() {
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  // Load doctors for doctor category (safe — returns [] if table doesn't exist)
-  useEffect(() => {
-    if (!isDoctor) return
-    listDoctors({ data: { restaurantId: restaurant.id } }).then((docs) => {
-      setDoctorList(docs)
-      if (docs.length === 1) setSelectedDoctorId(docs[0].id)
-    }).catch(() => {})
-  }, [isDoctor, restaurant.id])
-
   async function checkAvailability() {
     setLoadingSlots(true)
     setSelectedTime(null)
     setError(null)
     try {
-      const result = await getAvailability({ data: { restaurantId: restaurant.id, date, partySize, format: isFootball ? (partySize === 10 ? '5v5' : partySize === 12 ? '6v6' : '7v7') : undefined } })
+      const result = await getAvailability({ data: { restaurantId: restaurant.id, date, partySize, format: isFootball ? (partySize === 10 ? '5v5' : partySize === 12 ? '6v6' : '7v7') : undefined, doctorId: isDoctor ? selectedDoctorId : undefined } })
       setSlots(result)
     } finally {
       setLoadingSlots(false)
@@ -155,6 +147,7 @@ function RestaurantPage() {
           date,
           time: selectedTime,
           areaId,
+          doctorId: isDoctor ? selectedDoctorId : undefined,
           format: isFootball ? (partySize === 10 ? '5v5' : partySize === 12 ? '6v6' : '7v7') : undefined,
           specialRequests,
         },
