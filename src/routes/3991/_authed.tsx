@@ -54,9 +54,11 @@ const nav: { to: string; label: string; icon: typeof Building2; module?: string;
 ]
 
 function AdminLayout() {
-  const { session } = Route.useRouteContext() as {
-    session: { name: string; email: string; adminRole: 'super' | 'admin'; permissions: string[] }
+  const ctx = Route.useRouteContext() as {
+    session?: { name: string; email: string; adminRole: 'super' | 'admin'; permissions: string[] }
   }
+  if (!ctx.session) return null
+  const session = ctx.session
   const visibleNav = nav.filter((item) => {
     if (item.superOnly && session.adminRole !== 'super') return false
     return !item.module || adminHasModule(session, item.module)
