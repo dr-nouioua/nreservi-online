@@ -13,9 +13,9 @@ export const Route = createFileRoute('/3991/_authed/account')({
 type AdminRow = Awaited<ReturnType<typeof listAdmins>>['admins'][number]
 
 function AdminAccountPage() {
-  const { session } = Route.useRouteContext() as {
-    session: { id: number; name: string; email: string; adminRole: 'super' | 'admin'; permissions: string[] }
-  }
+  const ctx = Route.useRouteContext() as Record<string, any> | undefined
+  const session = ctx?.session as { id: number; name: string; email: string; adminRole: 'super' | 'admin'; permissions: string[] } | undefined
+  if (!session) return null
   const router = useRouter()
 
   const loader = Route.useLoaderData() as { admins: AdminRow[]; viewerIsSuper: boolean }

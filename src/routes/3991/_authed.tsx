@@ -24,7 +24,12 @@ import { BrandLogo } from '../../components/BrandLogo'
 
 export const Route = createFileRoute('/3991/_authed')({
   beforeLoad: async () => {
-    const session = await getSession()
+    let session = null
+    try {
+      session = await getSession()
+    } catch {
+      // getSession transport failed — treat as unauthenticated
+    }
     if (!session || session.role !== 'admin') {
       throw redirect({ to: '/3991/login' })
     }

@@ -86,9 +86,9 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 function AdminIndex() {
   const initial = Route.useLoaderData()
-  const { session } = Route.useRouteContext() as {
-    session: { adminRole: 'super' | 'admin'; analyticsCategories?: string[] | null }
-  }
+  const ctx = Route.useRouteContext() as Record<string, any> | undefined
+  const session = ctx?.session as { adminRole: 'super' | 'admin'; analyticsCategories?: string[] | null } | undefined
+  if (!session) return null
   const isSuper = session.adminRole === 'super'
   const allowedCategories = isSuper ? null : (session.analyticsCategories ?? [])
   const [restaurants, setRestaurants] = useState(() =>

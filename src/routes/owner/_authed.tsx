@@ -40,7 +40,12 @@ function FootballIcon({ className }: { className?: string }) {
 
 export const Route = createFileRoute('/owner/_authed')({
   beforeLoad: async () => {
-    const session = await getSession()
+    let session = null
+    try {
+      session = await getSession()
+    } catch {
+      // getSession transport failed — treat as unauthenticated
+    }
     if (!session || (session.role !== 'owner' && session.role !== 'staff')) {
       throw redirect({ to: '/owner/login' })
     }
