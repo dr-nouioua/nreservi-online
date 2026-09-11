@@ -25,7 +25,6 @@ import { Route as R3991AuthedIndexRouteImport } from './routes/3991/_authed.inde
 import { Route as OwnerAuthedSettingsRouteImport } from './routes/owner/_authed.settings'
 import { Route as OwnerAuthedMenuRouteImport } from './routes/owner/_authed.menu'
 import { Route as OwnerAuthedMarketingRouteImport } from './routes/owner/_authed.marketing'
-import { Route as OwnerAuthedDoctorsRouteImport } from './routes/owner/_authed.doctors'
 import { Route as OwnerAuthedBillingRouteImport } from './routes/owner/_authed.billing'
 import { Route as OwnerAuthedAnalyticsRouteImport } from './routes/owner/_authed.analytics'
 import { Route as R3991AuthedSubscriptionsRouteImport } from './routes/3991/_authed.subscriptions'
@@ -121,11 +120,6 @@ const OwnerAuthedMenuRoute = OwnerAuthedMenuRouteImport.update({
 const OwnerAuthedMarketingRoute = OwnerAuthedMarketingRouteImport.update({
   id: '/marketing',
   path: '/marketing',
-  getParentRoute: () => OwnerAuthedRoute,
-} as any)
-const OwnerAuthedDoctorsRoute = OwnerAuthedDoctorsRouteImport.update({
-  id: '/doctors',
-  path: '/doctors',
   getParentRoute: () => OwnerAuthedRoute,
 } as any)
 const OwnerAuthedBillingRoute = OwnerAuthedBillingRouteImport.update({
@@ -228,7 +222,6 @@ export interface FileRoutesByFullPath {
   '/3991/subscriptions': typeof R3991AuthedSubscriptionsRoute
   '/owner/analytics': typeof OwnerAuthedAnalyticsRoute
   '/owner/billing': typeof OwnerAuthedBillingRoute
-  '/owner/doctors': typeof OwnerAuthedDoctorsRoute
   '/owner/marketing': typeof OwnerAuthedMarketingRoute
   '/owner/menu': typeof OwnerAuthedMenuRoute
   '/owner/settings': typeof OwnerAuthedSettingsRoute
@@ -259,7 +252,6 @@ export interface FileRoutesByTo {
   '/3991/subscriptions': typeof R3991AuthedSubscriptionsRoute
   '/owner/analytics': typeof OwnerAuthedAnalyticsRoute
   '/owner/billing': typeof OwnerAuthedBillingRoute
-  '/owner/doctors': typeof OwnerAuthedDoctorsRoute
   '/owner/marketing': typeof OwnerAuthedMarketingRoute
   '/owner/menu': typeof OwnerAuthedMenuRoute
   '/owner/settings': typeof OwnerAuthedSettingsRoute
@@ -293,7 +285,6 @@ export interface FileRoutesById {
   '/3991/_authed/subscriptions': typeof R3991AuthedSubscriptionsRoute
   '/owner/_authed/analytics': typeof OwnerAuthedAnalyticsRoute
   '/owner/_authed/billing': typeof OwnerAuthedBillingRoute
-  '/owner/_authed/doctors': typeof OwnerAuthedDoctorsRoute
   '/owner/_authed/marketing': typeof OwnerAuthedMarketingRoute
   '/owner/_authed/menu': typeof OwnerAuthedMenuRoute
   '/owner/_authed/settings': typeof OwnerAuthedSettingsRoute
@@ -328,7 +319,6 @@ export interface FileRouteTypes {
     | '/3991/subscriptions'
     | '/owner/analytics'
     | '/owner/billing'
-    | '/owner/doctors'
     | '/owner/marketing'
     | '/owner/menu'
     | '/owner/settings'
@@ -359,7 +349,6 @@ export interface FileRouteTypes {
     | '/3991/subscriptions'
     | '/owner/analytics'
     | '/owner/billing'
-    | '/owner/doctors'
     | '/owner/marketing'
     | '/owner/menu'
     | '/owner/settings'
@@ -392,7 +381,6 @@ export interface FileRouteTypes {
     | '/3991/_authed/subscriptions'
     | '/owner/_authed/analytics'
     | '/owner/_authed/billing'
-    | '/owner/_authed/doctors'
     | '/owner/_authed/marketing'
     | '/owner/_authed/menu'
     | '/owner/_authed/settings'
@@ -528,13 +516,6 @@ declare module '@tanstack/react-router' {
       path: '/marketing'
       fullPath: '/owner/marketing'
       preLoaderRoute: typeof OwnerAuthedMarketingRouteImport
-      parentRoute: typeof OwnerAuthedRoute
-    }
-    '/owner/_authed/doctors': {
-      id: '/owner/_authed/doctors'
-      path: '/doctors'
-      fullPath: '/owner/doctors'
-      preLoaderRoute: typeof OwnerAuthedDoctorsRouteImport
       parentRoute: typeof OwnerAuthedRoute
     }
     '/owner/_authed/billing': {
@@ -687,7 +668,6 @@ const R3991AuthedRouteWithChildren = R3991AuthedRoute._addFileChildren(
 interface OwnerAuthedRouteChildren {
   OwnerAuthedAnalyticsRoute: typeof OwnerAuthedAnalyticsRoute
   OwnerAuthedBillingRoute: typeof OwnerAuthedBillingRoute
-  OwnerAuthedDoctorsRoute: typeof OwnerAuthedDoctorsRoute
   OwnerAuthedMarketingRoute: typeof OwnerAuthedMarketingRoute
   OwnerAuthedMenuRoute: typeof OwnerAuthedMenuRoute
   OwnerAuthedSettingsRoute: typeof OwnerAuthedSettingsRoute
@@ -698,7 +678,6 @@ interface OwnerAuthedRouteChildren {
 const OwnerAuthedRouteChildren: OwnerAuthedRouteChildren = {
   OwnerAuthedAnalyticsRoute: OwnerAuthedAnalyticsRoute,
   OwnerAuthedBillingRoute: OwnerAuthedBillingRoute,
-  OwnerAuthedDoctorsRoute: OwnerAuthedDoctorsRoute,
   OwnerAuthedMarketingRoute: OwnerAuthedMarketingRoute,
   OwnerAuthedMenuRoute: OwnerAuthedMenuRoute,
   OwnerAuthedSettingsRoute: OwnerAuthedSettingsRoute,

@@ -40,7 +40,7 @@ function todayISO() {
 function RestaurantPage() {
   // Loader typing flows through the generated route tree, which this
   // TanStack Start beta leaves as `{}` — annotate explicitly here.
-  const { restaurant, areas, menu, doctors: doctorList = [], ads = [] } = Route.useLoaderData() as {
+  const { restaurant, areas, menu, ads = [] } = Route.useLoaderData() as {
     restaurant: {
       id: number
       slug: string
@@ -68,7 +68,6 @@ function RestaurantPage() {
     }
     areas: { id: number; name: string }[]
     tables: unknown[]
-    doctors: { id: number; name: string; specialty: string; bio: string | null; photoUrl: string | null; qualifications: string | null; available: boolean }[]
     menu: {
       id: number
       name: string
@@ -106,9 +105,6 @@ function RestaurantPage() {
   const [babySeats, setBabySeats] = useState(0)
   const [areaId, setAreaId] = useState<number | undefined>(undefined)
   const [serviceId, setServiceId] = useState<number | undefined>(undefined)
-  const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>(
-    isDoctor && doctorList.length === 1 ? doctorList[0].id : undefined
-  )
   const [slots, setSlots] = useState<{ time: string; available: boolean; tableCount: number }[]>([])
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
@@ -124,7 +120,7 @@ function RestaurantPage() {
     setSelectedTime(null)
     setError(null)
     try {
-      const result = await getAvailability({ data: { restaurantId: restaurant.id, date, partySize, format: isFootball ? (partySize === 10 ? '5v5' : partySize === 12 ? '6v6' : '7v7') : undefined, doctorId: isDoctor ? selectedDoctorId : undefined } })
+      const result = await getAvailability({ data: { restaurantId: restaurant.id, date, partySize, format: isFootball ? (partySize === 10 ? '5v5' : partySize === 12 ? '6v6' : '7v7') : undefined } })
       setSlots(result)
     } finally {
       setLoadingSlots(false)
@@ -147,7 +143,6 @@ function RestaurantPage() {
           date,
           time: selectedTime,
           areaId,
-          doctorId: isDoctor ? selectedDoctorId : undefined,
           format: isFootball ? (partySize === 10 ? '5v5' : partySize === 12 ? '6v6' : '7v7') : undefined,
           specialRequests,
         },
@@ -298,59 +293,7 @@ function RestaurantPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 pb-16">
           <div className="lg:col-span-2 space-y-6">
-            {/* Doctor: show doctor profiles instead of menu */}
-            {isDoctor && doctorList.length > 0 && (
-              <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden">
-                <div className="p-4 sm:p-5 bg-stone-50 dark:bg-stone-950/40">
-                  <span className="flex items-center gap-3.5">
-                    <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#069494]/10 dark:bg-[#069494]/15">
-                      <Stethoscope className="h-7 w-7 text-[#069494]" />
-                    </span>
-                    <span>
-                      <span className="block text-lg font-semibold text-stone-900 dark:text-stone-100">
-                        {doctorList.length === 1 ? 'Notre médecin' : 'Nos médecins'}
-                      </span>
-                      <span className="block text-sm text-stone-500 dark:text-stone-400">
-                        {doctorList.length === 1 ? doctorList[0].specialty : `${doctorList.length} spécialistes`}
-                      </span>
-                    </span>
-                  </span>
-                </div>
-                <div className="p-4 sm:p-6 space-y-4">
-                  {doctorList.map((doc) => (
-                    <div key={doc.id} className={`flex flex-col sm:flex-row gap-4 p-4 rounded-lg border ${selectedDoctorId === doc.id ? 'border-[#069494] bg-[#069494]/5 dark:bg-[#069494]/10' : 'border-stone-100 bg-stone-50 dark:border-stone-800 dark:bg-stone-950'}`}>
-                      <div className="shrink-0">
-                        {doc.photoUrl ? (
-                          <img src={doc.photoUrl} alt={doc.name} className="h-20 w-20 rounded-full object-cover" />
-                        ) : (
-                          <div className="h-20 w-20 rounded-full bg-[#069494]/10 dark:bg-[#069494]/20 flex items-center justify-center text-2xl font-bold text-[#069494]">
-                            {doc.name.split(' ').map((w) => w[0]).join('').slice(0, 2)}
-                          </div>
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold text-stone-900 dark:text-stone-100">{doc.name}</h3>
-                        <p className="text-sm text-[#069494] font-medium">{doc.specialty}</p>
-                        {doc.bio && <p className="text-sm text-stone-500 dark:text-stone-400 mt-1 line-clamp-2">{doc.bio}</p>}
-                        {doc.qualifications && <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">{doc.qualifications}</p>}
-                        {doctorList.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => { setSelectedDoctorId(doc.id); setSelectedTime(null); setSlots([]) }}
-                            className={`mt-2 px-3 py-1.5 rounded-lg text-xs font-medium transition ${selectedDoctorId === doc.id ? 'bg-[#069494] text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700'}`}
-                          >
-                            {selectedDoctorId === doc.id ? 'Sélectionné' : 'Choisir ce médecin'}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Non-doctor: show menu/services as before */}
-            {((!isFootball && !isCarRental && !isDoctor) || (!isDoctor && menu.length > 0)) && (
+            {((!isFootball && !isCarRental) || menu.length > 0) && (
             <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden">
               <button
                 onClick={() => setMenuOpen((o) => !o)}
@@ -416,23 +359,6 @@ function RestaurantPage() {
               <CalendarDays className="h-4 w-4" /> {isFootball ? 'Réserver un terrain' : isCarRental ? 'Louer' : 'Réserver'}
             </h2>
             <div className="space-y-3">
-              {/* ---- Doctor selector (group practice) ---- */}
-              {isDoctor && doctorList.length > 1 && (
-                <div>
-                  <label className="text-xs text-stone-500 dark:text-stone-400">Médecin</label>
-                  <select
-                    value={selectedDoctorId ?? ''}
-                    onChange={(e) => { setSelectedDoctorId(e.target.value ? Number(e.target.value) : undefined); setSelectedTime(null); setSlots([]) }}
-                    className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
-                  >
-                    <option value="">Choisir un médecin</option>
-                    {doctorList.filter((d) => d.available).map((doc) => (
-                      <option key={doc.id} value={doc.id}>{doc.name} — {doc.specialty}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
               {/* ---- Date fields ---- */}
               {isCarRental ? (
                 <div className="grid grid-cols-2 gap-2">
@@ -552,7 +478,7 @@ function RestaurantPage() {
               ) : null}
               <button
                 onClick={checkAvailability}
-                disabled={loadingSlots || (isDoctor && doctorList.length > 1 && !selectedDoctorId)}
+                disabled={loadingSlots}
                 className="event-cta w-full py-2.5 rounded-lg bg-stone-900 text-white dark:ring-1 dark:ring-stone-700 text-sm font-medium hover:bg-stone-800 disabled:opacity-50"
               >
                 {loadingSlots ? 'Recherche...' : isCarRental ? 'Voir les véhicules' : 'Voir les disponibilités'}

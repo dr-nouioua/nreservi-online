@@ -10,7 +10,6 @@ import {
   reservations,
   customers,
   ads,
-  doctors,
 } from "../../db/schema.js";
 import { ensureSeeded } from "./seed.server.js";
 import { sendWhatsappMessage } from "./whatsapp.server.js";
@@ -63,7 +62,6 @@ export const getRestaurantBySlug = createServerFn({ method: "GET" })
     if (!restaurant) return null;
     const areaRows = await db.select().from(areas).where(eq(areas.restaurantId, restaurant.id));
     const tableRows = await db.select().from(tables).where(eq(tables.restaurantId, restaurant.id));
-    const doctorRows = await db.select().from(doctors).where(eq(doctors.restaurantId, restaurant.id));
     const [categoryRows, itemRows, adRows] = await Promise.all([
       db.select().from(menuCategories).where(eq(menuCategories.restaurantId, restaurant.id)),
       db.select().from(menuItems).where(eq(menuItems.restaurantId, restaurant.id)),
@@ -84,14 +82,13 @@ export const getRestaurantBySlug = createServerFn({ method: "GET" })
       restaurant,
       areas: areaRows,
       tables: tableRows,
-      doctors: doctorRows,
       menu: categoryRows.map((c) => ({ ...c, items: itemRows.filter((i) => i.categoryId === c.id) })),
       ads: adRows,
     };
   });
 
 export const getAvailability = createServerFn({ method: "GET" })
-  .inputValidator((data: { restaurantId: number; date: string; partySize: number; format?: string; doctorId?: number }) => data)
+  .inputValidator((data: { restaurantId: number; date: string; partySize: number; format?: string }) => data)
   .handler(async ({ data }) => {
     // Expired / suspended / pending restaurants expose no slots at all.
     const [restaurantRow] = await db
@@ -179,20 +176,17 @@ export const getAvailability = createServerFn({ method: "GET" })
 
     // For non-restaurant categories (no format), there are no tables — check reservation conflicts only
     if (!hasTables) {
-      const conds = [
-        eq(reservations.restaurantId, data.restaurantId),
-        eq(reservations.date, data.date),
-        ne(reservations.status, "cancelled"),
-        ne(reservations.status, "no_show"),
-      ];
-      // For doctors, check conflicts per-doctor (multiple doctors can share the same slot)
-      if (data.doctorId) {
-        conds.push(eq(reservations.doctorId, data.doctorId));
-      }
       const dayRes = await db
         .select()
         .from(reservations)
-        .where(and(...conds));
+        .where(
+          and(
+            eq(reservations.restaurantId, data.restaurantId),
+            eq(reservations.date, data.date),
+            ne(reservations.status, "cancelled"),
+            ne(reservations.status, "no_show"),
+          ),
+        );
       const bookedTimes = new Set(dayRes.map((r) => r.time.slice(0, 5)));
       return allSlots.map((slot) => ({
         time: slot,
@@ -237,7 +231,6 @@ export const createReservation = createServerFn({ method: "POST" })
       date: string;
       time: string;
       areaId?: number;
-      doctorId?: number;
       format?: string;
       specialRequests?: string;
       babySeats?: number;
@@ -306,20 +299,10 @@ export const createReservation = createServerFn({ method: "POST" })
         );
 
       // For non-restaurant categories (except football), block if same time slot is already booked
-      // For doctors, check per-doctor conflicts (multiple doctors can share the same slot)
+      // Football handles this per-terrain below
       if (!hasTables && category !== 'football_pitch') {
-        const conflictConds = [
-          eq(reservations.restaurantId, data.restaurantId),
-          eq(reservations.date, data.date),
-          eq(reservations.time, `${data.time}:00`),
-          ne(reservations.status, "cancelled"),
-          ne(reservations.status, "no_show"),
-        ];
-        if (data.doctorId) {
-          conflictConds.push(eq(reservations.doctorId, data.doctorId));
-        }
-        const bookedAtTime = await tx.select({ id: reservations.id }).from(reservations).where(and(...conflictConds)).limit(1);
-        if (bookedAtTime.length > 0) return { kind: "full" as const };
+        const bookedAtTime = dayRes.some((r) => r.time.slice(0, 5) === data.time);
+        if (bookedAtTime) return { kind: "full" as const };
       }
 
       let [customer] = await tx.select().from(customers).where(eq(customers.phone, data.guestPhone));
@@ -376,7 +359,6 @@ export const createReservation = createServerFn({ method: "POST" })
           customerId: customer.id,
           tableId,
           areaId,
-          doctorId: data.doctorId ?? null,
           guestName: data.guestName,
           guestPhone: data.guestPhone,
           partySize: data.partySize,

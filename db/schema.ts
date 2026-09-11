@@ -137,23 +137,6 @@ export const menuItems = pgTable("menu_items", {
   index("menu_items_category_idx").on(table.categoryId),
 ]);
 
-// ---------- Doctors (profiles within a practice) ----------
-
-export const doctors = pgTable("doctors", {
-  id: serial().primaryKey(),
-  restaurantId: integer("restaurant_id").notNull().references(() => restaurants.id),
-  name: text("name").notNull(),
-  specialty: text("specialty").notNull(),
-  bio: text("bio").default(""),
-  photoUrl: text("photo_url"),
-  qualifications: text("qualifications").default(""),
-  available: boolean("available").notNull().default(true),
-  sortOrder: integer("sort_order").notNull().default(0),
-  createdAt: timestamp("created_at").defaultNow(),
-}, (table) => [
-  index("doctors_restaurant_idx").on(table.restaurantId),
-]);
-
 // ---------- Customers ----------
 
 export const customers = pgTable("customers", {
@@ -175,7 +158,6 @@ export const reservations = pgTable("reservations", {
   customerId: integer("customer_id").references(() => customers.id),
   tableId: integer("table_id").references(() => tables.id),
   areaId: integer("area_id").references(() => areas.id),
-  doctorId: integer("doctor_id").references(() => doctors.id),
   guestName: text("guest_name").notNull(),
   guestPhone: text("guest_phone").notNull(),
   partySize: integer("party_size").notNull(),
