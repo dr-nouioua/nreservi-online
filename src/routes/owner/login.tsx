@@ -36,6 +36,9 @@ function OwnerLogin() {
       } else {
         navigate({ to: '/owner' })
       }
+    } catch (err) {
+      console.error('[owner login]', err)
+      setError("Une erreur est survenue. Réessayez dans un instant.")
     } finally {
       setLoading(false)
     }

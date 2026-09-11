@@ -36,6 +36,9 @@ function AdminLogin() {
       } else {
         navigate({ to: '/3991' })
       }
+    } catch (err) {
+      console.error('[admin login]', err)
+      setError("Une erreur est survenue. Réessayez dans un instant.")
     } finally {
       setLoading(false)
     }
