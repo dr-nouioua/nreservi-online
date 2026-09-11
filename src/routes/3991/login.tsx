@@ -6,13 +6,13 @@ import { loginAdmin } from '../../server/auth.functions'
 import { ensureSeeded } from '../../server/seed.server'
 
 const seedForLogin = createServerFn({ method: 'GET' }).handler(async () => {
-  await ensureSeeded()
+  try { await ensureSeeded() } catch { /* seed is non-critical */ }
   return null
 })
 
 export const Route = createFileRoute('/3991/login')({
   loader: async () => {
-    await seedForLogin()
+    try { await seedForLogin() } catch { /* seed failure must not block login */ }
     return null
   },
   component: AdminLogin,

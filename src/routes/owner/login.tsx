@@ -6,13 +6,13 @@ import { ensureSeeded } from '../../server/seed.server'
 import { createServerFn } from '@tanstack/react-start'
 
 const seedForLogin = createServerFn({ method: 'GET' }).handler(async () => {
-  await ensureSeeded()
+  try { await ensureSeeded() } catch { /* seed is non-critical */ }
   return null
 })
 
 export const Route = createFileRoute('/owner/login')({
   loader: async () => {
-    await seedForLogin()
+    try { await seedForLogin() } catch { /* seed failure must not block login */ }
     return null
   },
   component: OwnerLogin,

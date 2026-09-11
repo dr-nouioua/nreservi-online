@@ -20,7 +20,7 @@ import { rateLimit } from "./rate-limit.server.js";
 export const listRestaurants = createServerFn({ method: "GET" })
   .inputValidator((data: { q?: string; city?: string; cuisine?: string; category?: string } | undefined) => data)
   .handler(async ({ data }) => {
-    await ensureSeeded();
+    try { await ensureSeeded(); } catch { /* seed is non-critical */ }
     // SQL-level filtering + minimal columns: scales to hundreds of restaurants.
     const conds = [eq(restaurants.status, "active")];
     const q = data?.q?.trim();
@@ -57,7 +57,7 @@ export const listRestaurants = createServerFn({ method: "GET" })
 export const getRestaurantBySlug = createServerFn({ method: "GET" })
   .inputValidator((data: { slug: string }) => data)
   .handler(async ({ data }) => {
-    await ensureSeeded();
+    try { await ensureSeeded(); } catch { /* seed is non-critical */ }
     const [restaurant] = await db.select().from(restaurants).where(eq(restaurants.slug, data.slug));
     if (!restaurant) return null;
     const areaRows = await db.select().from(areas).where(eq(areas.restaurantId, restaurant.id));

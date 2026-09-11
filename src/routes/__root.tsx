@@ -29,13 +29,15 @@ export const Route = createRootRoute({
   // never shown to visitors — they only go to the server logs.
   errorComponent: ({ error }) => {
     console.error("[app error]", error);
+    const msg = error instanceof Error ? error.message : String(error);
     return (
       <div className="min-h-screen bg-stone-950 flex items-center justify-center p-4">
         <div className="max-w-md rounded-xl border border-stone-800 bg-stone-900 p-8 text-center">
           <p className="text-4xl">😔</p>
           <h1 className="mt-4 text-xl font-bold text-stone-100">Une erreur est survenue</h1>
+          <p className="mt-3 text-xs text-red-400 bg-stone-800 rounded-lg p-3 text-left break-all font-mono">{msg}</p>
           <p className="mt-3 text-sm text-stone-400">
-            Une erreur inattendue s'est produite. Rechargez la page ou réessayez dans un instant.
+            Rechargez la page ou réessayez dans un instant.
           </p>
           <a
             href="/"
