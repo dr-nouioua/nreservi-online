@@ -1,5 +1,5 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Bar } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
@@ -112,9 +112,9 @@ function AdminIndex() {
   }
 
   // Load prospect stats on mount
-  useState(() => {
+  useEffect(() => {
     getProspectStats().then(setProspectStats).catch(() => {})
-  })
+  }, [])
 
   async function applyEventTheme() {
     const ids = eventScope === 'all' ? null : [...eventPicked]
