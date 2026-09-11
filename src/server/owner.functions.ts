@@ -59,6 +59,7 @@ export const getOwnSubscription = createServerFn({ method: "GET" }).handler(asyn
       start: restaurants.subscriptionStart,
       end: restaurants.subscriptionEnd,
       category: restaurants.category,
+      hasDoctors: restaurants.hasDoctors,
     })
     .from(restaurants)
     .where(eq(restaurants.id, session.restaurantId));
@@ -70,6 +71,7 @@ export const getOwnSubscription = createServerFn({ method: "GET" }).handler(asyn
     start: row.start,
     end: row.end,
     category: row.category ?? "restaurant",
+    hasDoctors: row.hasDoctors,
     effective: computeSubscriptionStatus({ status: row.status, subscriptionEnd: row.end }),
     daysLeft: daysUntil(row.end),
   };
@@ -438,6 +440,14 @@ export const setHasChildSeat = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const restaurantId = await requireRestaurantId();
     await db.update(restaurants).set({ hasChildSeat: data.enabled }).where(eq(restaurants.id, restaurantId));
+    return { success: true };
+  });
+
+export const setHasDoctors = createServerFn({ method: "POST" })
+  .inputValidator((data: { enabled: boolean }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    await db.update(restaurants).set({ hasDoctors: data.enabled }).where(eq(restaurants.id, restaurantId));
     return { success: true };
   });
 

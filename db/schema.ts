@@ -59,6 +59,7 @@ export const restaurants = pgTable("restaurants", {
     hasLockerRooms: boolean("has_locker_rooms").notNull().default(false), // football: locker rooms badge
     hasNightLighting: boolean("has_night_lighting").notNull().default(false), // football: night lighting badge
     hasChildSeat: boolean("has_child_seat").notNull().default(false), // car rental: child seat on request
+    hasDoctors: boolean("has_doctors").notNull().default(false), // doctor: enable doctor management section
     slotDuration: integer("slot_duration").notNull().default(30), // minutes per time slot (15, 30, 45, 60, 90, 120, 150, 180)
     facebookUrl: text("facebook_url"),
    instagramUrl: text("instagram_url"),
@@ -135,6 +136,23 @@ export const menuItems = pgTable("menu_items", {
 }, (table) => [
   index("menu_items_restaurant_idx").on(table.restaurantId),
   index("menu_items_category_idx").on(table.categoryId),
+]);
+
+// ---------- Doctors (profiles within a practice) ----------
+
+export const doctors = pgTable("doctors", {
+  id: serial().primaryKey(),
+  restaurantId: integer("restaurant_id").notNull().references(() => restaurants.id),
+  name: text("name").notNull(),
+  specialty: text("specialty").notNull(),
+  bio: text("bio").default(""),
+  photoUrl: text("photo_url"),
+  qualifications: text("qualifications").default(""),
+  available: boolean("available").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("doctors_restaurant_idx").on(table.restaurantId),
 ]);
 
 // ---------- Customers ----------

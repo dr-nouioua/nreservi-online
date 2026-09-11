@@ -8,6 +8,7 @@ import {
   tables,
   menuCategories,
   menuItems,
+  doctors,
   customers,
   reservations,
   marketingSegments,
@@ -73,6 +74,8 @@ export async function ensureSeeded() {
     ownerEmail: string;
     coverImageUrl: string;
     logoUrl: string;
+    areaNames?: string[];
+    menuCategories?: Record<string, { name: string; price: string; description: string; photoUrl: string }[]>;
   }) => {
     const [r] = await db
       .insert(restaurants)
@@ -92,6 +95,7 @@ export async function ensureSeeded() {
         avgTicketPrice: opts.avgTicket,
         status: "active",
         subscriptionTier: "premium",
+        hasDoctors: opts.category === "doctor",
         openingHours: hours,
       })
       .returning();
@@ -111,7 +115,7 @@ export async function ensureSeeded() {
       role: "host",
     });
 
-    const areaNames = ["Indoor", "Terrace", "Bar"];
+    const areaNames = opts.areaNames ?? ["Indoor", "Terrace", "Bar"];
     const areaRows = await db
       .insert(areas)
       .values(areaNames.map((name) => ({ restaurantId: r.id, name })))
@@ -133,13 +137,7 @@ export async function ensureSeeded() {
     });
     const insertedTables = await db.insert(tables).values(tableRows).returning();
 
-    const categories = ["Starters", "Mains", "Desserts", "Drinks"];
-    const catRows = await db
-      .insert(menuCategories)
-      .values(categories.map((name, idx) => ({ restaurantId: r.id, name, sortOrder: idx })))
-      .returning();
-
-    const itemsByCat: Record<string, { name: string; price: string; description: string; photoUrl: string }[]> = {
+    const defaultMenuCategories: Record<string, { name: string; price: string; description: string; photoUrl: string }[]> = {
       Starters: [
         { name: "Burrata & Heirloom Tomato", price: "12.00", description: "Basil oil, sourdough crisp", photoUrl: "https://images.unsplash.com/photo-1565299507177-b0ac66763828?auto=format&fit=crop&w=700&q=80" },
         { name: "Charred Octopus", price: "16.00", description: "Smoked paprika, lemon", photoUrl: "https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=700&q=80" },
@@ -155,6 +153,13 @@ export async function ensureSeeded() {
         { name: "Citrus Spritz", price: "11.00", description: "Non-alcoholic option available", photoUrl: "https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=700&q=80" },
       ],
     };
+    const categories = Object.keys(opts.menuCategories ?? defaultMenuCategories);
+    const catRows = await db
+      .insert(menuCategories)
+      .values(categories.map((name, idx) => ({ restaurantId: r.id, name, sortOrder: idx })))
+      .returning();
+
+    const itemsByCat = opts.menuCategories ?? defaultMenuCategories;
 
     for (const cat of catRows) {
       const items = itemsByCat[cat.name] ?? [];
@@ -397,8 +402,8 @@ export async function ensureSeeded() {
     logoUrl: "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=300&q=80",
   });
 
-  // Doctor establishments
-  await seedRestaurant({
+  // Doctor establishments with custom areas and medical services
+  const cabinetBenali = await seedRestaurant({
     slug: "cabinet-dr-benali",
     name: "Cabinet Dr Benaali",
     category: "doctor",
@@ -408,8 +413,32 @@ export async function ensureSeeded() {
     ownerEmail: "dr.benali@cabinet.dev",
     coverImageUrl: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1400&q=80",
     logoUrl: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=300&q=80",
+    areaNames: ["Salle de consultation 1", "Salle de consultation 2", "Salle de consultation 3"],
+    menuCategories: {
+      "Consultations": [
+        { name: "Consultation générale", price: "2000", description: "Bilan de santé complet", photoUrl: "" },
+        { name: "Consultation cardiologique", price: "3000", description: "Examen cardiaque approfondi", photoUrl: "" },
+        { name: "Électrocardiogramme (ECG)", price: "1500", description: "Enregistrement de l'activité électrique du cœur", photoUrl: "" },
+      ],
+      "Examens": [
+        { name: "Échographie cardiaque", price: "4000", description: "Imagerie par ultrasons du cœur", photoUrl: "" },
+        { name: "Test d'effort", price: "3500", description: "Évaluation de la capacité cardiaque à l'effort", photoUrl: "" },
+        { name: "Holter tensionnel", price: "2500", description: "Monitoring tensionnel sur 24h", photoUrl: "" },
+      ],
+    },
   });
-  await seedRestaurant({
+  // Insert doctor profiles for Cabinet Benaali (group practice)
+  if (cabinetBenali) {
+    try {
+      await db.insert(doctors).values([
+        { restaurantId: cabinetBenali.id, name: "Dr. Ahmed Benaali", specialty: "Cardiologue", bio: "Spécialiste en cardiologie interventionnelle avec plus de 15 ans d'expérience. Expert en cathétérisme cardiaque et angioplastie.", qualifications: "Université de Alger, Diplôme de Cardiologie", sortOrder: 1, available: true },
+        { restaurantId: cabinetBenali.id, name: "Dr. Sara Benaali", specialty: "Cardiologue pédiatrique", bio: "Spécialiste en cardiologie pédiatrique. Soins des maladies cardiaques congénitales et acquises chez l'enfant.", qualifications: "Université de Alger, Sous-spécialité Cardiologie Pédiatrique", sortOrder: 2, available: true },
+        { restaurantId: cabinetBenali.id, name: "Dr. Youcef Benaali", specialty: "Médecin généraliste", bio: "Médecin généraliste, suivi médical préventif et curatif pour toute la famille.", qualifications: "Université de Alger, Médecine Générale", sortOrder: 3, available: true },
+      ]);
+    } catch { /* doctors table may not exist yet */ }
+  }
+
+  const cabinetMebarki = await seedRestaurant({
     slug: "cabinet-dr-mebarki",
     name: "Cabinet Dr Mebarki",
     category: "doctor",
@@ -419,7 +448,28 @@ export async function ensureSeeded() {
     ownerEmail: "dr.mebarki@cabinet.dev",
     coverImageUrl: "https://images.unsplash.com/photo-1582719471384-894fbb16e074?auto=format&fit=crop&w=1400&q=80",
     logoUrl: "https://images.unsplash.com/photo-1582719471384-894fbb16e074?auto=format&fit=crop&w=300&q=80",
+    areaNames: ["Salle 1", "Salle 2", "Salle 3"],
+    menuCategories: {
+      "Consultations": [
+        { name: "Consultation généraliste", price: "1500", description: "Bilan de santé, diagnostic et traitement", photoUrl: "" },
+        { name: "Consultation pédiatrique", price: "1500", description: "Suivi de l'enfant, vaccination, croissance", photoUrl: "" },
+        { name: "Consultation de suivi", price: "1000", description: "Contrôle régulier, renouvellement d'ordonnance", photoUrl: "" },
+      ],
+      "Services": [
+        { name: "Vaccination", price: "500", description: "Vaccins selon le calendrier vaccinal", photoUrl: "" },
+        { name: "Petite chirurgie", price: "2000", description: "Sutures, ablation de grains de beauté", photoUrl: "" },
+        { name: "Électrocardiogramme", price: "1000", description: "ECG de dépistage", photoUrl: "" },
+      ],
+    },
   });
+  // Insert doctor profile for Cabinet Mebarki (solo practice)
+  if (cabinetMebarki) {
+    try {
+      await db.insert(doctors).values([
+        { restaurantId: cabinetMebarki.id, name: "Dr. Karim Mebarki", specialty: "Généraliste, Pédiatre", bio: "Médecin généraliste et pédiatre, passionné par le suivi médical des familles. Plus de 20 ans de pratique médicale à Oran.", qualifications: "Université d'Oran, Médecine Générale et Pédiatrie", sortOrder: 1, available: true },
+      ]);
+    } catch { /* doctors table may not exist yet */ }
+  }
 
   // A restaurant awaiting super-admin approval, to demonstrate onboarding workflow
   await db.insert(restaurants).values({

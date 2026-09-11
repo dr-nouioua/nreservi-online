@@ -1,7 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Baby, CalendarDays, Car, CheckCircle2, ChevronDown, ImagePlus, MapPin, Scissors, Sparkles, Stethoscope, Users, UtensilsCrossed } from 'lucide-react'
 import { getRestaurantBySlug, getAvailability, createReservation } from '../server/booking.functions'
+import { listDoctors } from '../server/doctor.functions'
 import { EVENT_THEMES } from '../services/event-themes'
 import { formatPriceDA } from '../services/format'
 import { type Ad } from '../components/AdCard'
@@ -60,6 +61,7 @@ function RestaurantPage() {
       hasLockerRooms: boolean
       hasNightLighting: boolean
       hasChildSeat: boolean
+      hasDoctors: boolean
       subscriptionTier: string
       facebookUrl: string | null
       instagramUrl: string | null
@@ -80,7 +82,7 @@ function RestaurantPage() {
   const isCarRental = restaurant.category === 'car_rental'
   const isBarbershop = restaurant.category === 'barbershop'
   const isSalonOrSpa = restaurant.category === 'beauty_salon' || restaurant.category === 'spa'
-  const isDoctor = restaurant.category === 'doctor'
+  const isDoctor = restaurant.category === 'doctor' && restaurant.hasDoctors
   const showPartySize = !isCarRental && !isFootball
   const showBabySeats = restaurant.category === 'restaurant' && restaurant.babySeatAvailable
   const showPlayerCount = isFootball
@@ -105,6 +107,8 @@ function RestaurantPage() {
   const [babySeats, setBabySeats] = useState(0)
   const [areaId, setAreaId] = useState<number | undefined>(undefined)
   const [serviceId, setServiceId] = useState<number | undefined>(undefined)
+  const [selectedDoctorId, setSelectedDoctorId] = useState<number | undefined>(undefined)
+  const [doctorList, setDoctorList] = useState<{ id: number; name: string; specialty: string; bio: string | null; photoUrl: string | null; qualifications: string | null; available: boolean }[]>([])
   const [slots, setSlots] = useState<{ time: string; available: boolean; tableCount: number }[]>([])
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
@@ -114,6 +118,15 @@ function RestaurantPage() {
   const [confirmation, setConfirmation] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+
+  // Load doctors for doctor category (safe — returns [] if table doesn't exist)
+  useEffect(() => {
+    if (!isDoctor) return
+    listDoctors({ data: { restaurantId: restaurant.id } }).then((docs) => {
+      setDoctorList(docs)
+      if (docs.length === 1) setSelectedDoctorId(docs[0].id)
+    }).catch(() => {})
+  }, [isDoctor, restaurant.id])
 
   async function checkAvailability() {
     setLoadingSlots(true)
@@ -293,7 +306,59 @@ function RestaurantPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 pb-16">
           <div className="lg:col-span-2 space-y-6">
-            {((!isFootball && !isCarRental) || menu.length > 0) && (
+            {/* Doctor: show doctor profiles instead of menu */}
+            {isDoctor && doctorList.length > 0 && (
+              <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden">
+                <div className="p-4 sm:p-5 bg-stone-50 dark:bg-stone-950/40">
+                  <span className="flex items-center gap-3.5">
+                    <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#069494]/10 dark:bg-[#069494]/15">
+                      <Stethoscope className="h-7 w-7 text-[#069494]" />
+                    </span>
+                    <span>
+                      <span className="block text-lg font-semibold text-stone-900 dark:text-stone-100">
+                        {doctorList.length === 1 ? 'Notre médecin' : 'Nos médecins'}
+                      </span>
+                      <span className="block text-sm text-stone-500 dark:text-stone-400">
+                        {doctorList.length === 1 ? doctorList[0].specialty : `${doctorList.length} spécialistes`}
+                      </span>
+                    </span>
+                  </span>
+                </div>
+                <div className="p-4 sm:p-6 space-y-4">
+                  {doctorList.map((doc) => (
+                    <div key={doc.id} className={`flex flex-col sm:flex-row gap-4 p-4 rounded-lg border ${selectedDoctorId === doc.id ? 'border-[#069494] bg-[#069494]/5 dark:bg-[#069494]/10' : 'border-stone-100 bg-stone-50 dark:border-stone-800 dark:bg-stone-950'}`}>
+                      <div className="shrink-0">
+                        {doc.photoUrl ? (
+                          <img src={doc.photoUrl} alt={doc.name} className="h-20 w-20 rounded-full object-cover" />
+                        ) : (
+                          <div className="h-20 w-20 rounded-full bg-[#069494]/10 dark:bg-[#069494]/20 flex items-center justify-center text-2xl font-bold text-[#069494]">
+                            {doc.name.split(' ').map((w) => w[0]).join('').slice(0, 2)}
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-stone-900 dark:text-stone-100">{doc.name}</h3>
+                        <p className="text-sm text-[#069494] font-medium">{doc.specialty}</p>
+                        {doc.bio && <p className="text-sm text-stone-500 dark:text-stone-400 mt-1 line-clamp-2">{doc.bio}</p>}
+                        {doc.qualifications && <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">{doc.qualifications}</p>}
+                        {doctorList.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => { setSelectedDoctorId(doc.id); setSelectedTime(null); setSlots([]) }}
+                            className={`mt-2 px-3 py-1.5 rounded-lg text-xs font-medium transition ${selectedDoctorId === doc.id ? 'bg-[#069494] text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700'}`}
+                          >
+                            {selectedDoctorId === doc.id ? 'Sélectionné' : 'Choisir ce médecin'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Non-doctor: show menu/services as before */}
+            {((!isFootball && !isCarRental && !isDoctor) || (!isDoctor && menu.length > 0)) && (
             <div className="bg-white dark:bg-stone-900 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden">
               <button
                 onClick={() => setMenuOpen((o) => !o)}
@@ -359,6 +424,23 @@ function RestaurantPage() {
               <CalendarDays className="h-4 w-4" /> {isFootball ? 'Réserver un terrain' : isCarRental ? 'Louer' : 'Réserver'}
             </h2>
             <div className="space-y-3">
+              {/* ---- Doctor selector (group practice) ---- */}
+              {isDoctor && doctorList.length > 1 && (
+                <div>
+                  <label className="text-xs text-stone-500 dark:text-stone-400">Médecin</label>
+                  <select
+                    value={selectedDoctorId ?? ''}
+                    onChange={(e) => { setSelectedDoctorId(e.target.value ? Number(e.target.value) : undefined); setSelectedTime(null); setSlots([]) }}
+                    className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
+                  >
+                    <option value="">Choisir un médecin</option>
+                    {doctorList.filter((d) => d.available).map((doc) => (
+                      <option key={doc.id} value={doc.id}>{doc.name} — {doc.specialty}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               {/* ---- Date fields ---- */}
               {isCarRental ? (
                 <div className="grid grid-cols-2 gap-2">
@@ -478,7 +560,7 @@ function RestaurantPage() {
               ) : null}
               <button
                 onClick={checkAvailability}
-                disabled={loadingSlots}
+                disabled={loadingSlots || (isDoctor && doctorList.length > 1 && !selectedDoctorId)}
                 className="event-cta w-full py-2.5 rounded-lg bg-stone-900 text-white dark:ring-1 dark:ring-stone-700 text-sm font-medium hover:bg-stone-800 disabled:opacity-50"
               >
                 {loadingSlots ? 'Recherche...' : isCarRental ? 'Voir les véhicules' : 'Voir les disponibilités'}

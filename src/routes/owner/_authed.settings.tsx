@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
-import { AtSign, Baby, Car, ChevronRight, DoorOpen, Droplets, ImagePlus, KeyRound, Lightbulb, MessageCircle, Pencil, Plus, Save, Trash2, Upload } from 'lucide-react'
-import { getOwnerOverview, updateRestaurantSettings, addArea, addTable, deleteTable, renameArea, deleteArea, setBabySeatAvailable, setHasParking, setHasShowers, setHasLockerRooms, setHasNightLighting, setHasChildSeat, setSlotDuration } from '../../server/owner.functions'
+import { AtSign, Baby, Car, ChevronRight, DoorOpen, Droplets, ImagePlus, KeyRound, Lightbulb, MessageCircle, Pencil, Plus, Save, Stethoscope, Trash2, Upload } from 'lucide-react'
+import { getOwnerOverview, updateRestaurantSettings, addArea, addTable, deleteTable, renameArea, deleteArea, setBabySeatAvailable, setHasParking, setHasShowers, setHasLockerRooms, setHasNightLighting, setHasChildSeat, setHasDoctors, setSlotDuration } from '../../server/owner.functions'
 import { changePassword, updateAccountEmail } from '../../server/auth.functions'
 
 export const Route = createFileRoute('/owner/_authed/settings')({
@@ -36,6 +36,7 @@ function SettingsPage() {
   const [lockerRooms, setLockerRooms] = useState(initial.restaurant?.hasLockerRooms ?? false)
   const [nightLighting, setNightLighting] = useState(initial.restaurant?.hasNightLighting ?? false)
   const [childSeat, setChildSeat] = useState(initial.restaurant?.hasChildSeat ?? false)
+  const [hasDoctors, setHasDoctors] = useState(initial.restaurant?.hasDoctors ?? false)
   const [slotDuration, setLocalSlotDuration] = useState(initial.restaurant?.slotDuration ?? 30)
 
   const category = initial.restaurant?.category ?? 'restaurant'
@@ -103,8 +104,8 @@ function SettingsPage() {
     refresh()
   }
 
-  async function toggleFlag(kind: 'baby' | 'parking' | 'showers' | 'locker' | 'lighting' | 'childseat') {
-    const flags = { baby: babySeat, parking, showers: showers, locker: lockerRooms, lighting: nightLighting, childseat: childSeat }
+  async function toggleFlag(kind: 'baby' | 'parking' | 'showers' | 'locker' | 'lighting' | 'childseat' | 'doctors') {
+    const flags = { baby: babySeat, parking, showers: showers, locker: lockerRooms, lighting: nightLighting, childseat: childSeat, doctors: hasDoctors }
     const next = !flags[kind]
     if (kind === 'baby') setBabySeat(next)
     else if (kind === 'parking') setParking(next)
@@ -112,7 +113,8 @@ function SettingsPage() {
     else if (kind === 'locker') setLockerRooms(next)
     else if (kind === 'lighting') setNightLighting(next)
     else if (kind === 'childseat') setChildSeat(next)
-    const fns = { baby: setBabySeatAvailable, parking: setHasParking, showers: setHasShowers, locker: setHasLockerRooms, lighting: setHasNightLighting, childseat: setHasChildSeat }
+    else if (kind === 'doctors') setHasDoctors(next)
+    const fns = { baby: setBabySeatAvailable, parking: setHasParking, showers: setHasShowers, locker: setHasLockerRooms, lighting: setHasNightLighting, childseat: setHasChildSeat, doctors: setHasDoctors }
     await fns[kind]({ data: { enabled: next } })
   }
 
@@ -212,6 +214,9 @@ function SettingsPage() {
               )}
               {initial.restaurant?.category === 'car_rental' && (
                 <ServiceToggle enabled={childSeat} onToggle={() => toggleFlag('childseat')} label="Siège bébé sur demande" icon={Baby} hint="Disponible à la demande" />
+              )}
+              {initial.restaurant?.category === 'doctor' && (
+                <ServiceToggle enabled={hasDoctors} onToggle={() => toggleFlag('doctors')} label="Gestion des médecins" icon={Stethoscope} hint="Activez pour gérer les profils de médecins" />
               )}
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
