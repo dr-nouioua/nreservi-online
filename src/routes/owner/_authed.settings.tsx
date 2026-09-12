@@ -27,7 +27,7 @@ function SettingsPage() {
   const [instagramUrl, setInstagramUrl] = useState(initial.restaurant?.instagramUrl ?? '')
   const [tiktokUrl, setTiktokUrl] = useState(initial.restaurant?.tiktokUrl ?? '')
   const [mapsUrl, setMapsUrl] = useState(initial.restaurant?.mapsUrl ?? '')
-  const [hours, setHours] = useState<Record<string, { open: string; close: string }[]>>(
+  const [hours, setHours] = useState<Record<string, { open: string; close: string; enabled: boolean }[]>>(
     (initial.restaurant?.openingHours as any) ?? {},
   )
   const [babySeat, setBabySeat] = useState(initial.restaurant?.babySeatAvailable ?? false)
@@ -246,31 +246,48 @@ function SettingsPage() {
 
           <div className="space-y-3">
             <p className="font-semibold text-stone-900 dark:text-stone-100">Horaires d'ouverture</p>
-            {DAYS.map(([d, label]) => (
-              <div key={d} className="grid grid-cols-[42px_1fr_1fr] items-center gap-2 text-sm">
-                <span className="uppercase text-stone-500 dark:text-stone-400">{label}</span>
-                <input
-                  inputMode="numeric"
-                  placeholder="HH:MM"
-                  value={hours[d]?.[0]?.open ?? ''}
-                  onChange={(e) => {
-                    const v = e.target.value.replace(/[^0-9:]/g, "").slice(0, 5)
-                    setHours({ ...hours, [d]: [{ open: v, close: hours[d]?.[0]?.close ?? "22:00" }] })
-                  }}
-                  className={`min-w-0 rounded border px-2 py-1 text-center text-sm ${/^([01]\d|2[0-3]):[0-5]\d$/.test(hours[d]?.[0]?.open ?? "") || !hours[d]?.[0]?.open ? "border-stone-300 dark:border-stone-700" : "border-red-400"}`}
-                />
-                <input
-                  inputMode="numeric"
-                  placeholder="HH:MM"
-                  value={hours[d]?.[0]?.close ?? ''}
-                  onChange={(e) => {
-                    const v = e.target.value.replace(/[^0-9:]/g, "").slice(0, 5)
-                    setHours({ ...hours, [d]: [{ open: hours[d]?.[0]?.open ?? "12:00", close: v }] })
-                  }}
-                  className={`min-w-0 rounded border px-2 py-1 text-center text-sm ${/^([01]\d|2[0-3]):[0-5]\d$/.test(hours[d]?.[0]?.close ?? "") || !hours[d]?.[0]?.close ? "border-stone-300 dark:border-stone-700" : "border-red-400"}`}
-                />
-              </div>
-            ))}
+            {DAYS.map(([d, label]) => {
+              const dayEnabled = hours[d]?.[0]?.enabled ?? (hours[d]?.[0]?.open ? true : false)
+              return (
+                <div key={d} className="flex items-center gap-2 text-sm">
+                  <button
+                    type="button"
+                    onClick={() => setHours({ ...hours, [d]: [{ open: hours[d]?.[0]?.open ?? '09:00', close: hours[d]?.[0]?.close ?? '22:00', enabled: !dayEnabled }] })}
+                    className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 ${dayEnabled ? 'bg-emerald-500' : 'bg-stone-300 dark:bg-stone-600'}`}
+                  >
+                    <span className={`absolute h-4 w-4 rounded-full bg-white shadow transition-all duration-200 ${dayEnabled ? 'left-[18px]' : 'left-0.5'}`} />
+                  </button>
+                  <span className={`w-10 uppercase font-medium ${dayEnabled ? 'text-stone-700 dark:text-stone-300' : 'text-stone-400 dark:text-stone-500'}`}>{label}</span>
+                  {dayEnabled ? (
+                    <div className="flex items-center gap-1 flex-1">
+                      <input
+                        inputMode="numeric"
+                        placeholder="HH:MM"
+                        value={hours[d]?.[0]?.open ?? ''}
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/[^0-9:]/g, "").slice(0, 5)
+                          setHours({ ...hours, [d]: [{ open: v, close: hours[d]?.[0]?.close ?? "22:00", enabled: true }] })
+                        }}
+                        className={`min-w-0 w-20 rounded border px-2 py-1 text-center text-sm ${/^([01]\d|2[0-3]):[0-5]\d$/.test(hours[d]?.[0]?.open ?? "") || !hours[d]?.[0]?.open ? "border-stone-300 dark:border-stone-700" : "border-red-400"}`}
+                      />
+                      <span className="text-stone-400">→</span>
+                      <input
+                        inputMode="numeric"
+                        placeholder="HH:MM"
+                        value={hours[d]?.[0]?.close ?? ''}
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/[^0-9:]/g, "").slice(0, 5)
+                          setHours({ ...hours, [d]: [{ open: hours[d]?.[0]?.open ?? "12:00", close: v, enabled: true }] })
+                        }}
+                        className={`min-w-0 w-20 rounded border px-2 py-1 text-center text-sm ${/^([01]\d|2[0-3]):[0-5]\d$/.test(hours[d]?.[0]?.close ?? "") || !hours[d]?.[0]?.close ? "border-stone-300 dark:border-stone-700" : "border-red-400"}`}
+                      />
+                    </div>
+                  ) : (
+                    <span className="text-xs text-stone-400 dark:text-stone-500 italic">Fermé</span>
+                  )}
+                </div>
+              )
+            })}
             <button className="inline-flex items-center gap-2 rounded-lg bg-stone-950 px-4 py-2 text-sm font-medium text-white dark:ring-1 dark:ring-stone-700 hover:bg-stone-800"><Save className="h-4 w-4" /> Enregistrer</button>
           </div>
         </div>

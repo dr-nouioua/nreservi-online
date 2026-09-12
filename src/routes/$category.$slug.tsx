@@ -46,6 +46,22 @@ function todayISO() {
   return new Date().toISOString().slice(0, 10)
 }
 
+function isOpenNow(openingHours: Record<string, { open: string; close: string; enabled?: boolean }[]> | null): boolean {
+  if (!openingHours) return false
+  const now = new Date()
+  const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
+  const dayKey = dayNames[now.getDay()]
+  const dayHours = openingHours[dayKey]
+  if (!dayHours || dayHours.length === 0) return false
+  const h = dayHours[0]
+  if (h.enabled === false) return false
+  if (!h.open || !h.close) return false
+  const [openH, openM] = h.open.split(':').map(Number)
+  const [closeH, closeM] = h.close.split(':').map(Number)
+  const mins = now.getHours() * 60 + now.getMinutes()
+  return mins >= openH * 60 + openM && mins < closeH * 60 + closeM
+}
+
 function RestaurantPage() {
   // Loader typing flows through the generated route tree, which this
   // TanStack Start beta leaves as `{}` — annotate explicitly here.
@@ -248,6 +264,11 @@ function RestaurantPage() {
               <div className="min-w-0">
                 <p className="mb-2 flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur"><Sparkles className="h-3.5 w-3.5" /> {restaurant.cuisine}</span>
+                  {isOpenNow(restaurant.openingHours as any) ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/90 px-3 py-1 text-sm font-medium backdrop-blur"><span className="h-2 w-2 rounded-full bg-white animate-pulse" /> Ouvert</span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-stone-500/70 px-3 py-1 text-sm backdrop-blur">Fermé</span>
+                  )}
                   {cat === 'restaurant' && restaurant.babySeatAvailable && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur"><Baby className="h-3.5 w-3.5" /> Chaises bébé</span>
                   )}

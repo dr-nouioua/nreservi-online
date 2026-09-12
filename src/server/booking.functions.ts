@@ -109,6 +109,11 @@ export const getAvailability = createServerFn({ method: "GET" })
     const dayKey = dayNames[dateObj.getDay()];
     const dayHours = openingHours[dayKey] ?? [];
 
+    // If day is explicitly closed (enabled === false), return no slots
+    if (dayHours.length > 0 && dayHours[0].enabled === false) {
+      return [];
+    }
+
     // Generate slots based on opening hours and slot duration
     const allSlots: string[] = [];
     for (const period of dayHours) {
