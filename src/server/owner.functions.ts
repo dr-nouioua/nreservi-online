@@ -481,13 +481,10 @@ export const deleteArea = createServerFn({ method: "POST" })
   .inputValidator((data: { id: number }) => data)
   .handler(async ({ data }) => {
     const restaurantId = await requirePremiumRestaurantId();
-    const tableCount = await db
-      .select({ id: tables.id })
-      .from(tables)
+    // Delete all tables in this area first
+    await db
+      .delete(tables)
       .where(and(eq(tables.areaId, data.id), eq(tables.restaurantId, restaurantId)));
-    if (tableCount.length > 0) {
-      return { error: "Supprimez d'abord les tables de cet espace." };
-    }
     // Nullify areaId on all reservations for this area (FK constraint)
     await db
       .update(reservations)
