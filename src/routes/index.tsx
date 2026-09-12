@@ -37,6 +37,11 @@ const CATEGORIES = [
   { key: 'doctor', label: 'Médecins', icon: Stethoscope, color: 'bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-300', activeColor: 'bg-[#069494] text-white dark:bg-[#069494] dark:text-white' },
 ] as const
 
+const CATEGORY_PREFIX: Record<string, string> = {
+  restaurant: 'r', beauty_salon: 'b', spa: 's', football_pitch: 'f',
+  car_rental: 'c', doctor: 'd', barbershop: 'z',
+}
+
 const CATEGORY_BADGES: Record<string, { label: string; color: string }> = {
   restaurant: { label: 'Restaurant', color: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300' },
   beauty_salon: { label: 'Salon', color: 'bg-pink-100 text-pink-700 dark:bg-pink-500/15 dark:text-pink-300' },
@@ -171,7 +176,7 @@ function Home() {
           const badge = CATEGORY_BADGES[r.category] ?? CATEGORY_BADGES.restaurant
           const CatIcon = CATEGORY_ICONS[r.category] ?? UtensilsCrossed
           return (
-            <Link key={r.id} to="/restaurants/$slug" params={{ slug: r.slug }}
+            <Link key={r.id} to={`/${CATEGORY_PREFIX[r.category] ?? 'r'}/${r.slug}`}
               className="group overflow-hidden rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
               <div className="relative h-44 bg-stone-100 dark:bg-stone-800">
                 {r.coverImageUrl ? (

@@ -25,10 +25,18 @@ function FootballIcon({ className }: { className?: string }) {
 import { SiteHeader } from '../components/SiteHeader'
 import { SiteFooter } from '../components/SiteFooter'
 
-export const Route = createFileRoute('/restaurants/$slug')({
+const CATEGORY_PREFIX: Record<string, string> = {
+  r: 'restaurant', d: 'doctor', c: 'car_rental', f: 'football_pitch',
+  b: 'beauty_salon', s: 'spa', z: 'barbershop',
+}
+
+export const Route = createFileRoute('/$category/$slug')({
   loader: async ({ params }) => {
+    const category = CATEGORY_PREFIX[params.category]
+    if (!category) throw new Error('Catégorie introuvable')
     const data = await getRestaurantBySlug({ data: { slug: params.slug } })
     if (!data) throw new Error('Restaurant not found')
+    if (data.restaurant.category !== category) throw new Error('Catégorie incorrecte')
     return data
   },
   component: RestaurantPage,
