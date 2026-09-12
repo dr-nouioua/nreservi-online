@@ -417,6 +417,7 @@ function OwnerReservationsBoard() {
                     <tr>
                       <th className="px-4 py-3">Heure</th>
                       <th className="px-4 py-3">Client</th>
+                      {doctors.length > 0 && <th className="px-4 py-3">Médecin</th>}
                       <th className="px-4 py-3">Pers.</th>
                       {hasTables && <th className="px-4 py-3">Table</th>}
                       <th className="px-4 py-3">Statut</th>
@@ -431,11 +432,15 @@ function OwnerReservationsBoard() {
                         <td className="px-4 py-3">
                           {r.guestName}
                           <div className="text-xs text-stone-400">{r.guestPhone}</div>
-                          {r.doctorId && doctorsById.get(r.doctorId) && (
-                            <div className="text-xs text-[#069494] font-medium flex items-center gap-1"><Stethoscope className="h-3 w-3" /> {doctorsById.get(r.doctorId).name}</div>
-                          )}
                           {r.specialRequests && <div className="text-xs text-amber-600 dark:text-amber-400">{r.specialRequests}</div>}
                         </td>
+                        {doctors.length > 0 && (
+                          <td className="px-4 py-3 text-sm">
+                            {r.doctorId && doctorsById.get(r.doctorId) ? (
+                              <span className="text-[#069494] font-medium flex items-center gap-1"><Stethoscope className="h-3 w-3" /> {doctorsById.get(r.doctorId).name}</span>
+                            ) : <span className="text-stone-300 dark:text-stone-600">—</span>}
+                          </td>
+                        )}
                         <td className="px-4 py-3">
                           {r.partySize}
                           {hasTables && r.babySeats > 0 && (
