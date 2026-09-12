@@ -176,6 +176,7 @@ export const reservations = pgTable("reservations", {
   customerId: integer("customer_id").references(() => customers.id),
   tableId: integer("table_id").references(() => tables.id),
   areaId: integer("area_id").references(() => areas.id),
+  doctorId: integer("doctor_id").references(() => doctors.id),
   guestName: text("guest_name").notNull(),
   guestPhone: text("guest_phone").notNull(),
   partySize: integer("party_size").notNull(),

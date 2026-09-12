@@ -231,6 +231,7 @@ export const createReservation = createServerFn({ method: "POST" })
       date: string;
       time: string;
       areaId?: number;
+      doctorId?: number;
       format?: string;
       specialRequests?: string;
       babySeats?: number;
@@ -359,6 +360,7 @@ export const createReservation = createServerFn({ method: "POST" })
           customerId: customer.id,
           tableId,
           areaId,
+          doctorId: data.doctorId ?? null,
           guestName: data.guestName,
           guestPhone: data.guestPhone,
           partySize: data.partySize,

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
-import { Baby, BellRing, CalendarDays, MessageCircle, Plus, RefreshCw, Users, Volume2, VolumeX, X } from 'lucide-react'
+import { Baby, BellRing, CalendarDays, MessageCircle, Plus, RefreshCw, Stethoscope, Users, Volume2, VolumeX, X } from 'lucide-react'
 import {
   getOwnerOverview,
   listReservationsForDateRange,
@@ -8,6 +8,7 @@ import {
   updateReservationNotes,
   createWalkIn,
 } from '../../server/owner.functions'
+import { listDoctors } from '../../server/doctor.functions'
 import { getWhatsappSettings } from '../../server/whatsapp.functions'
 import { WhatsappComposer, type ComposerReservation } from '../../components/WhatsappComposer'
 import { ensureAudio, playReservationChime, playCancellationChime, setSoundEnabled, soundEnabled } from '../../services/notification-sound'
@@ -21,7 +22,11 @@ export const Route = createFileRoute('/owner/_authed/')({
       listReservationsForDateRange({ data: { startDate: today, endDate: end } }),
       getWhatsappSettings(),
     ])
-    return { overview, reservations, today, whatsapp }
+    let doctors: { id: number; name: string; specialty: string }[] = []
+    try {
+      doctors = await listDoctors({ data: { restaurantId: overview.restaurant.id } })
+    } catch {}
+    return { overview, reservations, today, whatsapp, doctors }
   },
   component: OwnerReservationsBoard,
 })
@@ -92,9 +97,10 @@ const TOAST_TITLES: Record<ToastKind, string> = {
 }
 
 function OwnerReservationsBoard() {
-  const { overview, today, whatsapp } = Route.useLoaderData()
+  const { overview, today, whatsapp, doctors } = Route.useLoaderData()
   const initial = Route.useLoaderData().reservations as any[]
   const [reservations, setReservations] = useState<any[]>(initial)
+  const doctorsById = new Map((doctors ?? []).map((d: any) => [d.id, d]))
   const [areaFilter, setAreaFilter] = useState<number | 'all'>('all')
   const [statusFilter, setStatusFilter] = useState<string | 'all'>('all')
   const [showWalkIn, setShowWalkIn] = useState(false)
@@ -346,6 +352,9 @@ function OwnerReservationsBoard() {
                       <div className="min-w-0">
                         <p className="truncate font-semibold text-stone-900 dark:text-stone-100">{r.guestName}</p>
                         <p className="text-xs text-stone-400">{r.guestPhone}</p>
+                        {r.doctorId && doctorsById.get(r.doctorId) && (
+                          <p className="text-xs text-[#069494] font-medium flex items-center gap-1 mt-0.5"><Stethoscope className="h-3 w-3" /> {doctorsById.get(r.doctorId).name}</p>
+                        )}
                       </div>
                       {statusSelect(r)}
                     </div>
@@ -422,6 +431,9 @@ function OwnerReservationsBoard() {
                         <td className="px-4 py-3">
                           {r.guestName}
                           <div className="text-xs text-stone-400">{r.guestPhone}</div>
+                          {r.doctorId && doctorsById.get(r.doctorId) && (
+                            <div className="text-xs text-[#069494] font-medium flex items-center gap-1"><Stethoscope className="h-3 w-3" /> {doctorsById.get(r.doctorId).name}</div>
+                          )}
                           {r.specialRequests && <div className="text-xs text-amber-600 dark:text-amber-400">{r.specialRequests}</div>}
                         </td>
                         <td className="px-4 py-3">

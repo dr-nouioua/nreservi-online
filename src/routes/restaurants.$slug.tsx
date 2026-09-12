@@ -156,6 +156,7 @@ function RestaurantPage() {
           date,
           time: selectedTime,
           areaId,
+          doctorId: selectedDoctorId,
           format: isFootball ? (partySize === 10 ? '5v5' : partySize === 12 ? '6v6' : '7v7') : undefined,
           specialRequests,
         },
