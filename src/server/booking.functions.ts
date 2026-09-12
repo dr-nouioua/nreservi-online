@@ -538,7 +538,7 @@ export const getAvailableVehicles = createServerFn({ method: "GET" })
       }
     }
 
-    const vehicles = filtered.map((v) => {
+    const vehicles = allItems.map((v) => {
       const returnDate = vehicleReturnDates.get(v.id)
       const isBooked = v.available && !!returnDate
       const windows = windowsByVehicle.get(v.id)
