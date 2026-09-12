@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, ilike, isNull, ne, or, sql } from "drizzle-orm";
+import { and, eq, ilike, isNull, ne, or, sql, inArray, lte, gte } from "drizzle-orm";
 import { db } from "../../db/index.js";
 import {
   restaurants,
@@ -232,6 +232,8 @@ export const createReservation = createServerFn({ method: "POST" })
       time: string;
       areaId?: number;
       doctorId?: number;
+      menuItemId?: number;
+      endDate?: string;
       format?: string;
       specialRequests?: string;
       babySeats?: number;
@@ -286,6 +288,29 @@ export const createReservation = createServerFn({ method: "POST" })
       const [restRow] = await tx.select({ category: restaurants.category }).from(restaurants).where(eq(restaurants.id, data.restaurantId));
       const category = restRow?.category ?? 'restaurant';
       const hasTables = category === 'restaurant';
+
+      // Car rental: check date range overlap for the specific vehicle
+      if (category === 'car_rental' && data.menuItemId) {
+        const endDate = data.endDate || data.date;
+        const overlapping = await tx
+          .select({ id: reservations.id })
+          .from(reservations)
+          .where(
+            and(
+              eq(reservations.restaurantId, data.restaurantId),
+              eq(reservations.menuItemId, data.menuItemId),
+              lte(reservations.date, endDate),
+              or(
+                gte(reservations.endDate, data.date),
+                isNull(reservations.endDate),
+              ),
+              ne(reservations.status, "cancelled"),
+              ne(reservations.status, "no_show"),
+            ),
+          )
+          .limit(1);
+        if (overlapping.length > 0) return { kind: "full" as const };
+      }
 
       const dayRes = await tx
         .select()
@@ -361,11 +386,13 @@ export const createReservation = createServerFn({ method: "POST" })
           tableId,
           areaId,
           doctorId: data.doctorId ?? null,
+          menuItemId: data.menuItemId ?? null,
           guestName: data.guestName,
           guestPhone: data.guestPhone,
           partySize: data.partySize,
           babySeats,
           date: data.date,
+          endDate: data.endDate ?? null,
           time: `${data.time}:00`,
           status: "confirmed",
           source: "online",
@@ -446,4 +473,58 @@ export const setWhatsappOptIn = createServerFn({ method: "POST" })
     }
     await db.update(customers).set({ whatsappOptIn: data.optIn }).where(eq(customers.phone, data.phone));
     return { success: true };
+  });
+
+export const getAvailableVehicles = createServerFn({ method: "GET" })
+  .inputValidator(
+    (data: { restaurantId: number; startDate: string; endDate: string; areaId?: number }) => data,
+  )
+  .handler(async ({ data }) => {
+    await ensureSeeded();
+
+    // Get all vehicles (menu items) for this restaurant, grouped by category
+    const cats = await db.select().from(menuCategories).where(eq(menuCategories.restaurantId, data.restaurantId));
+    const catIds = cats.map((c) => c.id);
+    if (catIds.length === 0) return { vehicles: [] as any[], categories: cats };
+
+    const allItems = await db.select().from(menuItems).where(inArray(menuItems.categoryId, catIds));
+
+    // Get all non-cancelled reservations that overlap with [startDate, endDate]
+    // Overlap: reservation.date <= endDate AND (reservation.endDate >= startDate OR reservation.endDate IS NULL)
+    const overlapping = await db
+      .select({ menuItemId: reservations.menuItemId })
+      .from(reservations)
+      .where(
+        and(
+          eq(reservations.restaurantId, data.restaurantId),
+          lte(reservations.date, data.endDate),
+          or(
+            gte(reservations.endDate, data.startDate),
+            isNull(reservations.endDate),
+          ),
+          ne(reservations.status, "cancelled"),
+          ne(reservations.status, "no_show"),
+          sql`${reservations.menuItemId} IS NOT NULL`,
+        ),
+      );
+
+    const bookedVehicleIds = new Set(overlapping.map((r) => r.menuItemId));
+
+    // Filter by vehicle type if specified
+    const filtered = data.areaId
+      ? allItems.filter((item) => {
+          const cat = cats.find((c) => c.id === item.categoryId);
+          // areaId for car_rental maps to area.id, but vehicles are in menuItems
+          // We use the category name to match: area name = vehicle type category name
+          return true; // areaId filtering happens on the client via the areas/categories relationship
+        })
+      : allItems;
+
+    const vehicles = filtered.map((v) => ({
+      ...v,
+      available: v.available && !bookedVehicleIds.has(v.id),
+      category: cats.find((c) => c.id === v.categoryId)?.name ?? "",
+    }));
+
+    return { vehicles, categories: cats };
   });

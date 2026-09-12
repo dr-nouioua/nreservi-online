@@ -82,7 +82,9 @@ export const getOwnerOverview = createServerFn({ method: "GET" }).handler(async 
   const [restaurant] = await db.select().from(restaurants).where(eq(restaurants.id, restaurantId));
   const areaRows = await db.select().from(areas).where(eq(areas.restaurantId, restaurantId));
   const tableRows = await db.select().from(tables).where(eq(tables.restaurantId, restaurantId));
-  return { restaurant, areas: areaRows, tables: tableRows };
+  const menuRows = await db.select().from(menuItems).where(eq(menuItems.restaurantId, restaurantId));
+  const menuCatRows = await db.select().from(menuCategories).where(eq(menuCategories.restaurantId, restaurantId));
+  return { restaurant, areas: areaRows, tables: tableRows, vehicles: menuRows, vehicleCategories: menuCatRows };
 });
 
 export const listReservationsForDate = createServerFn({ method: "GET" })

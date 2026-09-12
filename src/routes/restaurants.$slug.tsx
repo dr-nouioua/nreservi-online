@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { Baby, CalendarDays, Car, CheckCircle2, ChevronDown, ImagePlus, MapPin, Scissors, Sparkles, Stethoscope, Users, UtensilsCrossed } from 'lucide-react'
-import { getRestaurantBySlug, getAvailability, createReservation } from '../server/booking.functions'
+import { getRestaurantBySlug, getAvailability, getAvailableVehicles, createReservation } from '../server/booking.functions'
 import { listDoctors } from '../server/doctor.functions'
 import { EVENT_THEMES } from '../services/event-themes'
 import { formatPriceDA } from '../services/format'
@@ -112,6 +112,10 @@ function RestaurantPage() {
   const [slots, setSlots] = useState<{ time: string; available: boolean; tableCount: number }[]>([])
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
+  const [vehicles, setVehicles] = useState<any[]>([])
+  const [vehicleCategories, setVehicleCategories] = useState<any[]>([])
+  const [selectedVehicle, setSelectedVehicle] = useState<any | null>(null)
+  const [loadingVehicles, setLoadingVehicles] = useState(false)
   const [guestName, setGuestName] = useState('')
   const [guestPhone, setGuestPhone] = useState('')
   const [specialRequests, setSpecialRequests] = useState('')
@@ -131,10 +135,18 @@ function RestaurantPage() {
   async function checkAvailability() {
     setLoadingSlots(true)
     setSelectedTime(null)
+    setSelectedVehicle(null)
     setError(null)
     try {
-      const result = await getAvailability({ data: { restaurantId: restaurant.id, date, partySize, format: isFootball ? (partySize === 10 ? '5v5' : partySize === 12 ? '6v6' : '7v7') : undefined } })
-      setSlots(result)
+      if (isCarRental) {
+        if (dateEnd < date) { setError('La date de fin doit être après la date de début'); return }
+        const result = await getAvailableVehicles({ data: { restaurantId: restaurant.id, startDate: date, endDate: dateEnd, areaId } })
+        setVehicles(result.vehicles ?? [])
+        setVehicleCategories(result.categories ?? [])
+      } else {
+        const result = await getAvailability({ data: { restaurantId: restaurant.id, date, partySize, format: isFootball ? (partySize === 10 ? '5v5' : partySize === 12 ? '6v6' : '7v7') : undefined } })
+        setSlots(result)
+      }
     } finally {
       setLoadingSlots(false)
     }
@@ -142,7 +154,8 @@ function RestaurantPage() {
 
   async function submitBooking(e: React.FormEvent) {
     e.preventDefault()
-    if (!selectedTime) return
+    if (isCarRental && !selectedVehicle) return
+    if (!isCarRental && !selectedTime) return
     setSubmitting(true)
     setError(null)
     try {
@@ -151,11 +164,13 @@ function RestaurantPage() {
           restaurantId: restaurant.id,
           guestName,
           guestPhone,
-          partySize,
+          partySize: isCarRental ? 1 : partySize,
           babySeats,
           date,
-          time: selectedTime,
+          endDate: isCarRental ? dateEnd : undefined,
+          time: isCarRental ? '00:00' : selectedTime!,
           areaId,
+          menuItemId: isCarRental ? selectedVehicle?.id : undefined,
           doctorId: selectedDoctorId,
           format: isFootball ? (partySize === 10 ? '5v5' : partySize === 12 ? '6v6' : '7v7') : undefined,
           specialRequests,
@@ -567,7 +582,51 @@ function RestaurantPage() {
                 {loadingSlots ? 'Recherche...' : isCarRental ? 'Voir les véhicules' : 'Voir les disponibilités'}
               </button>
 
-              {slots.length > 0 && (
+              {isCarRental && vehicles.length > 0 && (
+                <div className="space-y-2 pt-2">
+                  <p className="text-xs font-medium text-stone-500 dark:text-stone-400">Véhicules disponibles ({date} → {dateEnd})</p>
+                  {vehicleCategories.map((cat) => {
+                    const catVehicles = vehicles.filter((v) => v.category === cat.name)
+                    if (catVehicles.length === 0) return null
+                    return (
+                      <div key={cat.id}>
+                        <p className="text-[11px] uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-1">{cat.name}</p>
+                        <div className="space-y-2">
+                          {catVehicles.map((v) => (
+                            <button
+                              key={v.id}
+                              type="button"
+                              disabled={!v.available}
+                              onClick={() => setSelectedVehicle(selectedVehicle?.id === v.id ? null : v)}
+                              className={`w-full text-left rounded-lg border p-3 transition ${
+                                selectedVehicle?.id === v.id
+                                  ? 'border-lime-400 bg-lime-50 dark:border-lime-500/50 dark:bg-lime-500/10'
+                                  : v.available
+                                  ? 'border-stone-200 dark:border-stone-700 hover:border-lime-400 dark:hover:border-lime-500/50'
+                                  : 'border-stone-100 dark:border-stone-800 opacity-50 cursor-not-allowed'
+                              }`}
+                            >
+                              <div className="flex items-start gap-3">
+                                {v.photoUrl && <img src={v.photoUrl} alt={v.name} className="h-14 w-14 rounded object-cover shrink-0" />}
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-medium text-sm text-stone-900 dark:text-stone-100">{v.name}</p>
+                                  {v.description && <p className="text-xs text-stone-500 dark:text-stone-400 line-clamp-1">{v.description}</p>}
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-sm font-semibold text-stone-900 dark:text-stone-100">{formatPriceDA(v.price)}<span className="text-xs font-normal text-stone-400"> /jour</span></span>
+                                    {!v.available && <span className="text-[11px] text-red-500">Réservé</span>}
+                                  </div>
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {!isCarRental && slots.length > 0 && (
                 <div className="grid grid-cols-3 gap-2 pt-2">
                   {slots.map((s) => (
                     <button
@@ -588,8 +647,14 @@ function RestaurantPage() {
                 </div>
               )}
 
-              {selectedTime && (
+              {(selectedTime || (isCarRental && selectedVehicle)) && (
                 <form onSubmit={submitBooking} className="pt-4 border-t border-stone-100 dark:border-stone-800 space-y-3 mt-2">
+                  {isCarRental && selectedVehicle && (
+                    <div className="rounded-lg bg-stone-50 dark:bg-stone-800/60 p-3 text-sm">
+                      <p className="font-medium text-stone-900 dark:text-stone-100">{selectedVehicle.name}</p>
+                      <p className="text-xs text-stone-500">{date} → {dateEnd} · {formatPriceDA(selectedVehicle.price)}/jour</p>
+                    </div>
+                  )}
                   <div>
                     <label className="text-xs text-stone-500 dark:text-stone-400">Votre nom</label>
                     <input
@@ -625,7 +690,7 @@ function RestaurantPage() {
                     disabled={submitting}
                     className="event-cta w-full py-2.5 rounded-lg bg-stone-950 text-white dark:ring-1 dark:ring-stone-700 text-sm font-medium hover:bg-stone-800 disabled:opacity-50"
                   >
-                    {submitting ? 'Réservation...' : `Confirmer pour le ${date} à ${selectedTime}`}
+                    {submitting ? 'Réservation...' : isCarRental && selectedVehicle ? `Louer ${selectedVehicle.name} du ${date} au ${dateEnd}` : `Confirmer pour le ${date} à ${selectedTime}`}
                   </button>
                 </form>
               )}

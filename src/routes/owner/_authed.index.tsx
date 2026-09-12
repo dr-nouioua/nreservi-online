@@ -101,6 +101,7 @@ function OwnerReservationsBoard() {
   const initial = Route.useLoaderData().reservations as any[]
   const [reservations, setReservations] = useState<any[]>(initial)
   const doctorsById = new Map((doctors ?? []).map((d: any) => [d.id, d]))
+  const vehiclesById = new Map((overview.vehicles ?? []).map((v: any) => [v.id, v]))
   const [areaFilter, setAreaFilter] = useState<number | 'all'>('all')
   const [statusFilter, setStatusFilter] = useState<string | 'all'>('all')
   const [showWalkIn, setShowWalkIn] = useState(false)
@@ -355,6 +356,9 @@ function OwnerReservationsBoard() {
                         {r.doctorId && doctorsById.get(r.doctorId) && (
                           <p className="text-xs text-[#069494] font-medium flex items-center gap-1 mt-0.5"><Stethoscope className="h-3 w-3" /> {doctorsById.get(r.doctorId).name}</p>
                         )}
+                        {r.menuItemId && vehiclesById.get(r.menuItemId) && (
+                          <p className="text-xs text-slate-600 dark:text-slate-400 font-medium flex items-center gap-1 mt-0.5"><Car className="h-3 w-3" /> {vehiclesById.get(r.menuItemId).name}{r.endDate ? ` · ${r.date} → ${r.endDate}` : ''}</p>
+                        )}
                       </div>
                       {statusSelect(r)}
                     </div>
@@ -432,6 +436,9 @@ function OwnerReservationsBoard() {
                         <td className="px-4 py-3">
                           {r.guestName}
                           <div className="text-xs text-stone-400">{r.guestPhone}</div>
+                          {r.menuItemId && vehiclesById.get(r.menuItemId) && (
+                            <div className="text-xs text-slate-600 dark:text-slate-400 font-medium flex items-center gap-1"><Car className="h-3 w-3" /> {vehiclesById.get(r.menuItemId).name}{r.endDate ? ` · ${r.date} → ${r.endDate}` : ''}</div>
+                          )}
                           {r.specialRequests && <div className="text-xs text-amber-600 dark:text-amber-400">{r.specialRequests}</div>}
                         </td>
                         {doctors.length > 0 && (

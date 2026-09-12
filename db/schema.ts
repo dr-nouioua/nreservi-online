@@ -177,11 +177,13 @@ export const reservations = pgTable("reservations", {
   tableId: integer("table_id").references(() => tables.id),
   areaId: integer("area_id").references(() => areas.id),
   doctorId: integer("doctor_id").references(() => doctors.id),
+  menuItemId: integer("menu_item_id").references(() => menuItems.id),
   guestName: text("guest_name").notNull(),
   guestPhone: text("guest_phone").notNull(),
   partySize: integer("party_size").notNull(),
   babySeats: integer("baby_seats").notNull().default(0),
   date: date("date").notNull(),
+  endDate: date("end_date"),
   time: time("time").notNull(),
   status: text("status").notNull().default("confirmed"), // confirmed | seated | completed | no_show | cancelled
   source: text("source").notNull().default("online"), // online | walk_in | phone
