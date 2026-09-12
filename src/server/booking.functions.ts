@@ -492,7 +492,7 @@ export const getAvailableVehicles = createServerFn({ method: "GET" })
     // Get all non-cancelled reservations that overlap with [startDate, endDate]
     // Overlap: reservation.date <= endDate AND (reservation.endDate >= startDate OR reservation.endDate IS NULL)
     const overlapping = await db
-      .select({ menuItemId: reservations.menuItemId })
+      .select({ menuItemId: reservations.menuItemId, endDate: reservations.endDate, date: reservations.date })
       .from(reservations)
       .where(
         and(
@@ -508,23 +508,36 @@ export const getAvailableVehicles = createServerFn({ method: "GET" })
         ),
       );
 
-    const bookedVehicleIds = new Set(overlapping.map((r) => r.menuItemId));
+    // For each vehicle, find the latest endDate among overlapping reservations → that's when it's free again
+    const vehicleReturnDates = new Map<number, string>()
+    for (const r of overlapping) {
+      if (!r.menuItemId) continue
+      const returnDate = r.endDate ?? r.date // if no endDate, assume 1-day rental
+      const current = vehicleReturnDates.get(r.menuItemId)
+      if (!current || returnDate > current) {
+        vehicleReturnDates.set(r.menuItemId, returnDate)
+      }
+    }
 
-    // Filter by vehicle type if specified
-    const filtered = data.areaId
-      ? allItems.filter((item) => {
-          const cat = cats.find((c) => c.id === item.categoryId);
-          // areaId for car_rental maps to area.id, but vehicles are in menuItems
-          // We use the category name to match: area name = vehicle type category name
-          return true; // areaId filtering happens on the client via the areas/categories relationship
-        })
-      : allItems;
-
-    const vehicles = filtered.map((v) => ({
-      ...v,
-      available: v.available && !bookedVehicleIds.has(v.id),
-      category: cats.find((c) => c.id === v.categoryId)?.name ?? "",
-    }));
+    const vehicles = filtered.map((v) => {
+      const returnDate = vehicleReturnDates.get(v.id)
+      const isBooked = v.available && !!returnDate
+      // Vehicle is available if: not disabled by owner AND no overlapping reservation
+      const available = v.available && !isBooked
+      // If booked, compute next available day (return date + 1)
+      let nextAvailable: string | null = null
+      if (isBooked && returnDate) {
+        const next = new Date(returnDate + 'T12:00:00')
+        next.setDate(next.getDate() + 1)
+        nextAvailable = next.toISOString().slice(0, 10)
+      }
+      return {
+        ...v,
+        available,
+        category: cats.find((c) => c.id === v.categoryId)?.name ?? "",
+        nextAvailable,
+      }
+    });
 
     return { vehicles, categories: cats };
   });

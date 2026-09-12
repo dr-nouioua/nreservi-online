@@ -603,7 +603,7 @@ function RestaurantPage() {
                                   ? 'border-lime-400 bg-lime-50 dark:border-lime-500/50 dark:bg-lime-500/10'
                                   : v.available
                                   ? 'border-stone-200 dark:border-stone-700 hover:border-lime-400 dark:hover:border-lime-500/50'
-                                  : 'border-stone-100 dark:border-stone-800 opacity-50 cursor-not-allowed'
+                                  : 'border-stone-100 dark:border-stone-800 opacity-60'
                               }`}
                             >
                               <div className="flex items-start gap-3">
@@ -613,7 +613,13 @@ function RestaurantPage() {
                                   {v.description && <p className="text-xs text-stone-500 dark:text-stone-400 line-clamp-1">{v.description}</p>}
                                   <div className="flex items-center gap-2 mt-1">
                                     <span className="text-sm font-semibold text-stone-900 dark:text-stone-100">{formatPriceDA(v.price)}<span className="text-xs font-normal text-stone-400"> /jour</span></span>
-                                    {!v.available && <span className="text-[11px] text-red-500">Réservé</span>}
+                                    {v.available ? (
+                                      <span className="text-[11px] text-emerald-600 dark:text-emerald-400">Disponible</span>
+                                    ) : v.nextAvailable ? (
+                                      <span className="text-[11px] text-amber-600 dark:text-amber-400">Disponible à partir du {v.nextAvailable}</span>
+                                    ) : (
+                                      <span className="text-[11px] text-red-500">Indisponible</span>
+                                    )}
                                   </div>
                                 </div>
                               </div>
