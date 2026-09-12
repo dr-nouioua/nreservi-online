@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { Baby, CalendarDays, Car, CheckCircle2, ChevronDown, ImagePlus, MapPin, Scissors, Sparkles, Stethoscope, Users, UtensilsCrossed } from 'lucide-react'
+import { Baby, CalendarDays, Car, CheckCircle2, ChevronDown, ImagePlus, MapPin, Phone, Scissors, Sparkles, Stethoscope, Users, UtensilsCrossed } from 'lucide-react'
 import { getRestaurantBySlug, getAvailability, getAvailableVehicles, createReservation } from '../server/booking.functions'
 import { listDoctors } from '../server/doctor.functions'
 import { EVENT_THEMES } from '../services/event-themes'
@@ -91,6 +91,8 @@ function RestaurantPage() {
       instagramUrl: string | null
       tiktokUrl: string | null
       mapsUrl: string | null
+      contactPhone: string
+      openingHours: Record<string, { open: string; close: string; enabled?: boolean }[]> | null
     }
     areas: { id: number; name: string }[]
     tables: unknown[]
@@ -267,7 +269,10 @@ function RestaurantPage() {
                   {isOpenNow(restaurant.openingHours as any) ? (
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/90 px-3 py-1 text-sm font-medium backdrop-blur"><span className="h-2 w-2 rounded-full bg-white animate-pulse" /> Ouvert</span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-stone-500/70 px-3 py-1 text-sm backdrop-blur">Fermé</span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-red-500/90 px-3 py-1 text-sm font-medium backdrop-blur">Fermé</span>
+                  )}
+                  {restaurant.contactPhone && (
+                    <a href={`tel:${restaurant.contactPhone}`} className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur hover:bg-white/25 transition"><Phone className="h-3.5 w-3.5" /> Appeler</a>
                   )}
                   {cat === 'restaurant' && restaurant.babySeatAvailable && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur"><Baby className="h-3.5 w-3.5" /> Chaises bébé</span>
