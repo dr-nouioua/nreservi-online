@@ -547,7 +547,7 @@ function RestaurantPage() {
                     ))}
                   </select>
                 </div>
-              ) : !isFootball && areas.length > 0 ? (
+              ) : !isFootball && !isDoctor && areas.length > 0 ? (
                 <div>
                   <label className="text-xs text-stone-500 dark:text-stone-400">Espace (facultatif)</label>
                   <select value={areaId ?? ''} onChange={(e) => setAreaId(e.target.value ? Number(e.target.value) : undefined)} className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100">
