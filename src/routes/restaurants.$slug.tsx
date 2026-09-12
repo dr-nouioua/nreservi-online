@@ -613,7 +613,7 @@ function RestaurantPage() {
                     <textarea
                       value={specialRequests}
                       onChange={(e) => setSpecialRequests(e.target.value)}
-                      placeholder={isFootball ? "Nom de l'équipe, équipement..." : isCarRental ? "Permis de conduire, besoins spécifiques..." : "Anniversaire, allergies, chaise haute..."}
+                      placeholder={isFootball ? "Nom de l'équipe, équipement..." : isCarRental ? "Permis de conduire, besoins spécifiques..." : isDoctor ? "Motif de consultation, traitements en cours..." : "Anniversaire, allergies, chaise haute..."}
                       className="h-11 w-full mt-1 rounded-lg border border-stone-300 bg-white px-3 text-sm text-stone-900 appearance-none dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
                       rows={2}
                     />
