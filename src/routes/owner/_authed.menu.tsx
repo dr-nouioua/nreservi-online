@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { ImagePlus, Images, PanelTop, Pencil, Plus, Trash2, Upload, X } from 'lucide-react'
+import { CalendarDays, ImagePlus, Images, PanelTop, Pencil, Plus, Trash2, Upload, X } from 'lucide-react'
 import {
   getMenu,
   addMenuCategory,
@@ -11,6 +11,9 @@ import {
   toggleMenuItemAvailability,
   setShowMenuImages,
   setMenuFixed,
+  listVehicleAvailability,
+  addVehicleAvailability,
+  deleteVehicleAvailability,
 } from '../../server/owner.functions'
 import { formatPriceDA } from '../../services/format'
 
@@ -52,6 +55,15 @@ function MenuPage() {
   const labels = menuLabels[category] ?? menuLabels.restaurant
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editForm, setEditForm] = useState<ItemForm>(EMPTY_ITEM)
+
+  // Vehicle availability (car_rental only)
+  const allItems = categories.flatMap((c) => c.items)
+  const [availVehicleId, setAvailVehicleId] = useState<number | null>(allItems[0]?.id ?? null)
+  const [availStart, setAvailStart] = useState('')
+  const [availEnd, setAvailEnd] = useState('')
+  const [availWindows, setAvailWindows] = useState<any[]>([])
+  const [availLoading, setAvailLoading] = useState(false)
+  const isCarRental = category === 'car_rental'
 
   async function refresh() {
     const data = await getMenu()
@@ -136,6 +148,31 @@ function MenuPage() {
     const reader = new FileReader()
     reader.onload = () => setter(String(reader.result))
     reader.readAsDataURL(file)
+  }
+
+  async function loadAvailWindows(vehicleId: number) {
+    setAvailVehicleId(vehicleId)
+    setAvailLoading(true)
+    try {
+      const windows = await listVehicleAvailability({ data: { menuItemId: vehicleId } })
+      setAvailWindows(windows)
+    } catch { setAvailWindows([]) }
+    finally { setAvailLoading(false) }
+  }
+
+  async function addAvailWindow(e: React.FormEvent) {
+    e.preventDefault()
+    if (!availVehicleId || !availStart || !availEnd) return
+    const result = await addVehicleAvailability({ data: { menuItemId: availVehicleId, startDate: availStart, endDate: availEnd } })
+    if ('error' in result && result.error) { alert(result.error); return }
+    setAvailStart('')
+    setAvailEnd('')
+    loadAvailWindows(availVehicleId)
+  }
+
+  async function removeAvailWindow(id: number) {
+    await deleteVehicleAvailability({ data: { id } })
+    if (availVehicleId) loadAvailWindows(availVehicleId)
   }
 
   return (
@@ -236,6 +273,55 @@ function MenuPage() {
           <p className="text-sm text-stone-500">Créez votre première catégorie pour commencer.</p>
         )}
       </div>
+
+      {isCarRental && allItems.length > 0 && (
+        <div className="mt-6 bg-white rounded-lg border border-stone-200 p-4 shadow-sm dark:bg-stone-900 dark:border-stone-800">
+          <p className="text-sm font-medium text-stone-700 flex items-center gap-1 dark:text-stone-300"><CalendarDays className="w-4 h-4" /> Disponibilité des véhicules</p>
+          <p className="text-xs text-stone-400 mt-0.5">Définissez les plages de dates pendant lesquelles chaque véhicule est louable.</p>
+
+          <div className="mt-3">
+            <label className="text-xs text-stone-500 dark:text-stone-400">Véhicule</label>
+            <select
+              value={availVehicleId ?? ''}
+              onChange={(e) => loadAvailWindows(Number(e.target.value))}
+              className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 bg-white text-sm dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
+            >
+              {allItems.map((item) => (
+                <option key={item.id} value={item.id}>{item.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {availVehicleId && (
+            <>
+              <form onSubmit={addAvailWindow} className="mt-3 flex flex-wrap items-end gap-2">
+                <div className="flex-1 min-w-[140px]">
+                  <label className="text-xs text-stone-500 dark:text-stone-400">Date début</label>
+                  <input type="date" required value={availStart} onChange={(e) => setAvailStart(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 bg-white text-sm dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
+                </div>
+                <div className="flex-1 min-w-[140px]">
+                  <label className="text-xs text-stone-500 dark:text-stone-400">Date fin</label>
+                  <input type="date" required value={availEnd} min={availStart} onChange={(e) => setAvailEnd(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 bg-white text-sm dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100" />
+                </div>
+                <button type="submit" className="px-4 py-2 rounded-lg bg-stone-950 text-white text-sm font-medium hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white shrink-0">Ajouter</button>
+              </form>
+
+              <div className="mt-3 space-y-2">
+                {availLoading && <p className="text-xs text-stone-400">Chargement...</p>}
+                {!availLoading && availWindows.length === 0 && (
+                  <p className="text-xs text-stone-400">Aucune plage définie — le véhicule est louable tous les jours par défaut.</p>
+                )}
+                {availWindows.map((w) => (
+                  <div key={w.id} className="flex items-center justify-between gap-2 rounded-lg bg-stone-50 dark:bg-stone-800/60 px-3 py-2 text-sm">
+                    <span className="text-stone-700 dark:text-stone-300">{w.startDate} → {w.endDate}</span>
+                    <button onClick={() => removeAvailWindow(w.id)} className="rounded-md p-1 text-stone-400 hover:text-red-600 dark:hover:text-red-400"><Trash2 className="h-3.5 w-3.5" /></button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[.75fr_1.25fr] gap-4 mt-6">
         <form onSubmit={createCategory} className="bg-white rounded-lg border border-stone-200 p-4 space-y-2 shadow-sm dark:bg-stone-900 dark:border-stone-800">

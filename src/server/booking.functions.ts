@@ -10,6 +10,7 @@ import {
   reservations,
   customers,
   ads,
+  vehicleAvailability,
 } from "../../db/schema.js";
 import { ensureSeeded } from "./seed.server.js";
 import { sendWhatsappMessage } from "./whatsapp.server.js";
@@ -489,6 +490,24 @@ export const getAvailableVehicles = createServerFn({ method: "GET" })
 
     const allItems = await db.select().from(menuItems).where(inArray(menuItems.categoryId, catIds));
 
+    // Get availability windows set by the owner for these vehicles
+    const itemIds = allItems.map((i) => i.id);
+    const availWindows = itemIds.length > 0
+      ? await db.select().from(vehicleAvailability).where(
+          and(
+            eq(vehicleAvailability.restaurantId, data.restaurantId),
+            inArray(vehicleAvailability.menuItemId, itemIds),
+          ),
+        )
+      : [];
+    // Group windows by vehicle
+    const windowsByVehicle = new Map<number, { startDate: string; endDate: string }[]>();
+    for (const w of availWindows) {
+      const list = windowsByVehicle.get(w.menuItemId) ?? [];
+      list.push({ startDate: w.startDate, endDate: w.endDate });
+      windowsByVehicle.set(w.menuItemId, list);
+    }
+
     // Get all non-cancelled reservations that overlap with [startDate, endDate]
     // Overlap: reservation.date <= endDate AND (reservation.endDate >= startDate OR reservation.endDate IS NULL)
     const overlapping = await db
@@ -522,14 +541,24 @@ export const getAvailableVehicles = createServerFn({ method: "GET" })
     const vehicles = filtered.map((v) => {
       const returnDate = vehicleReturnDates.get(v.id)
       const isBooked = v.available && !!returnDate
-      // Vehicle is available if: not disabled by owner AND no overlapping reservation
-      const available = v.available && !isBooked
-      // If booked, compute next available day (return date + 1)
+      const windows = windowsByVehicle.get(v.id)
+
+      // If owner set availability windows, vehicle is only available if requested dates fall within a window
+      let inWindow = true
+      if (windows && windows.length > 0) {
+        inWindow = windows.some((w) => w.startDate <= data.startDate && w.endDate >= data.endDate)
+      }
+
+      const available = v.available && inWindow && !isBooked
       let nextAvailable: string | null = null
       if (isBooked && returnDate) {
         const next = new Date(returnDate + 'T12:00:00')
         next.setDate(next.getDate() + 1)
         nextAvailable = next.toISOString().slice(0, 10)
+      } else if (!inWindow && windows && windows.length > 0) {
+        // Find the next window that starts after the requested dates
+        const futureWindows = windows.filter((w) => w.startDate > data.endDate).sort((a, b) => a.startDate.localeCompare(b.startDate))
+        if (futureWindows.length > 0) nextAvailable = futureWindows[0].startDate
       }
       return {
         ...v,

@@ -15,6 +15,7 @@ import {
   campaignLogs,
   whatsappMessages,
   marketingCampaigns,
+  vehicleAvailability,
 } from "../../db/schema.js";
 import { requireSession } from "./auth.functions.js";
 import { sendWhatsappMessage, renderTemplate } from "./whatsapp.server.js";
@@ -890,5 +891,66 @@ export const markCampaignRecipientPrepared = createServerFn({ method: "POST" })
       customerId: data.customerId,
       status: "prepared",
     });
+    return { success: true };
+  });
+
+// ── Vehicle availability (car_rental) ────────────────────────────────
+
+export const listVehicleAvailability = createServerFn({ method: "GET" })
+  .inputValidator((data: { menuItemId: number }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    const rows = await db
+      .select()
+      .from(vehicleAvailability)
+      .where(
+        and(
+          eq(vehicleAvailability.restaurantId, restaurantId),
+          eq(vehicleAvailability.menuItemId, data.menuItemId),
+        ),
+      )
+      .orderBy(vehicleAvailability.startDate);
+    return rows;
+  });
+
+export const addVehicleAvailability = createServerFn({ method: "POST" })
+  .inputValidator((data: { menuItemId: number; startDate: string; endDate: string }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    if (data.endDate < data.startDate) return { error: "La date de fin doit être après la date de début." };
+    // Check for overlapping windows for the same vehicle
+    const [overlap] = await db
+      .select({ id: vehicleAvailability.id })
+      .from(vehicleAvailability)
+      .where(
+        and(
+          eq(vehicleAvailability.restaurantId, restaurantId),
+          eq(vehicleAvailability.menuItemId, data.menuItemId),
+          sql`${vehicleAvailability.startDate} <= ${data.endDate} AND ${vehicleAvailability.endDate} >= ${data.startDate}`,
+        ),
+      )
+      .limit(1);
+    if (overlap) return { error: "Ces dates chevauchent une plage existante." };
+    await db.insert(vehicleAvailability).values({
+      restaurantId,
+      menuItemId: data.menuItemId,
+      startDate: data.startDate,
+      endDate: data.endDate,
+    });
+    return { success: true };
+  });
+
+export const deleteVehicleAvailability = createServerFn({ method: "POST" })
+  .inputValidator((data: { id: number }) => data)
+  .handler(async ({ data }) => {
+    const restaurantId = await requireRestaurantId();
+    await db
+      .delete(vehicleAvailability)
+      .where(
+        and(
+          eq(vehicleAvailability.id, data.id),
+          eq(vehicleAvailability.restaurantId, restaurantId),
+        ),
+      );
     return { success: true };
   });

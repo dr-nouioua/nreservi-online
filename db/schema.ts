@@ -198,6 +198,19 @@ export const reservations = pgTable("reservations", {
   index("reservations_customer_idx").on(table.customerId),
 ]);
 
+// ---------- Vehicle availability (car_rental) ----------
+
+export const vehicleAvailability = pgTable("vehicle_availability", {
+  id: serial().primaryKey(),
+  restaurantId: integer("restaurant_id").notNull().references(() => restaurants.id),
+  menuItemId: integer("menu_item_id").notNull().references(() => menuItems.id),
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("va_restaurant_menuitem_idx").on(table.restaurantId, table.menuItemId),
+]);
+
 // ---------- Marketing ----------
 
 export const marketingSegments = pgTable("marketing_segments", {
