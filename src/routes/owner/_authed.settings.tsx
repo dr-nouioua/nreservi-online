@@ -65,15 +65,20 @@ function SettingsPage() {
 
   async function saveSettings(e: React.FormEvent) {
     e.preventDefault()
-    const result = await updateRestaurantSettings({ data: { name, description, logoUrl, coverImageUrl, facebookUrl, instagramUrl, tiktokUrl, mapsUrl, openingHours: hours } })
-    if ('error' in result && result.error) {
-      setSaved(result.error)
+    try {
+      const result = await updateRestaurantSettings({ data: { name, description, logoUrl, coverImageUrl, facebookUrl, instagramUrl, tiktokUrl, mapsUrl, openingHours: hours } })
+      if ('error' in result && result.error) {
+        setSaved(result.error)
+        setTimeout(() => setSaved(null), 3500)
+        return
+      }
+      await setSlotDuration({ data: { duration: slotDuration } })
+      setSaved('Enregistré')
+      setTimeout(() => setSaved(null), 2000)
+    } catch (err: any) {
+      setSaved(err?.message?.slice(0, 200) || 'Erreur lors de la sauvegarde')
       setTimeout(() => setSaved(null), 3500)
-      return
     }
-    await setSlotDuration({ data: { duration: slotDuration } })
-    setSaved('Enregistré')
-    setTimeout(() => setSaved(null), 2000)
   }
 
   async function setImageFromFile(file: File | undefined, setter: (value: string) => void) {
