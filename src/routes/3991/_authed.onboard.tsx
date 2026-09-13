@@ -73,7 +73,7 @@ function OnboardPage() {
         ...form,
         subscriptionTier: form.subscriptionTier,
         subscriptionStart: now.toISOString().slice(0, 10),
-        subscriptionEnd: form.subscriptionTier === 'premium' ? endDate.toISOString().slice(0, 10) : null,
+        subscriptionEnd: endDate.toISOString().slice(0, 10),
       }})
       navigate({ to: '/3991' })
     } finally {
@@ -133,24 +133,22 @@ function OnboardPage() {
               onChange={(e) => setForm((f) => ({ ...f, subscriptionTier: e.target.value }))}
               className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm"
             >
-              <option value="basic">Basic (sans réservation en ligne)</option>
+              <option value="basic">Basic</option>
               <option value="premium">Premium (tout inclus)</option>
             </select>
           </div>
-          {form.subscriptionTier === 'premium' && (
-            <div>
-              <label className="text-xs text-stone-500 dark:text-stone-400">Durée</label>
-              <select
-                value={form.subscriptionDuration}
-                onChange={(e) => setForm((f) => ({ ...f, subscriptionDuration: e.target.value }))}
-                className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm"
-              >
-                <option value="1">Essai gratuit — 1 mois</option>
-                <option value="6">6 mois (15 000 DA)</option>
-                <option value="12">12 mois (25 000 DA)</option>
-              </select>
-            </div>
-          )}
+          <div>
+            <label className="text-xs text-stone-500 dark:text-stone-400">Durée</label>
+            <select
+              value={form.subscriptionDuration}
+              onChange={(e) => setForm((f) => ({ ...f, subscriptionDuration: e.target.value }))}
+              className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm"
+            >
+              <option value="1">Essai gratuit — 1 mois</option>
+              <option value="6">6 mois</option>
+              <option value="12">12 mois</option>
+            </select>
+          </div>
         </div>
         <button disabled={submitting} className="w-full py-2.5 rounded-lg bg-stone-900 text-white dark:ring-1 dark:ring-stone-700 text-sm font-medium disabled:opacity-50">
           {submitting ? 'Création...' : 'Créer l\'établissement + compte propriétaire'}
