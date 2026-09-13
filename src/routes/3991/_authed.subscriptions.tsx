@@ -7,12 +7,13 @@ import {
   renewSubscription,
   setSubscriptionTier,
 } from '../../server/admin.functions'
+import { adminHasModule } from '../../server/admin.permissions'
 
 export const Route = createFileRoute('/3991/_authed/subscriptions')({
 
   beforeLoad: ({ context }) => {
     const { session } = context as { session: { adminRole: 'super' | 'admin'; permissions: string[] } }
-    if (session.adminRole !== 'super' && !(session.permissions ?? []).includes('subscriptions')) {
+    if (!adminHasModule(session, 'subscriptions')) {
       throw redirect({ to: '/3991' })
     }
   },

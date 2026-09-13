@@ -1,12 +1,13 @@
 import { createFileRoute, useNavigate, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
 import { onboardRestaurant } from '../../server/admin.functions'
+import { adminHasModule } from '../../server/admin.permissions'
 
 export const Route = createFileRoute('/3991/_authed/onboard')({
 
   beforeLoad: ({ context }) => {
     const { session } = context as { session: { adminRole: 'super' | 'admin'; permissions: string[] } }
-    if (session.adminRole !== 'super' && !(session.permissions ?? []).includes('onboard')) {
+    if (!adminHasModule(session, 'onboard')) {
       throw redirect({ to: '/3991' })
     }
   },

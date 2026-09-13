@@ -2,12 +2,13 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Mail, Save, Send } from 'lucide-react'
 import { getMailSettings, saveMailSettings, sendTestEmail, listMailLog } from '../../server/admin.functions'
+import { adminHasModule } from '../../server/admin.permissions'
 
 export const Route = createFileRoute('/3991/_authed/mail')({
 
   beforeLoad: ({ context }) => {
     const { session } = context as { session: { adminRole: 'super' | 'admin'; permissions: string[] } }
-    if (session.adminRole !== 'super' && !(session.permissions ?? []).includes('mail')) {
+    if (!adminHasModule(session, 'mail')) {
       throw redirect({ to: '/3991' })
     }
   },

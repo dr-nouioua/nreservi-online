@@ -2,23 +2,24 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Briefcase, Building2, Plus, Send, Trash2 } from 'lucide-react'
 import {
-  listSubscriptions,
+  listAllRestaurants,
   listMailContacts,
   addMailContact,
   deleteMailContact,
   emailRestaurants,
   emailContacts,
 } from '../../server/admin.functions'
+import { adminHasModule as adminHasModuleCheck } from '../../server/admin.permissions'
 
 export const Route = createFileRoute('/3991/_authed/emails')({
 
   beforeLoad: ({ context }) => {
-    const { session } = context as { session: { adminRole: 'super' | 'admin'; permissions: string[] } }
-    if (session.adminRole !== 'super' && !(session.permissions ?? []).includes('emails')) {
+    const { session } = context as { session: { adminRole: 'super' | 'admin'; permissions: string[]; id?: number } }
+    if (session.adminRole !== 'super' && !adminHasModuleCheck(session, 'emails')) {
       throw redirect({ to: '/3991' })
     }
   },
-  loader: () => Promise.all([listSubscriptions(), listMailContacts()]),
+  loader: () => Promise.all([listAllRestaurants(), listMailContacts()]),
   component: EmailsPage,
 })
 

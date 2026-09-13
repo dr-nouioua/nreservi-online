@@ -9,12 +9,13 @@ import {
   setAdActive,
   deleteAd,
 } from '../../server/admin.functions'
+import { adminHasModule } from '../../server/admin.permissions'
 
 export const Route = createFileRoute('/3991/_authed/ads')({
 
   beforeLoad: ({ context }) => {
     const { session } = context as { session: { adminRole: 'super' | 'admin'; permissions: string[] } }
-    if (session.adminRole !== 'super' && !(session.permissions ?? []).includes('ads')) {
+    if (!adminHasModule(session, 'ads')) {
       throw redirect({ to: '/3991' })
     }
   },

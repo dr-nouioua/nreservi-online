@@ -29,12 +29,14 @@ async function logAdmin(action: string, details?: string) {
 /** Any admin may call, but module-scoped features require the privilege (super bypasses). */
 async function requireAdminWithModule(module: string) {
   const session = await requireAdmin();
-  if (session.adminRole !== "super" && !(session.permissions ?? []).includes(module)) {
-    const err = new Error("FORBIDDEN_MODULE");
-    (err as Error & { code?: string }).code = "FORBIDDEN_MODULE";
-    throw err;
-  }
-  return session;
+  if (session.adminRole === "super") return session;
+  const [admin] = await db.select({ permissions: adminUsers.permissions }).from(adminUsers).where(eq(adminUsers.id, session.id));
+  const dbPerms = (admin?.permissions as string[]) ?? [];
+  console.log(`[requireAdminWithModule] id=${session.id} role=${session.adminRole} module=${module} jwtPerms=${JSON.stringify(session.permissions)} dbPerms=${JSON.stringify(dbPerms)} adminFound=${!!admin}`);
+  if (dbPerms.includes(module)) return session;
+  const err = new Error("FORBIDDEN_MODULE");
+  (err as Error & { code?: string }).code = "FORBIDDEN_MODULE";
+  throw err;
 }
 
 export const listAllRestaurants = createServerFn({ method: "GET" }).handler(async () => {

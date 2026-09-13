@@ -23,7 +23,20 @@ export const requireSession = createServerOnlyFn(async (): Promise<SessionPayloa
 
 export const getSession = createServerFn({ method: "GET" }).handler(async () => {
   try {
-    return await requireSession();
+    const session = await requireSession();
+    if (!session) return null;
+    // Refresh admin permissions from DB so stale JWTs are healed automatically.
+    if (session.role === "admin") {
+      const [admin] = await db.select({ permissions: adminUsers.permissions, adminRole: adminUsers.role }).from(adminUsers).where(eq(adminUsers.id, session.id));
+      if (admin) {
+        return {
+          ...session,
+          permissions: (admin.permissions as string[]) ?? [],
+          adminRole: (admin.adminRole as "super" | "admin") ?? session.adminRole,
+        };
+      }
+    }
+    return session;
   } catch {
     return null;
   }
