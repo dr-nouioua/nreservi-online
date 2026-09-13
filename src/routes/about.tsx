@@ -404,7 +404,6 @@ function LandingPage() {
           <div className="flex flex-wrap justify-center gap-5 text-xs text-stone-400">
             <Link to="/" className="hover:text-stone-600 dark:hover:text-stone-300">Explorer</Link>
             <Link to="/owner/login" className="hover:text-stone-600 dark:hover:text-stone-300">Espace professionnel</Link>
-            <Link to="/3991/login" className="hover:text-stone-600 dark:hover:text-stone-300">Administration</Link>
           </div>
         </div>
       </footer>
