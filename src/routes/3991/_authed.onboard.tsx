@@ -28,6 +28,8 @@ function OnboardPage() {
     ownerEmail: '',
     ownerPassword: '',
     ownerName: '',
+    subscriptionTier: 'premium',
+    subscriptionDuration: '6',
   })
   const [submitting, setSubmitting] = useState(false)
 
@@ -63,7 +65,16 @@ function OnboardPage() {
     e.preventDefault()
     setSubmitting(true)
     try {
-      await onboardRestaurant({ data: form })
+      const now = new Date()
+      const months = Number(form.subscriptionDuration)
+      const endDate = new Date(now)
+      endDate.setMonth(endDate.getMonth() + months)
+      await onboardRestaurant({ data: {
+        ...form,
+        subscriptionTier: form.subscriptionTier,
+        subscriptionStart: now.toISOString().slice(0, 10),
+        subscriptionEnd: form.subscriptionTier === 'premium' ? endDate.toISOString().slice(0, 10) : null,
+      }})
       navigate({ to: '/3991' })
     } finally {
       setSubmitting(false)
@@ -113,6 +124,32 @@ function OnboardPage() {
             />
           </div>
         ))}
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="text-xs text-stone-500 dark:text-stone-400">Abonnement</label>
+            <select
+              value={form.subscriptionTier}
+              onChange={(e) => setForm((f) => ({ ...f, subscriptionTier: e.target.value }))}
+              className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm"
+            >
+              <option value="basic">Basic (sans réservation en ligne)</option>
+              <option value="premium">Premium (tout inclus)</option>
+            </select>
+          </div>
+          {form.subscriptionTier === 'premium' && (
+            <div>
+              <label className="text-xs text-stone-500 dark:text-stone-400">Durée</label>
+              <select
+                value={form.subscriptionDuration}
+                onChange={(e) => setForm((f) => ({ ...f, subscriptionDuration: e.target.value }))}
+                className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm"
+              >
+                <option value="6">6 mois (15 000 DA)</option>
+                <option value="12">12 mois (25 000 DA)</option>
+              </select>
+            </div>
+          )}
         </div>
         <button disabled={submitting} className="w-full py-2.5 rounded-lg bg-stone-900 text-white dark:ring-1 dark:ring-stone-700 text-sm font-medium disabled:opacity-50">
           {submitting ? 'Création...' : 'Créer l\'établissement + compte propriétaire'}

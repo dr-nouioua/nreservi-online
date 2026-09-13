@@ -164,6 +164,9 @@ export const onboardRestaurant = createServerFn({ method: "POST" })
       ownerEmail: string;
       ownerPassword: string;
       ownerName: string;
+      subscriptionTier?: string;
+      subscriptionStart?: string;
+      subscriptionEnd?: string | null;
     }) => data,
   )
   .handler(async ({ data }) => {
@@ -177,6 +180,7 @@ export const onboardRestaurant = createServerFn({ method: "POST" })
       sat: [{ open: "12:00", close: "23:00" }],
       sun: [{ open: "12:00", close: "21:00" }],
     };
+    const tier = data.subscriptionTier === 'premium' ? 'premium' : 'basic';
     const [restaurant] = await db
       .insert(restaurants)
       .values({
@@ -190,7 +194,9 @@ export const onboardRestaurant = createServerFn({ method: "POST" })
         contactPhone: data.contactPhone,
         whatsappNumber: data.whatsappNumber || null,
         status: "active",
-        subscriptionTier: "basic",
+        subscriptionTier: tier,
+        subscriptionStart: data.subscriptionStart ?? new Date().toISOString().slice(0, 10),
+        subscriptionEnd: data.subscriptionEnd ?? null,
         openingHours: defaultHours,
       })
       .returning();
