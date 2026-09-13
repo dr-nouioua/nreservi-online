@@ -145,6 +145,7 @@ function OnboardPage() {
                 onChange={(e) => setForm((f) => ({ ...f, subscriptionDuration: e.target.value }))}
                 className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm"
               >
+                <option value="1">Essai gratuit — 1 mois</option>
                 <option value="6">6 mois (15 000 DA)</option>
                 <option value="12">12 mois (25 000 DA)</option>
               </select>
